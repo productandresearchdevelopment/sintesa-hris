@@ -1,0 +1,61 @@
+version: '3'
+services:
+    app:
+        image: andika2000/ubuntu-laravel9-full
+        container_name: mfds
+        restart: unless-stopped
+        tty: true
+        working_dir: /var/www
+        user: root
+        ports:
+            - "8610:80"
+        volumes:
+            - ./:/var/www
+            - ./dockers/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+            - ./dockers/nginx/conf.d/:/etc/nginx/conf.d/
+            - ./dockers/nginx/sites-available/:/etc/nginx/sites-available/
+            - ./dockers/supervisor/:/etc/supervisor/conf.d
+            - ./dockers/logs/nginx/:/var/log/nginx/
+            - ./dockers/php/www.conf:/etc/php/8.1/fpm/pool.d/www.conf
+        extra_hosts:
+            - "host.docker.internal:host-gateway"   
+
+    app-gps:
+        image: node:20.3.1
+        container_name: mfds-gps
+        restart: unless-stopped
+        tty: true
+        working_dir: /var/www
+        user: root
+        ports:
+            - "6109:3100"
+        volumes:
+            - ./nodejs/gps:/var/www
+        extra_hosts:
+            - "host.docker.internal:host-gateway"      
+        command: bash -c "npm start"
+
+    app-socketio:
+        image: node:20.3.1
+        container_name: mfds-socketio
+        restart: unless-stopped
+        tty: true
+        working_dir: /var/www
+        user: root
+        ports:
+            - "6108:80"
+            - "6104:443"
+        volumes:
+            - ./nodejs/socket-io:/var/www
+            - ./dockers/letsencrypt/:/var/letsencrypt/
+        extra_hosts:
+            - "host.docker.internal:host-gateway"      
+        command: bash -c "npm start"
+
+    redis:
+        image: redis:7.0
+        container_name: mfds-redis
+        restart: unless-stopped
+        ports:
+            - "6610:6379"
+

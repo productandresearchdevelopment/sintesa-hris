@@ -1,0 +1,77 @@
+ons-input .text-input,
+ons-search-input .search-input,
+.toolbar__title,
+.page--material__content,
+.list-title, input, textarea, .textarea, body, div,
+.button--material,
+.text-input--material__label,
+.select-input--material{ font-family: Quicksand,helvetica,tahoma,verdana,sans-serif; }
+
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; height: 14px; width: 14px; display: block; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAn0lEQVR42u3UMQrDMBBEUZ9WfQqDmm22EaTyjRMHAlM5K+Y7lb0wnUZPIKHlnutOa+25Z4D++MRBX98MD1V/trSppLKHqj9TTBWKcoUqffbUcbBBEhTjBOV4ja4l4OIAZThEOV6jHO8ARXD+gPPvKMABinGOrnu6gTNUawrcQKNCAQ7QeTxORzle3+sDfjJpPCqhJh7GixZq4rHcc9l5A9qZ+WeBhgEuAAAAAElFTkSuQmCC); background-repeat: no-repeat; background-size: 14px; }
+
+ons-action-sheet .action-sheet{overflow-y: auto; max-height: 52%}
+ons-popover .popover{overflow-y: auto; max-height: 80%}
+
+.ai-actionbar .toolbar--material__left, .ai-actionbar .toolbar--material__right{
+    min-width: 0px; padding: 0px 5px; line-height: 54px;
+}
+.ai-actionbar .ons-icon{ font-size: 16px; margin: 0px 10px; color: #888888; }
+.ai-actionbar .ai-actionbar-title{font-size: 16px; display: none;}
+.ai-actionbar .ai-search-input{width: 100%}
+.ai-actionbar input[type="search"]{
+    width: 100%;
+    margin: 18px 0px;
+    border: 0px;
+    font-size: 16px;
+    height: auto;
+    box-shadow: none;
+    color: #333;
+    padding: 0px 0px 0px 30px;
+    background-position: 0px center;
+}
+
+.ai-popup-list .popup-line{border-bottom: 1px solid #eeeeee}
+.ai-popup-list .ai-popup-item{padding: 0px 0px; border-bottom: 0px solid #ffffff}
+.ai-popup-list .ai-popup-item .popup-text{padding: 0px 5px;}
+.ai-popup-list .ai-popup-item .icon-left, .ai-popup-list .ai-popup-item .icon-right, .ai-popup-list .ai-popup-item .popup-text{
+    min-height: 56px;
+    color: #777777;
+    font-size: 15px;
+}
+.ai-popup-list .ai-popup-item .icon-left{min-width: 0px; width: 30px; padding: 0px 0px 0px 5px; }
+.ai-popup-list .ai-popup-item .icon-right{min-width: 0px; width: 25px; padding: 0px 0px 0px 5px; }
+
+.ai-page-intro .text{padding: 10px; background-color: rgba(0, 0, 0, 0.11)}
+
+.ai-load-more{text-align: center; padding: 10px 10px 15px 10px; background: #efeff4}
+.ai-load-more .ai-load-more-icon{font-size: 20px !important; color: #333}
+
+.ai-list-node{padding: 5px 0px; background-color: #efeff4}
+.ai-list-node .ai-list-item{padding: 0px !important;}
+.ai-list-node .ai-list-item .center {padding: 0px !important;}
+.ai-list-node .ai-list-item .card {border-radius: 5px; margin: 7px 10px}
+
+.ai-form ons-input{width: 100%; margin-bottom: 20px;}
+.ai-form ons-select{width: 100%; margin-bottom: 20px; margin-top: -10px}
+.ai-form label{color: #3d5afe; font-size: 11px;}
+.ai-form .checkbox {width: 100%; display: flex; margin-bottom: 10px;}
+.ai-form .checkbox ons-checkbox{width: 20px;  margin-right: 10px;}
+.ai-form .checkbox label{color: #666666; font-size: 15px; flex: 1; padding-bottom: 5px}
+.ai-form .textarea{background: #FFFFFF; padding: 10px; width: 100%; margin: 5px 0px 20px 0px; border-radius: 5px}
+.ai-form .textarea:focus {border-color: #0076ff;}
+.ai-form .group-title{font-weight: 700; font-size: 15px; padding: 0px 0px 10px 0px; color: #444; margin-top: 10px}
+
+.datetimepicker, .datepicker, .timepicker{
+    background-image: url("images/icons/calendar.png");
+    background-repeat: no-repeat;
+    background-position-y: 3px;
+}
+.datetimepicker input, .datepicker input, .timepicker input{padding-left: 25px}
+.popover{left: unset}
+
+
+
+
+
+
+

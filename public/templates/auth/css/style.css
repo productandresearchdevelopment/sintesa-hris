@@ -1,0 +1,19 @@
+body{
+    background-image: url("../images/bg.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.main-container{
+    background-color: #FFFFFF44;
+    max-width: 500px;
+}
+
+.error-message{color: #CC0000; line-height: 30px; font-size: 11px;}
+
+@media (max-width: 600px) {
+    .main-container {
+        width: 100%;
+    }
+}
+

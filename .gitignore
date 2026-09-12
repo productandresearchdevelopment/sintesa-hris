@@ -1,0 +1,49 @@
+/app/Http/Controllers/Auth/LoginController (origin).php
+/app/Http/Controllers/Main (origin).php
+/app/Http/Middleware/AuthRoles (origin).php
+/app/Http/Middleware/AuthDeviceRoles (origin).php
+
+/Dockerfile
+/docker-compose.yml
+/dockers/
+
+/bootstrap/cache/*
+/public/hot
+/public/storage
+/public/env
+/storage/*.key
+/storage/debugbar
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/laravel-excel/*
+/storage/app/uploads/*
+/storage/fonts
+/vendor
+/.vscode
+/.idea
+/.vagrant
+/config/params.php
+/.composer/
+/.composer/cache/
+/.composer/cache/*
+.env
+.env.prod.example
+.env.backup
+.phpunit.result.cache
+.DS_Store
+.bash_history
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+deploy.sh
+composer.lock
+gcs.json
+
+/laravel-echo-server.json
+
+**/node_modules
+**/package-lock.json
+**/Dockerfile
+**/.env

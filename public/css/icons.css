@@ -1,0 +1,93 @@
+.icon-add {background-image: url('../images/icons/add.png') !important;}
+.icon-edit{background-image: url('../images/icons/edit.png') !important;}
+.icon-edit-bright{background-image: url('../images/icons/edit-bright.png') !important;}
+.icon-remove{background-image: url('../images/icons/remove.png') !important;}
+.icon-gear{background-image: url('../images/icons/gear.png') !important;}
+.icon-key{background-image: url('../images/icons/key.png') !important;}
+.icon-lock{background-image: url('../images/icons/lock.png') !important;}
+.icon-unlock{background-image: url('../images/icons/unlock.png') !important;}
+.icon-menu{background-image: url('../images/icons/menu.png') !important;}
+.icon-no{background-image: url('../images/icons/no.png') !important;}
+.icon-back-bright{background-image: url('../images/icons/back_bright.png') !important;}
+.icon-next-bright{background-image: url('../images/icons/next_bright.png') !important;}
+.icon-back{background-image: url('../images/icons/back.png') !important;}
+.icon-next{background-image: url('../images/icons/next.png') !important;}
+.icon-save-bright{background-image: url('../images/icons/save-bright.png') !important;}
+.icon-save-dark{background-image: url('../images/icons/save-dark.png') !important;}
+.icon-close{background-image: url('../images/icons/close.png') !important;}
+.icon-cancel{background-image: url('../images/icons/close.png') !important;}
+.icon-search{background-image: url('../images/icons/search.png') !important;}
+.icon-search-bright{background-image: url('../images/icons/search-bright.png') !important;}
+.icon-show{background-image: url('../images/icons/show.png') !important;}
+.icon-hide{background-image: url('../images/icons/hide.png') !important;}
+.icon-yes{background-image: url('../images/icons/yes.png') !important;}
+.icon-refresh{background-image: url('../images/icons/refresh.png') !important;}
+.icon-refresh-bright{background-image: url('../images/icons/refresh-bright.png') !important;}
+.icon-tag{background-image: url('../images/icons/tag.png') !important;}
+.icon-excel{background-image: url('../images/icons/excel.png') !important;}
+.icon-print{background-image: url('../images/icons/print.png') !important;}
+.icon-excel-bright{background-image: url('../images/icons/excel-bright.png') !important;}
+.icon-file{background-image: url('../images/icons/file.png') !important;}
+.icon-folder{background-image: url('../images/icons/folder.png') !important;}
+.icon-folder-hide{background-image: url('../images/icons/folder-hide.png') !important;}
+.icon-page{background-image: url('../images/icons/page.png') !important;}
+.icon-mobile{background-image: url('../images/icons/mobile.png') !important;}
+.icon-desktop{background-image: url('../images/icons/desktop.png') !important;}
+.icon-menu-square{background-image: url('../images/icons/menu-square.png') !important;}
+.icon-revert{background-image: url('../images/icons/revert.png') !important;}
+.icon-finish{background-image: url('../images/icons/finish.png') !important;}
+.icon-down{background-image: url('../images/icons/down.png') !important;}
+.icon-up{background-image: url('../images/icons/up.png') !important;}
+.icon-plus{background-image: url('../images/icons/plus.png') !important;}
+.icon-plus-bright{background-image: url('../images/icons/plus-bright.png') !important;}
+.icon-cash{background-image: url('../images/icons/cash.png') !important;}
+.icon-pay{background-image: url('../images/icons/pay.png') !important;}
+.icon-pdf{background-image: url('../images/icons/pdf.png') !important;}
+.icon-email{background-image: url('../images/icons/email.png') !important;}
+.icon-warning{background-image: url('../images/icons/warning.png') !important;} 
+.icon-bell{background-image: url('../images/icons/bell.png') !important;} 
+.icon-filter{background-image: url('../images/icons/filter.png') !important;} 
+.icon-cleaner{background-image: url('../images/icons/cleaner.png') !important;} 
+.icon-wind{background-image: url('../images/icons/wind.png') !important;} 
+.icon-splash{background-image: url('../images/icons/splash.png') !important;} 
+.icon-water{background-image: url('../images/icons/water.png') !important;} 
+.icon-thermometer{background-image: url('../images/icons/thermometer.png') !important;} 
+.icon-rain{background-image: url('../images/icons/rain.png') !important;} 
+.icon-upload{background-image: url('../images/icons/upload.png') !important;} 
+.icon-trash{background-image: url('../images/icons/trash.png') !important;} 
+.icon-home{background-image: url('../images/icons/home.png') !important;} 
+
+
+.icon-image-bright{background-image: url('../images/icons/image-bright.png') !important;}
+.icon-image{background-image: url('../images/icons/image.png') !important;}
+
+.icon-user{background-image: url('../images/icons/user.png') !important;}
+.icon-users{background-image: url('../images/icons/users.png') !important;}
+.icon-devices{background-image: url('../images/icons/devices.png') !important;}
+.icon-earth{background-image: url('../images/icons/earth.png') !important;}
+.icon-cloud{background-image: url('../images/icons/cloud.png') !important;}
+.icon-yes-green{background-image: url('../images/icons/yes-green.png') !important;}
+.icon-yes-bright{background-image: url('../images/icons/yes-bright.png') !important;}
+.icon-no-red{background-image: url('../images/icons/no-red.png') !important;}
+.icon-marker-place{background-image: url('../images/icons/marker-place.png') !important;}
+.icon-structure{background-image: url('../images/icons/structure.png') !important;}
+
+.icon-right-bright{background-image: url('../images/icons/right-bright.png') !important;}
+.icon-left-bright{background-image: url('../images/icons/left-bright.png') !important;}
+.icon-left-all-bright{background-image: url('../images/icons/left-all-bright.png') !important;}
+.icon-right-all-bright{background-image: url('../images/icons/right-all-bright.png') !important;}
+
+.icon-online{background-image: url('../images/icons/online.png') !important;}
+.icon-offline{background-image: url('../images/icons/offline.png') !important;}
+
+.icon-undo{background-image: url('../images/icons/undo.png') !important;}
+.icon-copy{background-image: url('../images/icons/copy.png') !important;}
+
+
+.buttons{
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-position: 5px 3px; 
+    border: 1px solid #ccc; padding: 1px 5px 2px 23px;
+    cursor: pointer;
+}

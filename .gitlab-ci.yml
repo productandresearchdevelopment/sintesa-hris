@@ -1,0 +1,25 @@
+stages:
+  - deploy
+  - deploy_sialit
+deploy:
+  stage: deploy
+  image: ubuntu:latest
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && ssh-keyscan -H "$SSH_HOST" > ~/.ssh/known_hosts'
+  script:
+    - ssh $SSH_USER@$SSH_HOST "cd $WORK_DIR && sudo sh deploy.sh"
+deploy_sialit:
+  stage: deploy
+  image: ubuntu:latest
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && ssh-keyscan -H "$SSH_HOST_SIALIT" > ~/.ssh/known_hosts'
+  script:
+    - ssh $SSH_USER@$SSH_HOST_SIALIT "cd $WORK_DIR && sudo sh deploy.sh"

@@ -1,0 +1,89 @@
+.uwa-grid-property .display-group{
+    background: #FFFFFF;
+    position: absolute;
+    left: 0;
+    right: 1px;
+    font-weight: 600;
+    padding: 6px 10px;
+    margin-top: -14px !important;
+    border-bottom: 1px solid #eee;
+}
+
+.uwa-grid-property .x-grid-row-alt .x-grid-td, .uwa-grid-property .x-grid-row .x-grid-td {background: #FFFFFF}
+.uwa-grid-property .x-grid-row-alt .x-grid-td.x-grid-cell-selected,
+.uwa-grid-property .x-grid-row .x-grid-td.x-grid-cell-selected {background: #FDFDFD}
+
+.uwa-grid-property .x-grid-property-name{background: #F9F9F9 !important}
+.uwa-grid-property .x-grid-cell-inner { padding: 6px 10px; font-size: 12px}
+.uwa-grid-property .x-grid-editor .x-form-text{height: 28px; margin-top: 2px !important;}
+
+.uwa-grid-property .display-textarea{
+    overflow: hidden;
+    white-space: normal;
+    max-height: 100px;
+    min-height: 100px;
+}
+
+.uwa-grid-property .display-file{white-space: normal;}
+
+
+/* FileEditor Style */
+.uwa-fileeditor-container .box{
+    background-image: url('images/no-image.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 70px;
+    min-width: 40px;
+    border: 0px;
+    margin: 5px 10px 2px 0px;
+    max-width: 70px;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+.uwa-fileeditor-container .box.add{
+    background-image: url('images/add-image.png');
+    height: 70px;
+    width: 70px;
+    background-color: #eeeeee;
+}
+.uwa-fileeditor-container .delete{
+    background-image: url('images/delete.png');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    border-radius: 50%;
+}
+.uwa-fileeditor-container .box .thumb{
+    height: 70px;
+    min-width: 70px;
+    padding: 0px;
+    margin: 0px;
+    border-radius: 3px;
+}
+
+/* TYPE FILE */
+.uwa-fileeditor-container .box.type{
+    height: 70px;
+    width: 70px;
+    border: 1px solid #DDDDDD;
+    background-image: url('images/filetype/file.png');
+}
+
+.thumb{background-image: url('images/filetype/file.png');}
+.thumb-pdf{background-image: url('images/filetype/pdf.png');}
+.thumb-sheet{background-image: url('images/filetype/xls.png');}
+.thumb-xls{background-image: url('images/filetype/xls.png');}
+.thumb-doc{background-image: url('images/filetype/doc.png');}
+.thumb-document{background-image: url('images/filetype/doc.png');}
+.thumb-ppt{background-image: url('images/filetype/ppt.png');}
+.thumb-presentation{background-image: url('images/filetype/ppt.png');}
