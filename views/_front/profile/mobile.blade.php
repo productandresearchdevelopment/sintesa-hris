@@ -2,256 +2,390 @@
 
 @section('head')
   <style>
-    /* Profile */
-    .profile-container {
-      background-color: var(--background-color);
-      padding-bottom: 112px;
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .profile-page-wrapper {
       min-height: 100vh;
-      height: 100%;
-    }
-
-    .profile-top {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 16px;
-      background-color: var(--primary-color);
-      color: white;
-      min-height: 170px;
-    }
-
-    .profile-back {
-      position: absolute;
-      top: 36%;
-      left: 0;
-      padding-left: 20px;
-    }
-
-    .back-button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .profile-title {
-      color: var(--white);
-      font-size: 24px;
-      font-weight: 500;
-    }
-
-    .profile-avatar-section {
-      position: absolute;
-      top: 36%;
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 8px;
+      padding-bottom: 40px;
     }
 
-    .profile-avatar {
-      width: 120px;
-      height: 120px;
-      border: 2px solid white;
-      border-radius: 12px;
-      object-fit: cover;
-    }
-
-    .profile-avatar-wrapper {
+    .profile-header-banner {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
+      padding: 16px 20px 48px 20px;
+      color: #ffffff;
       position: relative;
-      width: 120px;
-      height: 120px;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);
     }
 
-    .edit-avatar-icon {
+    .profile-header-banner::after {
+      content: '';
       position: absolute;
-      bottom: -5px;
-      right: -5px;
-      background-color: var(--primary-color);
-      color: white;
+      right: -20px;
+      bottom: -30px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
-      padding: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .check-avatar-icon {
-      position: absolute;
-      bottom: -5px;
-      right: -5px;
-      background-color: var(--green-color);
-      color: white;
-      border-radius: 50%;
-      padding: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-
-    .profile-info {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .profile-wrapper {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .profile-name {
-      color: var(--dark);
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 0px;
-    }
-
-    .profile-badge {
-      font-size: 20px;
-      color: var(--secondary-color);
-    }
-
-    .profile-role {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--secondary-color);
-    }
-
-    .profile-nav {
-      margin: 140px 20px;
-      display: flex;
-      justify-content: space-evenly;
-      border: 1px solid var(--gray-medium);
-      border-radius: var(--radius-xl);
-      margin-bottom: 16px;
-      overflow-x: auto;
-      background-color: var(--white);
-      padding: 8px;
-    }
-
-    .nav-item {
-      padding: 12px 24px;
-      color: var(--dark);
-      cursor: pointer;
-      background: none;
-      border: none;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    .nav-item.active {
-      background-color: var(--primary-color);
-      color: var(--white);
-      border-radius: var(--radius-xl);
-    }
-
-    .tab-container {
-      margin: 20px 20px 0 20px;
-    }
-
-    .profile-field {
-      margin-bottom: 16px;
-    }
-
-    .field-label {
-      font-size: 14px;
-      color: var(--gray-medium);
-      margin-bottom: 4px;
-    }
-
-    .field-input {
-      width: 100%;
-      font-size: 16px;
-      padding: 8px 16px;
-      background-color: var(--white);
-      border: 1px solid var(--gray-medium);
-      color: var(--dark);
-      border-radius: 8px;
-      outline: 1px solid var(--primary-color);
-    }
-
-    .field-input-disabled {
-      background: var(--gray-light);
-      color: var(--dark);
+      background: rgba(255, 255, 255, 0.1);
       pointer-events: none;
     }
 
-    .field-input:focus {
-      border: var(--primary-color);
+    .top-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
 
-    .field-input:disabled {
-      background: var(--gray-light);
-      color: var(--dark);
+    .btn-back-link {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 0.2s ease;
     }
 
-    input[type="date"] {
-      display: block;
-      -webkit-appearance: textfield;
-      -moz-appearance: textfield;
-      min-height: 1.2em;
-      padding: 6px 12px;
-      min-width: 95%;
+    .btn-back-link:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .header-page-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .user-hero-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 104px;
+      height: 104px;
+      margin-bottom: 12px;
+    }
+
+    .avatar-img {
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .avatar-edit-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0073e6;
+      border: 2.5px solid #ffffff;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease;
+    }
+
+    .avatar-edit-badge:active {
+      transform: scale(0.9);
+    }
+
+    .user-name-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+      letter-spacing: -0.4px;
+    }
+
+    .user-role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .content-body {
+      padding: 0 20px;
+      margin-top: -24px;
+      z-index: 10;
+      position: relative;
+    }
+
+    .tab-segmented-control {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 5px;
+      display: flex;
+      gap: 5px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #f1f5f9;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: #0073e6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 115, 230, 0.3);
+    }
+
+    .form-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 22px 20px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    }
+
+    .form-label-custom {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-group-custom {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 16px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .textarea-icon {
+      top: 18px !important;
+      transform: none !important;
+    }
+
+    .input-field-custom {
       width: 100%;
+      padding: 12px 14px 12px 42px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .input-field-custom:focus {
+      background: #ffffff;
+      border-color: #0073e6;
+      box-shadow: 0 0 0 4px rgba(0, 115, 230, 0.1);
+    }
+
+    textarea.input-field-custom {
+      padding-top: 12px;
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .btn-submit-gradient {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #0073e6 0%, #005bb5 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0, 115, 230, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-submit-gradient:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .settings-list-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    .settings-item {
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      text-decoration: none;
+      transition: background 0.15s ease;
+      cursor: pointer;
+    }
+
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+
+    .settings-item:active {
+      background: #f8fafc;
+    }
+
+    .settings-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .settings-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .settings-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .settings-desc {
+      font-size: 12px;
+      color: #64748b;
+      margin: 2px 0 0 0;
+    }
+
+    .pwd-toggle-btn {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 5;
     }
   </style>
 @endsection
 
 @section('content')
-  <div class="profile-container">
-    <div class="profile-top">
-      <div class="profile-back">
-        <form action="{{ url()->previous() }}" method="GET">
-          <button type="submit" class="back-button">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-        </form>
+  <div class="profile-page-wrapper">
+    <div class="profile-header-banner">
+      <div class="top-action-bar">
+        <a href="{{ route('main') }}" class="btn-back-link">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="header-page-title">Profil Saya</h1>
+        <div style="width: 38px;"></div>
       </div>
 
-      <div class="profile-avatar-section">
-        <span class="profile-title">Profile</span>
-        @if ($user->photo_id)
-          @php
-            $urlFile = route('file', $user->photo_id);
-          @endphp
-          <div class="profile-avatar-wrapper">
-            <img src="{{ $urlFile }}" alt="Profile" class="profile-avatar">
-            <i class="edit-avatar-icon fas fa-pencil-alt"></i>
-            <input type="file" class="avatar-input" accept="image/*" style="display: none;">
+      <div class="user-hero-card">
+        <div class="avatar-wrapper">
+          @if ($user->photo_id || ($user->employee && $user->employee->photo_id))
+            @php
+              $urlFile = route('file', $user->photo_id ?: $user->employee->photo_id);
+            @endphp
+            <img src="{{ $urlFile }}" alt="User Photo" class="avatar-img" id="userAvatarImg">
+          @else
+            <img src="{{ asset('/images/image-no-user.png') }}" alt="User Photo" class="avatar-img" id="userAvatarImg">
+          @endif
+          <div class="avatar-edit-badge" id="btnEditAvatar" title="Ubah Foto Profil">
+            <i class="bi bi-camera-fill"></i>
           </div>
-        @else
-          <div class="profile-avatar-wrapper">
-            <img src="{{ asset('/images/image-no-user.png') }}" alt="no-user" class="profile-avatar">
-            <i class="edit-avatar-icon fas fa-pencil-alt"></i>
-            <input type="file" class="avatar-input" accept="image/*" style="display: none;">
-          </div>
-        @endif
-        <div class="profile-info">
-          <div class="profile-wrapper">
-            <h3 class="profile-name"> {{ strtoupper($user->name) ?? 'User Name' }} </h3>
-            <i class="profile-badge fas fa-square-check"></i>
-          </div>
-          <span class="profile-role">{{ $user->role->name ?? '' }}</span>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+        </div>
+
+        <h2 class="user-name-title" id="userNameTitle">{{ strtoupper($user->name) }}</h2>
+        <div class="user-role-badge">
+          <i class="bi bi-patch-check-fill"></i>
+          <span>{{ $user->role->name ?? 'User Role' }}</span>
         </div>
       </div>
-
     </div>
 
-    <div class="profile-nav">
-      <button class="nav-item active" data-tab="profile">Profile</button>
-      <button class="nav-item" data-tab="settings">Settings</button>
-    </div>
+    <div class="content-body">
+      <div class="tab-segmented-control">
+        <button class="tab-btn active" data-tab="profile">
+          <i class="bi bi-person-badge-fill"></i> Data Profil
+        </button>
+        <button class="tab-btn" data-tab="settings">
+          <i class="bi bi-sliders"></i> Pengaturan
+        </button>
+      </div>
 
-    <div id="tab-container" class="tab-container">
-      <div id="tab-content">
+      <div id="tabContentArea">
       </div>
     </div>
   </div>
@@ -260,9 +394,9 @@
     $(document).ready(function() {
       const user = @json($user);
 
-      $('.nav-item').on('click', function() {
+      $('.tab-btn').on('click', function() {
         const tab = $(this).data('tab');
-        $('.nav-item').removeClass('active');
+        $('.tab-btn').removeClass('active');
         $(this).addClass('active');
 
         if (tab === 'profile') {
@@ -272,9 +406,22 @@
         }
       });
 
-      function uploadAvatar(file, $input) {
+      $('#btnEditAvatar').on('click', function() {
+        $('#avatarFileInput').click();
+      });
+
+      $('#avatarFileInput').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          uploadAvatar(file);
+        }
+      });
+
+      function uploadAvatar(file) {
         let formData = new FormData();
         formData.append('photo', file);
+
+        showLoading();
 
         $.ajax({
           url: "{{ route('profile.upload') }}",
@@ -286,60 +433,76 @@
             'X-CSRF-TOKEN': "{{ csrf_token() }}"
           },
           success: function(response) {
+            hideLoading();
             if (response.success) {
-              $input.siblings('.profile-avatar').attr('src',
-                `{{ route('file', '') }}/${response.data.photo_id}`);
-              showAlert('success', response.message || 'Profile picture updated successfully!');
+              $('#userAvatarImg').attr('src', `{{ route('file', '') }}/${response.data.photo_id}`);
+              showAlert('success', response.message || 'Foto profil berhasil diperbarui!');
             } else {
-              showAlert('danger', response.message || 'Failed to upload photo.');
+              showAlert('danger', response.message || 'Gagal mengunggah foto.');
             }
           },
           error: function(jqXHR) {
-            let msg = 'Failed to upload photo. Please try again.';
+            hideLoading();
+            let msg = 'Gagal mengunggah foto. Silakan coba lagi.';
             try {
-              const response = JSON.parse(jqXHR.responseText);
-              if (response.message) msg = response.message;
+              const res = JSON.parse(jqXHR.responseText);
+              if (res.message) msg = res.message;
             } catch (e) {}
             showAlert('danger', msg);
           }
         });
       }
 
-      $('.edit-avatar-icon').on('click', function() {
-        const $input = $(this).siblings('.avatar-input');
-        $input.click();
-      });
-
-      $('.avatar-input').on('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-          uploadAvatar(file, $(this));
-        }
-      });
-
-      // Profile
       function loadProfileForm() {
-        $('#tab-content').html(`
+        $('#tabContentArea').html(`
+          <div class="form-card">
             <form id="profileForm">
-                @csrf
-                <div class="profile-field">
-                    <div class="field-label">Username</div>
-                    <input type="text" class="field-input" name="username">
+              @csrf
+              <div class="form-group mb-3">
+                <label class="form-label-custom">
+                  <i class="bi bi-person-fill text-primary"></i> Nama Lengkap
+                </label>
+                <div class="input-group-custom">
+                  <i class="bi bi-person input-icon"></i>
+                  <input type="text" class="input-field-custom" name="name" placeholder="Masukkan nama lengkap" required>
                 </div>
-                <div class="profile-field">
-                    <div class="field-label">Email</div>
-                    <input type="text" class="field-input" name="email">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label-custom">
+                  <i class="bi bi-at text-primary"></i> Username
+                </label>
+                <div class="input-group-custom">
+                  <i class="bi bi-at input-icon"></i>
+                  <input type="text" class="input-field-custom" name="username" placeholder="Masukkan username" required>
                 </div>
-                <div class="profile-field">
-                    <div class="field-label">Name</div>
-                   <input type="text" class="field-input" name="name">
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label-custom">
+                  <i class="bi bi-envelope-fill text-primary"></i> Alamat Email
+                </label>
+                <div class="input-group-custom">
+                  <i class="bi bi-envelope input-icon"></i>
+                  <input type="email" class="input-field-custom" name="email" placeholder="Masukkan alamat email" required>
                 </div>
-                <div class="profile-field">
-                    <div class="field-label">address</div>
-                    <textarea class="field-input" name="address"></textarea>
+              </div>
+
+              <div class="form-group mb-4">
+                <label class="form-label-custom">
+                  <i class="bi bi-geo-alt-fill text-primary"></i> Alamat Tempat Tinggal
+                </label>
+                <div class="input-group-custom">
+                  <i class="bi bi-geo-alt input-icon textarea-icon"></i>
+                  <textarea class="input-field-custom" name="address" placeholder="Masukkan alamat tempat tinggal"></textarea>
                 </div>
-                <button type="submit" class="mt-2 btn btn-primary">Update</button>
+              </div>
+
+              <button type="submit" class="btn-submit-gradient">
+                <i class="bi bi-check-circle-fill"></i> Simpan Perubahan
+              </button>
             </form>
+          </div>
         `);
 
         fetchProfileData();
@@ -356,29 +519,25 @@
         $.ajax({
           url: "{{ route('profile.data') }}",
           type: 'GET',
-          success: async function(response) {
-            populateProfileForm(response);
+          success: function(response) {
+            hideLoading();
+            if (response) {
+              $('input[name="name"]').val(response.name || '');
+              $('input[name="username"]').val(response.username || '');
+              $('input[name="email"]').val(response.email || '');
+              $('textarea[name="address"]').val(response.address || '');
+            }
           },
           error: function() {
-            console.error('Failed to fetch profile data.');
-          },
-          complete: function() {
             hideLoading();
+            console.error('Gagal mengambil data profil.');
           }
         });
       }
 
-      async function populateProfileForm(data) {
-        $('input[name="organization_id"]').val(data.organization?.name || '');
-        $('input[name="employee_id"]').val(data.employee?.nik || '');
-        $('input[name="username"]').val(data.username || '');
-        $('input[name="email"]').val(data.email || '');
-        $('input[name="name"]').val(data.name || '');
-        $('textarea[name="address"]').val(data.address || '');
-      }
-
       function saveProfileData() {
         const formData = new FormData($('#profileForm')[0]);
+        showLoading();
 
         $.ajax({
           url: "{{ route('profile.edit') }}",
@@ -387,61 +546,168 @@
           processData: false,
           contentType: false,
           success: function(response) {
-            $('.profile-name').text(response.data.name.toUpperCase());
-            showAlert('success', response.message || 'Data saved successfully.');
+            hideLoading();
+            if (response.success && response.data) {
+              $('#userNameTitle').text(response.data.name.toUpperCase());
+              showAlert('success', response.message || 'Profil berhasil diperbarui.');
+            } else {
+              showAlert('danger', response.message || 'Gagal menyimpan perubahan.');
+            }
           },
-          error: function() {
-            showAlert('danger', 'Failed to request change.');
-          },
+          error: function(xhr) {
+            hideLoading();
+            const msg = xhr.responseJSON?.message || 'Gagal meminta perubahan.';
+            showAlert('danger', msg);
+          }
         });
       }
 
-      // Settings
-      function loadChangePasswordForm() {
-        $('#tab-content').html(`
-            <form id="changePasswordForm">
-                <div class="card p-4">
-                    <h5 class="card-title">Change Password</h5>
-                    <div class="form-group mb-3">
-                        <label for="old" class="form-label">Old Password</label>
-                        <input type="password" name="old" id="old" class="form-control"
-                            placeholder="Enter your old password">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="new" class="form-label">New Password</label>
-                        <input type="password" name="new" id="new" class="form-control"
-                            placeholder="Enter new password">
-                    </div>
-                    <div class="form-group mb-4">
-                        <label for="confirm" class="form-label">Confirm Password</label>
-                        <input type="password" name="confirm" id="confirm" class="form-control"
-                            placeholder="Enter confirm password">
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <button type="button" id="backButton" class="btn btn-danger">Cancel</button>
-                        <button type="submit" id="submitPasswordButton" class="btn btn-primary">Submit</button>
-                    </div>
+      function loadSettingsForm() {
+        $('#tabContentArea').html(`
+          <div class="settings-list-card" id="settingsMenuCard">
+            <div class="settings-item" id="btnChangePasswordLink">
+              <div class="settings-item-left">
+                <div class="settings-icon-box" style="background: #eff6ff; color: #0073e6;">
+                  <i class="bi bi-key-fill"></i>
                 </div>
-            </f>
+                <div>
+                  <h4 class="settings-title">Ubah Kata Sandi</h4>
+                  <p class="settings-desc">Perbarui kata sandi keamanan akun kamu</p>
+                </div>
+              </div>
+              <i class="bi bi-chevron-right text-muted fs-6"></i>
+            </div>
+
+            <div class="settings-item" id="btnExportPdfLink">
+              <div class="settings-item-left">
+                <div class="settings-icon-box" style="background: #fef2f2; color: #ef4444;">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                </div>
+                <div>
+                  <h4 class="settings-title">Ekspor PDF / CV</h4>
+                  <p class="settings-desc">Unduh dokumen profil lengkap dalam PDF</p>
+                </div>
+              </div>
+              <i class="bi bi-chevron-right text-muted fs-6"></i>
+            </div>
+
+            <a href="{{ route('logout') }}" class="settings-item" onclick="event.preventDefault(); window.location='{{ route('logout') }}';">
+              <div class="settings-item-left">
+                <div class="settings-icon-box" style="background: #fff1f2; color: #e11d48;">
+                  <i class="bi bi-box-arrow-right"></i>
+                </div>
+                <div>
+                  <h4 class="settings-title text-danger">Keluar Akun</h4>
+                  <p class="settings-desc">Keluar dari sesi Sintesa HRIS</p>
+                </div>
+              </div>
+              <i class="bi bi-chevron-right text-danger fs-6"></i>
+            </a>
+          </div>
         `);
 
-        $('#backButton').on('click', function() {
+        $('#btnChangePasswordLink').on('click', function(e) {
+          e.preventDefault();
+          loadChangePasswordForm();
+        });
+
+        $('#btnExportPdfLink').on('click', function(e) {
+          e.preventDefault();
+          const userId = user.employ_id;
+
+          if (!userId) {
+            showAlert('danger', 'ID Pegawai tidak ditemukan.');
+            return;
+          }
+          const downloadUrl = '{{ route('employee.request.export.pdf', ':id') }}'.replace(':id', userId);
+          window.location.href = downloadUrl;
+        });
+      }
+
+      function loadChangePasswordForm() {
+        $('#tabContentArea').html(`
+          <div class="form-card">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <button type="button" id="btnCancelPassword" class="btn btn-sm btn-light rounded-circle p-2" style="width:34px; height:34px; display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-arrow-left"></i>
+              </button>
+              <h5 class="fw-bold mb-0 text-dark" style="font-size: 16px;">Ubah Kata Sandi</h5>
+            </div>
+
+            <form id="changePasswordForm">
+              @csrf
+              <div class="form-group mb-3">
+                <label class="form-label-custom">Password Saat Ini</label>
+                <div class="input-group-custom">
+                  <i class="bi bi-lock-fill input-icon"></i>
+                  <input type="password" name="old" id="oldPasswordInput" class="input-field-custom" placeholder="Masukkan password lama" required>
+                  <button type="button" class="pwd-toggle-btn" data-target="#oldPasswordInput">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label-custom">Password Baru</label>
+                <div class="input-group-custom">
+                  <i class="bi bi-shield-lock-fill input-icon"></i>
+                  <input type="password" name="new" id="newPasswordInput" class="input-field-custom" placeholder="Minimal 8 karakter (Huruf Besar, Kecil, Angka)" required>
+                  <button type="button" class="pwd-toggle-btn" data-target="#newPasswordInput">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group mb-4">
+                <label class="form-label-custom">Konfirmasi Password Baru</label>
+                <div class="input-group-custom">
+                  <i class="bi bi-shield-check input-icon"></i>
+                  <input type="password" name="confirm" id="confirmPasswordInput" class="input-field-custom" placeholder="Ulangi password baru" required>
+                  <button type="button" class="pwd-toggle-btn" data-target="#confirmPasswordInput">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="button" id="btnCancelPasswordSubmit" class="btn btn-light w-50 py-2 fw-bold" style="border-radius: 12px;">Batal</button>
+                <button type="submit" class="btn-submit-gradient w-50">Simpan</button>
+              </div>
+            </form>
+          </div>
+        `);
+
+        $('#btnCancelPassword, #btnCancelPasswordSubmit').on('click', function() {
           loadSettingsForm();
         });
 
-        $('#changePasswordForm').off('submit').on('submit', function(e) {
-          event.preventDefault();
+        $('.pwd-toggle-btn').on('click', function() {
+          const targetSelector = $(this).data('target');
+          const input = $(targetSelector);
+          const icon = $(this).find('i');
 
-          const formData = new FormData(this);
-          formData.append('_token', '{{ csrf_token() }}');
+          if (input.attr('type') === 'password') {
+            input.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+          } else {
+            input.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+          }
+        });
 
-          const newPassword = $('#new').val();
-          const confirmPassword = $('#confirm').val();
+        $('#changePasswordForm').on('submit', function(e) {
+          e.preventDefault();
+
+          const newPassword = $('#newPasswordInput').val();
+          const confirmPassword = $('#confirmPasswordInput').val();
 
           if (newPassword !== confirmPassword) {
-            showAlert('warning', 'New Password and Confirm Password do not match.');
+            showAlert('warning', 'Password baru dan Konfirmasi Password tidak cocok.');
             return;
           }
+
+          const formData = new FormData(this);
+          showLoading();
 
           $.ajax({
             url: "{{ route('profile.password') }}",
@@ -450,70 +716,20 @@
             contentType: false,
             processData: false,
             success: function(response) {
-              showAlert('success', response.message || 'Password changed successfully.');
-              loadSettingsForm();
-              $('#changePasswordForm')[0].reset();
+              hideLoading();
+              if (response.success) {
+                showAlert('success', response.message || 'Password berhasil diubah.');
+                loadSettingsForm();
+              } else {
+                showAlert('danger', response.message || 'Gagal mengubah password.');
+              }
             },
             error: function(xhr) {
-              const errorMessage = xhr.responseJSON.message || 'Failed to change password.';
+              hideLoading();
+              const errorMessage = xhr.responseJSON?.message || 'Gagal mengubah password.';
               showAlert('danger', errorMessage);
             }
           });
-        })
-
-      }
-
-      function loadSettingsForm() {
-        $('#tab-content').html(`
-            <div id="settingsCard">
-                <div class="card">
-                    <div class="card-body">
-                        <ul class="d-flex flex-column gap-1 p-0 m-0">
-                            <li class="list-group-item d-flex align-items-center p-2">
-                                <a href="#" id="changePasswordLink" class="text-decoration-none text-primary-color d-flex align-items-center justify-content-between w-100">
-                                    <div>
-                                        <i class="fas fa-lock me-2"></i> Change Password
-                                    </div>
-                                    <p class="mb-0">></p>
-                                </a>
-                            </li>
-                            <li class="list-group-item d-flex align-items-center p-2">
-                                <a href="#" id="exportPdfLink" class="text-decoration-none d-flex text-secondary-color align-items-center justify-content-between w-100">
-                                    <div>
-                                        <i class="fas fa-file-pdf me-2"></i> Export PDF
-                                    </div>
-                                    <p class="mb-0">></p>
-                                </a>
-                            </li>
-                            <li class="list-group-item d-flex align-items-center p-2">
-                                <a href="{{ route('logout') }}" class="text-decoration-none text-danger-color d-flex align-items-center justify-content-between w-100">
-                                    <div>
-                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                    </div>
-                                    <p class="mb-0">></p>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `);
-
-        $('#changePasswordLink').on('click', function(e) {
-          e.preventDefault();
-          loadChangePasswordForm();
-        });
-
-        $('#exportPdfLink').on('click', function(e) {
-          e.preventDefault();
-          const userId = user.employ_id;
-
-          if (!userId) {
-            showAlert('danger', 'User ID not found.');
-            return;
-          }
-          const downloadUrl = '{{ route('employee.request.export.pdf', ':id') }}'.replace(':id', userId);
-          window.location.href = downloadUrl;
         });
       }
 

@@ -16,7 +16,7 @@ class SSO
 
     public function __construct()
     {
-        $this->basePath = "https://sso.qualita-indonesia.net/api/";
+        $this->basePath = env('SSO_BASE_PATH', 'https://sso.sintesa-hris.com/api/');
         $this->bearer = env('SSO_BEARER');
     }
 
@@ -52,7 +52,7 @@ class SSO
 
     public function login($username, $password, $user = null)
     {
-        $response = Curl::to('https://sso.qualita-indonesia.net/api/login')->withData(['username' => $username, 'password' => $password])
+        $response = Curl::to($this->basePath . 'login')->withData(['username' => $username, 'password' => $password])
             ->asJson()
             ->withBearer($this->bearer)
             ->withTimeout(120)

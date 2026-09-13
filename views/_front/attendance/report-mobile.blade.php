@@ -2,235 +2,332 @@
 
 @section('head')
   <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
+    html, body {
+      background-color: #ffffff !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     .report-page-wrapper {
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      box-sizing: border-box;
-      padding-bottom: 15px;
+      padding-bottom: 40px;
     }
 
-    .header-section {
-      background-color: var(--primary-color);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 15px;
-      color: white;
-      flex-shrink: 0;
+    .report-header-banner {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
+      padding: 16px 20px 48px 20px;
+      color: #ffffff;
+      position: relative;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);
     }
 
-    .table-card {
-      flex: 1;
+    .report-header-banner::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      bottom: -30px;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .top-action-bar {
       display: flex;
-      flex-direction: column;
-      min-height: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      background: white;
-      margin-bottom: 0 !important;
-    }
-
-    .table-card .table-responsive {
-      flex: 1;
-      height: 100%;
-      max-height: 100% !important;
-      overflow-y: auto;
-    }
-
-    .date-selectors {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .date-selector {
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      padding: 10px 15px;
-      color: white;
-      border: none;
-      flex: 1;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: calc(100% - 10px) center;
-      padding-right: 30px;
-    }
-
-    .date-selector option {
-      background-color: var(--primary-color);
-      color: white;
-    }
-
-    .header-actions {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
 
-    .export-btn {
-      background-color: rgba(255, 255, 255, 0.25);
+    .btn-back-link {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
       border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: white;
-      font-size: 13px;
-      font-weight: 500;
+      color: #ffffff;
       display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back-link:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .header-page-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .header-actions-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-action-glass {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      padding: 6px 12px;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
       text-decoration: none;
+      transition: all 0.2s ease;
     }
 
-    .export-btn:hover {
-      background-color: rgba(255, 255, 255, 0.35);
-      color: white;
+    .btn-action-glass:active {
+      background: rgba(255, 255, 255, 0.35);
     }
 
-    .log-status {
-      padding: 4px 8px;
+    .content-body {
+      padding: 0 16px;
+      margin-top: -24px;
+      z-index: 10;
+      position: relative;
+    }
+
+    @media (min-width: 769px) {
+      .att-header-banner {
+        display: none !important;
+      }
+      .content-body {
+        margin-top: 0 !important;
+        padding: 0 !important;
+      }
+    }
+
+    /* Filter Card */
+    .filter-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 16px;
+    }
+
+    .filter-card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #475569;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-select-custom {
+      width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
       border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-block;
-      text-align: center;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      outline: none;
     }
 
-    .status-on-time {
-      background-color: #d1fae5;
-      color: #047857;
+    .filter-select-custom:focus {
+      border-color: #0073e6;
+      background: #ffffff;
     }
 
-    .status-late {
-      background-color: #ffedd5;
-      color: #c2410c;
+    /* Attendance Record Cards for Mobile */
+    .record-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      margin-bottom: 12px;
     }
 
-    .status-absent {
-      background-color: #fee2e2;
-      color: #b91c1c;
+    .record-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .record-emp-name {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .record-date-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 3px 10px;
+      border-radius: 50px;
+    }
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .record-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .record-item-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .record-item-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .status-badge-pill {
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-on-time { background: #ecfdf5; color: #059669; }
+    .status-late { background: #fffbe0; color: #d97706; }
+    .status-absent { background: #fef2f2; color: #dc2626; }
+
+    .media-btn-link {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #0073e6;
+      border: 1px solid #dbeafe;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-white-card-action {
+      background-color: #ffffff !important;
+      color: #1d72b8 !important;
+      border: 1px solid #ffffff !important;
+      border-radius: 8px !important;
+      padding: 6px 16px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      text-decoration: none !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .btn-white-card-action:hover {
+      background-color: #f1f5f9 !important;
+      color: #1565c0 !important;
+    }
+
+    .select-translucent-blue {
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 10px 16px !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      width: 100% !important;
+      outline: none !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 0.85rem center !important;
+      background-size: 16px 12px !important;
+      cursor: pointer !important;
+    }
+
+    .select-translucent-blue option {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
     }
   </style>
 @endsection
 
 @section('content')
-  <div class="px-3 report-page-wrapper">
-    @if (isMobile())
-      <div class="py-3" style="flex-shrink: 0;">
-        <div class="d-flex align-items-center gap-4" style="cursor: pointer;"
-          onclick="window.location.href='{{ route('attendance.index') }}'">
-          <i class="bi bi-chevron-left" style="font-size: 1.2rem;"></i>
-          <p class="m-0" style="font-size: 1.1rem;">Attendance Report</p>
-        </div>
-      </div>
-    @endif
-
-    <div class="header-section">
-      <form action="{{ route('attendance.report') }}" method="GET" id="reportForm">
-        <div class="header-actions">
-          <div style="font-weight: 600; font-size: 16px;">Attendance Report</div>
+  {{-- DESKTOP WEBSITE VIEW --}}
+  <div class="d-none d-md-block container-fluid p-3">
+    <!-- Header Filter Card -->
+    <div class="card border-0 mb-4 text-white shadow-sm" style="background: #1d72b8; border-radius: 12px; padding: 20px 24px;">
+      <form action="{{ route('attendance.report') }}" method="GET" id="desktopReportForm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="fw-bold fs-5 text-white">Attendance Report</div>
           <div class="d-flex align-items-center gap-2">
             @if ($isHR)
-              <button type="button" class="export-btn" data-bs-toggle="modal" data-bs-target="#createAttendanceModal"
-                style="cursor: pointer; border: none;">
+              <button type="button" class="btn-white-card-action" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
                 <i class="bi bi-plus-lg"></i> Create
               </button>
             @endif
-            <a href="{{ route('attendance.report') }}" class="export-btn" title="Reset Filters">
+            <a href="{{ route('attendance.report') }}" class="btn-white-card-action">
               <i class="bi bi-arrow-counterclockwise"></i> Clear
             </a>
-            <a href="{{ route('attendance.export.excel', request()->all()) }}" class="export-btn">
-              <i class="bi bi-download"></i> Export
+            <a href="{{ route('attendance.export.excel', request()->all()) }}" class="btn-white-card-action">
+              <i class="bi bi-file-earmark-excel"></i> Export
             </a>
           </div>
         </div>
 
-        @if ($isHR)
-          <div class="row g-2 mb-2">
-            <div class="col-6 col-md-2">
-              <select name="month" class="date-selector w-100" id="month-selector">
-                <option value="">Month</option>
-                @for ($i = 1; $i <= 12; $i++)
-                  <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
-                    {{ date('F', mktime(0, 0, 0, $i, 1)) }}
-                  </option>
-                @endfor
-              </select>
-            </div>
-
-            <div class="col-6 col-md-2">
-              <select name="year" class="date-selector w-100" id="year-selector">
-                @php
-                  $currentYear = date('Y');
-                  $startYear = $currentYear - 3;
-                @endphp
-
-                @for ($i = $currentYear; $i >= $startYear; $i--)
-                  <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
-                    {{ $i }}
-                  </option>
-                @endfor
-              </select>
-            </div>
-
-            <div class="col-6 col-md-2">
-              <input type="date" name="start_date" id="start_date" class="date-selector w-100"
-                value="{{ $startDate }}" style="background-image: none; color-scheme: dark;" title="Start Date">
-            </div>
-
-            <div class="col-6 col-md-2">
-              <input type="date" name="end_date" id="end_date" class="date-selector w-100"
-                value="{{ $endDate }}" style="background-image: none; color-scheme: dark;" title="End Date">
-            </div>
-
-            <div class="col-12 col-md-2">
-              <select name="org_id" class="date-selector w-100" id="org-selector">
-                <option value="">All Organizations</option>
-                @foreach ($orgTree as $org)
-                  <option value="{{ $org['id'] }}"
-                    {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
-                    {{ $org['name'] }}
-                  </option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="col-12 col-md-2">
-              <select name="employee_id" class="date-selector w-100" id="employee-selector">
-                <option value="">All Employees</option>
-                @foreach ($employeesList as $emp)
-                  <option value="{{ $emp->id }}"
-                    {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>
-                    {{ $emp->fullname }}
-                  </option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-        @else
-          <div class="date-selectors">
-            <select name="month" class="date-selector" id="month-selector">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <select name="month" class="select-translucent-blue" id="desktop-month-selector" onchange="this.form.submit()">
+              <option value="">Semua Bulan</option>
               @for ($i = 1; $i <= 12; $i++)
                 <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
                   {{ date('F', mktime(0, 0, 0, $i, 1)) }}
                 </option>
               @endfor
             </select>
+          </div>
 
-            <select name="year" class="date-selector" id="year-selector">
+          <div class="col-md-6">
+            <select name="year" class="select-translucent-blue" id="desktop-year-selector" onchange="this.form.submit()">
               @php
                 $currentYear = date('Y');
                 $startYear = $currentYear - 3;
               @endphp
-
               @for ($i = $currentYear; $i >= $startYear; $i--)
                 <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
                   {{ $i }}
@@ -238,104 +335,61 @@
               @endfor
             </select>
           </div>
-        @endif
+        </div>
       </form>
     </div>
 
-    <div class="card shadow-sm border-0 table-card">
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" style="width: 100%;">
-          <thead style="position: sticky; top: 0; z-index: 10; background-color: #f8f9fa;">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
             <tr>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Employee Name</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Day</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Date</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Clock In</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Clock Out</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Status</th>
-              <th
-                style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                Media</th>
-              @if ($isHR)
-                <th
-                  style="padding: 15px 20px; font-weight: 600; color: #495057; text-align: center; border-bottom: 2px solid #dee2e6; background-color: #f8f9fa;">
-                  Action</th>
-              @endif
+              <th class="py-3 px-4 text-muted fw-bold small">Employee Name</th>
+              <th class="py-3 px-4 text-muted fw-bold small">Day</th>
+              <th class="py-3 px-4 text-muted fw-bold small">Date</th>
+              <th class="py-3 px-4 text-muted fw-bold small">Clock In</th>
+              <th class="py-3 px-4 text-muted fw-bold small">Clock Out</th>
+              <th class="py-3 px-4 text-muted fw-bold small">Status</th>
+              <th class="py-3 px-4 text-muted fw-bold small text-center">Media</th>
             </tr>
           </thead>
           <tbody>
             @if (isset($formattedLogs) && count($formattedLogs) > 0)
               @foreach ($formattedLogs as $log)
-                <tr style="border-bottom: 1px solid #e9ecef;">
-                  <td style="padding: 15px 20px; font-weight: 500; color: #212529;">{{ $log['employee_name'] }}</td>
-                  <td style="padding: 15px 20px; text-align: center; color: #6c757d;">{{ $log['day'] }}</td>
-                  <td style="padding: 15px 20px; text-align: center; color: #6c757d;">{{ $log['date'] }}</td>
-                  <td style="padding: 15px 20px; text-align: center; color: #212529;">{{ $log['clock_in'] }}</td>
-                  <td style="padding: 15px 20px; text-align: center; color: #212529;">{{ $log['clock_out'] }}</td>
-                  <td style="padding: 15px 20px; text-align: center;">
-                    <span class="log-status status-{{ strtolower(str_replace(' ', '-', $log['status'])) }}"
-                      style="width: 100px;">
+                <tr>
+                  <td class="py-3 px-4 fw-bold text-dark">{{ $log['employee_name'] }}</td>
+                  <td class="py-3 px-4 text-muted small">{{ $log['day'] }}</td>
+                  <td class="py-3 px-4 text-dark small">{{ $log['date'] }}</td>
+                  <td class="py-3 px-4 text-dark fw-bold small">{{ $log['clock_in'] }}</td>
+                  <td class="py-3 px-4 text-dark fw-bold small">{{ $log['clock_out'] }}</td>
+                  <td class="py-3 px-4">
+                    @php
+                      $st = strtolower(str_replace(' ', '-', $log['status']));
+                    @endphp
+                    <span class="badge rounded-pill px-3 py-2 fw-semibold status-{{ $st }}" style="font-size: 11px;">
                       {{ $log['status'] }}
                     </span>
                   </td>
-                  <td style="padding: 15px 20px; text-align: center;">
-                    <div class="d-inline-flex align-items-center gap-2">
-                      @if ($log['clock_in_photo'])
-                        <a href="{{ $log['clock_in_photo'] }}" target="_blank"
-                          class="btn btn-sm btn-outline-primary py-1 px-2 d-inline-flex align-items-center gap-1"
-                          style="font-size:12px; border-radius:6px;" title="Clock In Photo">
-                          <i class="bi bi-image"></i>
-                          In
-                        </a>
-                      @endif
-
-                      @if ($log['clock_out_photo'])
-                        <a href="{{ $log['clock_out_photo'] }}" target="_blank"
-                          class="btn btn-sm btn-outline-primary py-1 px-2 d-inline-flex align-items-center gap-1"
-                          style="font-size:12px; border-radius:6px;" title="Clock Out Photo">
-                          <i class="bi bi-image"></i>
-                          Out
-                        </a>
-                      @endif
-
-                      @if (!$log['clock_in_photo'] && !$log['clock_out_photo'])
-                        <span class="text-muted">-</span>
-                      @endif
-                    </div>
+                  <td class="py-3 px-4 text-center">
+                    @if ($log['clock_in_photo'])
+                      <a href="{{ $log['clock_in_photo'] }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 me-1" style="font-size: 11px;">
+                        <i class="bi bi-image me-1"></i> In
+                      </a>
+                    @endif
+                    @if ($log['clock_out_photo'])
+                      <a href="{{ $log['clock_out_photo'] }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 me-1" style="font-size: 11px;">
+                        <i class="bi bi-image me-1"></i> Out
+                      </a>
+                    @endif
                   </td>
-                  @if ($isHR)
-                    <td style="padding: 12px; text-align: center;">
-                      <button class="edit-attendance-btn" title="Edit Attendance" data-id="{{ $log['id'] }}"
-                        data-name="{{ $log['employee_name'] }}" data-date="{{ $log['date'] }}"
-                        data-clock-in="{{ $log['raw_clock_in'] }}" data-clock-out="{{ $log['raw_clock_out'] }}"
-                        style="width:36px; height:36px; border:none; border-radius:10px; background:var(--primary-color); color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:background-color .2s ease, box-shadow .2s ease; box-shadow:0 2px 8px rgba(37,99,235,.18);"
-                        onmouseover="this.style.background='#1d4ed8';this.style.boxShadow='0 6px 16px rgba(37,99,235,.35)';"
-                        onmouseout="this.style.background='var(--primary-color)';this.style.boxShadow='0 2px 8px rgba(37,99,235,.18)';">
-                        <i class="bi bi-pencil-square" style="font-size:14px;"></i>
-                      </button>
-                    </td>
-                  @endif
                 </tr>
               @endforeach
             @else
               <tr>
-                <td colspan="{{ $isHR ? 8 : 7 }}" style="padding: 40px; text-align: center; color: #6c757d;">
-                  <div class="empty-icon" style="font-size: 3rem; margin-bottom: 10px; color: #dee2e6;">
-                    <i class="bi bi-calendar-x"></i>
-                  </div>
-                  <div>No attendance records found for this period</div>
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                  <span>No Attendance Data Found</span>
                 </td>
               </tr>
             @endif
@@ -345,60 +399,191 @@
     </div>
   </div>
 
-  <div class="modal fade" id="editAttendanceModal" tabindex="-1" aria-labelledby="editAttendanceModalLabel"
-    aria-hidden="true">
+  {{-- MOBILE VIEW --}}
+  <div class="report-page-wrapper d-block d-md-none">
+    <div class="report-header-banner">
+      <div class="top-action-bar">
+        <a href="{{ route('attendance.index') }}" class="btn-back-link">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="header-page-title">Laporan Kehadiran</h1>
+        <div class="header-actions-group">
+          @if ($isHR)
+            <button type="button" class="btn-action-glass" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
+              <i class="bi bi-plus-lg"></i> Tambah
+            </button>
+          @endif
+          <a href="{{ route('attendance.export.excel', request()->all()) }}" class="btn-action-glass">
+            <i class="bi bi-download"></i> Excel
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <!-- Filter Card -->
+      <div class="filter-card">
+        <div class="filter-card-title">
+          <i class="bi bi-funnel-fill text-primary"></i> Filter Laporan Presensi
+        </div>
+
+        <form action="{{ route('attendance.report') }}" method="GET" id="reportForm">
+          <div class="row g-2">
+            <div class="col-6">
+              <select name="month" class="filter-select-custom" id="month-selector">
+                <option value="">Semua Bulan</option>
+                @for ($i = 1; $i <= 12; $i++)
+                  <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
+                    {{ date('F', mktime(0, 0, 0, $i, 1)) }}
+                  </option>
+                @endfor
+              </select>
+            </div>
+
+            <div class="col-6">
+              <select name="year" class="filter-select-custom" id="year-selector">
+                @php
+                  $currentYear = date('Y');
+                  $startYear = $currentYear - 3;
+                @endphp
+                @for ($i = $currentYear; $i >= $startYear; $i--)
+                  <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
+                    {{ $i }}
+                  </option>
+                @endfor
+              </select>
+            </div>
+
+            @if ($isHR)
+              <div class="col-12 mt-2">
+                <select name="org_id" class="filter-select-custom" id="org-selector">
+                  <option value="">Semua Organisasi</option>
+                  @foreach ($orgTree as $org)
+                    <option value="{{ $org['id'] }}" {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
+                      {{ $org['name'] }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="col-12 mt-2">
+                <select name="employee_id" class="filter-select-custom" id="employee-selector">
+                  <option value="">Semua Pegawai</option>
+                  @foreach ($employeesList as $emp)
+                    <option value="{{ $emp->id }}" {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>
+                      {{ $emp->fullname }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+            @endif
+          </div>
+        </form>
+      </div>
+
+      <!-- Record Cards List -->
+      <div id="recordsContainer">
+        @if (isset($formattedLogs) && count($formattedLogs) > 0)
+          @foreach ($formattedLogs as $log)
+            <div class="record-card">
+              <div class="record-card-header">
+                <div>
+                  <h3 class="record-emp-name">{{ $log['employee_name'] }}</h3>
+                  <span class="record-date-badge"><i class="bi bi-calendar3 me-1"></i> {{ $log['day'] }}, {{ $log['date'] }}</span>
+                </div>
+
+                @php
+                  $st = strtolower(str_replace(' ', '-', $log['status']));
+                @endphp
+                <span class="status-badge-pill status-{{ $st }}">
+                  <i class="bi bi-clock-history"></i> {{ $log['status'] }}
+                </span>
+              </div>
+
+              <div class="record-grid">
+                <div class="record-item">
+                  <span class="record-item-label">CLOCK IN</span>
+                  <span class="record-item-value text-success">{{ $log['clock_in'] }}</span>
+                </div>
+                <div class="record-item">
+                  <span class="record-item-label">CLOCK OUT</span>
+                  <span class="record-item-value text-danger">{{ $log['clock_out'] }}</span>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                <div class="d-flex gap-2">
+                  @if ($log['clock_in_photo'])
+                    <a href="{{ $log['clock_in_photo'] }}" target="_blank" class="media-btn-link">
+                      <i class="bi bi-image"></i> Foto Masuk
+                    </a>
+                  @endif
+                  @if ($log['clock_out_photo'])
+                    <a href="{{ $log['clock_out_photo'] }}" target="_blank" class="media-btn-link">
+                      <i class="bi bi-image"></i> Foto Keluar
+                    </a>
+                  @endif
+                </div>
+
+                @if ($isHR)
+                  <button class="edit-btn-icon edit-attendance-btn" title="Edit Attendance" data-id="{{ $log['id'] }}"
+                    data-name="{{ $log['employee_name'] }}" data-date="{{ $log['date'] }}"
+                    data-clock-in="{{ $log['raw_clock_in'] }}" data-clock-out="{{ $log['raw_clock_out'] }}">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                @endif
+              </div>
+            </div>
+          @endforeach
+        @else
+          <div class="record-card text-center py-4">
+            <i class="bi bi-calendar-x text-muted" style="font-size: 36px;"></i>
+            <h5 class="fw-bold text-dark mt-2 mb-1">Tidak Ada Data Presensi</h5>
+            <p class="small text-muted mb-0">Tidak ditemukan catatan presensi pada periode yang dipilih</p>
+          </div>
+        @endif
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Attendance (HR) -->
+  <div class="modal fade" id="editAttendanceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <div class="modal-header"
-          style="border-bottom: 1px solid #e9ecef; background-color: #f8f9fa; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-          <h5 class="modal-title" id="editAttendanceModalLabel" style="font-weight: 600; color: #212529;">Edit
-            Attendance</h5>
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Edit Presensi</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="editAttendanceForm">
           @csrf
           <input type="hidden" name="id" id="edit-id">
-          <div class="modal-body" style="padding: 20px;">
+          <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label" style="font-weight: 500; color: #495057;">Employee</label>
-              <input type="text" class="form-control-plaintext" id="edit-name" readonly
-                style="font-weight: 600; padding: 0;">
+              <label class="form-label small fw-bold text-muted">Pegawai</label>
+              <input type="text" class="form-control-plaintext fw-bold" id="edit-name" readonly>
             </div>
             <div class="mb-3">
-              <label class="form-label" style="font-weight: 500; color: #495057;">Date</label>
-              <input type="text" class="form-control-plaintext" id="edit-date" readonly
-                style="color: #6c757d; padding: 0;">
+              <label class="form-label small fw-bold text-muted">Tanggal</label>
+              <input type="text" class="form-control-plaintext text-muted" id="edit-date" readonly>
             </div>
             <div class="row">
               <div class="col-6">
                 <div class="mb-3">
-                  <label for="edit-clock-in" class="form-label" style="font-weight: 500; color: #495057;">Clock In
-                    Time</label>
-                  <input type="time" class="form-control" name="clock_in" id="edit-clock-in"
-                    style="border-radius: 8px;">
+                  <label class="form-label small fw-bold text-muted">Jam Masuk</label>
+                  <input type="time" class="form-control" name="clock_in" id="edit-clock-in" style="border-radius: 10px;">
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
-                  <label for="edit-clock-out" class="form-label" style="font-weight: 500; color: #495057;">Clock Out
-                    Time</label>
-                  <input type="time" class="form-control" name="clock_out" id="edit-clock-out"
-                    style="border-radius: 8px;">
+                  <label class="form-label small fw-bold text-muted">Jam Keluar</label>
+                  <input type="time" class="form-control" name="clock_out" id="edit-clock-out" style="border-radius: 10px;">
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal-footer"
-            style="border-top: 1px solid #e9ecef; padding: 15px 20px; display: flex !important; flex-direction: row !important; justify-content: flex-end !important; gap: 10px !important; align-items: center !important;">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
-              style="border-radius: 8px !important; font-weight: 500 !important; border: 1px solid #ced4da !important; color: #495057 !important; background: transparent !important; transition: all 0.2s ease-in-out !important; padding: 8px 20px !important; width: auto !important; margin: 0 !important;"
-              onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.color='#212529'; this.style.borderColor='#babbbc';"
-              onmouseout="this.style.backgroundColor='transparent'; this.style.color='#495057'; this.style.borderColor='#ced4da';">
-              Cancel
-            </button>
-            <button type="submit" class="btn btn-primary"
-              style="border-radius: 8px !important; font-weight: 500 !important; background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; padding: 8px 20px !important; width: auto !important; margin: 0 !important;">Save
-              Changes</button>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary fw-bold">Simpan</button>
           </div>
         </form>
       </div>
@@ -406,65 +591,48 @@
   </div>
 
   @if ($isHR)
-    <div class="modal fade" id="createAttendanceModal" tabindex="-1" aria-labelledby="createAttendanceModalLabel"
-      aria-hidden="true">
+    <!-- Modal Create Attendance (HR) -->
+    <div class="modal fade" id="createAttendanceModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-          <div class="modal-header"
-            style="border-bottom: 1px solid #e9ecef; background-color: #f8f9fa; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-            <h5 class="modal-title" id="createAttendanceModalLabel" style="font-weight: 600; color: #212529;">Create
-              Attendance</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">Tambah Record Presensi</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="createAttendanceForm">
             @csrf
-            <div class="modal-body" style="padding: 20px;">
+            <div class="modal-body">
               <div class="mb-3">
-                <label for="create-employee-id" class="form-label" style="font-weight: 500; color: #495057;">Employee
-                  <span class="text-danger">*</span></label>
-                <select name="employee_id" id="create-employee-id" class="form-select" style="border-radius: 8px;"
-                  required>
-                  <option value="">-- Select Employee --</option>
+                <label class="form-label small fw-bold text-muted">Pilih Pegawai <span class="text-danger">*</span></label>
+                <select name="employee_id" id="create-employee-id" class="form-select" style="border-radius: 10px;" required>
+                  <option value="">-- Pilih Pegawai --</option>
                   @foreach ($employeesList as $emp)
                     <option value="{{ $emp->id }}">{{ $emp->fullname }}</option>
                   @endforeach
                 </select>
               </div>
               <div class="mb-3">
-                <label for="create-date" class="form-label" style="font-weight: 500; color: #495057;">Date <span
-                    class="text-danger">*</span></label>
-                <input type="date" class="form-control" name="date" id="create-date"
-                  value="{{ date('Y-m-d') }}" style="border-radius: 8px;" required>
+                <label class="form-label small fw-bold text-muted">Tanggal <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" name="date" id="create-date" value="{{ date('Y-m-d') }}" style="border-radius: 10px;" required>
               </div>
               <div class="row">
                 <div class="col-6">
                   <div class="mb-3">
-                    <label for="create-clock-in" class="form-label" style="font-weight: 500; color: #495057;">Clock In
-                      Time</label>
-                    <input type="time" class="form-control" name="clock_in" id="create-clock-in"
-                      style="border-radius: 8px;">
+                    <label class="form-label small fw-bold text-muted">Jam Masuk</label>
+                    <input type="time" class="form-control" name="clock_in" id="create-clock-in" style="border-radius: 10px;">
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="mb-3">
-                    <label for="create-clock-out" class="form-label" style="font-weight: 500; color: #495057;">Clock
-                      Out Time</label>
-                    <input type="time" class="form-control" name="clock_out" id="create-clock-out"
-                      style="border-radius: 8px;">
+                    <label class="form-label small fw-bold text-muted">Jam Keluar</label>
+                    <input type="time" class="form-control" name="clock_out" id="create-clock-out" style="border-radius: 10px;">
                   </div>
                 </div>
               </div>
             </div>
-            <div class="modal-footer"
-              style="border-top: 1px solid #e9ecef; padding: 15px 20px; display: flex !important; flex-direction: row !important; justify-content: flex-end !important; gap: 10px !important; align-items: center !important;">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
-                style="border-radius: 8px !important; font-weight: 500 !important; border: 1px solid #ced4da !important; color: #495057 !important; background: transparent !important; transition: all 0.2s ease-in-out !important; padding: 8px 20px !important; width: auto !important; margin: 0 !important;"
-                onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.color='#212529'; this.style.borderColor='#babbbc';"
-                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#495057'; this.style.borderColor='#ced4da';">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary"
-                style="border-radius: 8px !important; font-weight: 500 !important; background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; padding: 8px 20px !important; width: auto !important; margin: 0 !important;">Save</button>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary fw-bold">Simpan</button>
             </div>
           </form>
         </div>
@@ -476,20 +644,7 @@
 @section('scripts')
   <script>
     $(document).ready(function() {
-      $('#month-selector, #year-selector').change(function() {
-        const month = $('#month-selector').val();
-        const year = $('#year-selector').val();
-        if (month && year) {
-          const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-          const lastDay = new Date(year, month, 0).getDate();
-          const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-          $('#start_date').val(startDate);
-          $('#end_date').val(endDate);
-        }
-        $('#reportForm').submit();
-      });
-
-      $('#org-selector, #employee-selector, #start_date, #end_date').change(function() {
+      $('#month-selector, #year-selector, #org-selector, #employee-selector').change(function() {
         $('#reportForm').submit();
       });
 
@@ -511,9 +666,8 @@
 
       $('#editAttendanceForm').submit(function(e) {
         e.preventDefault();
-
         const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true).text('Saving...');
+        submitBtn.prop('disabled', true).text('Menyimpan...');
 
         $.ajax({
           url: '{{ route('attendance.update') }}',
@@ -523,23 +677,21 @@
             if (response.success) {
               window.location.reload();
             } else {
-              alert(response.message || 'Failed to update attendance');
-              submitBtn.prop('disabled', false).text('Save Changes');
+              showAlert('danger', response.message || 'Gagal mengubah presensi');
+              submitBtn.prop('disabled', false).text('Simpan');
             }
           },
           error: function(xhr) {
-            const errorMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Error updating attendance';
-            alert(errorMsg);
-            submitBtn.prop('disabled', false).text('Save Changes');
+            showAlert('danger', xhr.responseJSON?.message || 'Error mengubah presensi');
+            submitBtn.prop('disabled', false).text('Simpan');
           }
         });
       });
 
       $('#createAttendanceForm').submit(function(e) {
         e.preventDefault();
-
         const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true).text('Saving...');
+        submitBtn.prop('disabled', true).text('Menyimpan...');
 
         $.ajax({
           url: '{{ route('attendance.store') }}',
@@ -549,14 +701,13 @@
             if (response.success) {
               window.location.reload();
             } else {
-              alert(response.message || 'Failed to create attendance');
-              submitBtn.prop('disabled', false).text('Save');
+              showAlert('danger', response.message || 'Gagal membuat presensi');
+              submitBtn.prop('disabled', false).text('Simpan');
             }
           },
           error: function(xhr) {
-            const errorMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Error creating attendance';
-            alert(errorMsg);
-            submitBtn.prop('disabled', false).text('Save');
+            showAlert('danger', xhr.responseJSON?.message || 'Error membuat presensi');
+            submitBtn.prop('disabled', false).text('Simpan');
           }
         });
       });

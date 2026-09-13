@@ -2,291 +2,507 @@
 
 @section('head')
   <style>
-    .btn-primary {
-      font-size: 1rem;
-      font-weight: 500;
-      border: none
+    html, body {
+      background-color: #ffffff !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
-    .search-container {
+    .apr-page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 40px;
+    }
+
+    .apr-header-banner {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
+      padding: 16px 20px 44px 20px;
+      color: #ffffff;
       position: relative;
-      width: 60%;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);
+    }
+
+    .top-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-back-link {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-back-link:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .header-page-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .content-body {
+      padding: 0 16px;
+      margin-top: -24px;
+      z-index: 10;
+      position: relative;
+    }
+
+    @media (min-width: 769px) {
+      .apr-header-banner {
+        display: none !important;
+      }
+      .apr-page-wrapper {
+        padding: 20px 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .content-body {
+        margin-top: 0 !important;
+        padding: 0 !important;
+      }
+      .emp-appraisal-card {
+        padding: 18px 22px !important;
+        border-radius: 18px !important;
+      }
+      .emp-appraisal-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 115, 230, 0.08) !important;
+        border-color: #dbeafe !important;
+      }
+      .search-filter-card {
+        padding: 16px 20px !important;
+        border-radius: 18px !important;
+      }
+    }
+
+    .search-filter-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 12px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-box-wrapper {
+      position: relative;
     }
 
     .search-input {
-      border-radius: 10px;
-      padding-left: 45px;
-      height: 40px;
+      border-radius: 14px !important;
+      padding-left: 38px !important;
+      height: 44px !important;
+      border: 1px solid #e2e8f0 !important;
+      font-size: 13.5px !important;
+      background: #f8fafc !important;
+    }
+
+    .search-input:focus {
+      background: #ffffff !important;
+      border-color: #0073e6 !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
     }
 
     .search-icon {
-      left: 15px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 1.2rem;
+      font-size: 15px;
+      color: #94a3b8;
+      position: absolute;
+      pointer-events: none;
     }
 
-    .period-selected {
-      width: 60%;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      margin-bottom: 0;
-      font-weight: 500;
-      border: 1px solid #dee2e6;
-      padding: 8px 12px;
+    /* Custom Select2 Styling to match Search Input */
+    .select2-container--default .select2-selection--single {
+      height: 44px !important;
+      border-radius: 14px !important;
+      border: 1px solid #e2e8f0 !important;
+      background-color: #f8fafc !important;
+      display: flex !important;
+      align-items: center !important;
+      padding-left: 14px !important;
+      padding-right: 32px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #0f172a !important;
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      line-height: 42px !important;
+      padding-left: 0 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 42px !important;
+      right: 12px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+      border-color: #64748b transparent transparent transparent !important;
+      border-width: 5px 5px 0 5px !important;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+      border-color: transparent transparent #0073e6 transparent !important;
+      border-width: 0 5px 5px 5px !important;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--single {
+      border-color: #0073e6 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+      outline: none !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+      margin-right: 10px !important;
+      color: #94a3b8 !important;
+      font-weight: bold !important;
+    }
+
+    .select2-dropdown {
+      border-radius: 14px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+      overflow: hidden !important;
+      z-index: 99999 !important;
+    }
+
+    .select2-results__option {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 10px 14px !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #0073e6 !important;
+      color: #ffffff !important;
+    }
+
+    .emp-appraisal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 14px 16px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .emp-appraisal-card:active {
+      transform: scale(0.98);
+      background: #f8fafc;
+    }
+
+    .emp-avatar-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid #f1f5f9;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background: #f1f5f9;
+    }
+
+    .emp-avatar-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .emp-info-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .emp-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-
-    .select2.select2-container.select2-container--default {
-      border-radius: 10px !important;
-      height: 40px !important;
-      width: 40% !important;
-    }
-
-    .select2-selection.select2-selection--single {
-      height: 100% !important;
-      border: 1px solid #dee2e6 !important;
-      border-radius: 10px !important;
-    }
-
-    .select2-selection.select2-selection--single .select2-selection__rendered {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      height: 100% !important;
-    }
-
-    .select2-selection.select2-selection--single .select2-selection__clear {
-      order: 1 !important;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-      top: 8px !important;
-    }
-
-    .icon-blue {
-      background-color: #007bff;
-    }
-
-    .icon-green {
-      background-color: #28a745;
-    }
-
-    .icon-orange {
-      background-color: #fd7e14;
-    }
-
-    #appraisal-summary {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      max-width: 500px;
-      margin: auto;
-    }
-
-    #appraisal-summary .summary-card {
-      background: linear-gradient(135deg, #ffffff, #f0f2f5);
-      border: 1px solid #dcdcdc;
-      border-radius: 16px;
-      padding: 1.6rem;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-      transition: transform 0.3s ease-in-out;
-    }
-
-    #appraisal-summary .summary-card:hover {
-      transform: translateY(-6px);
-    }
-
-    #appraisal-summary .summary-header {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
-
-    #appraisal-summary .summary-header h5 {
+    .emp-org {
+      font-size: 12px;
+      color: #64748b;
       font-weight: 600;
-      color: #2c3e50;
-      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    #appraisal-summary .summary-info {
-      padding: 10px 0;
+    .emp-score-box {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      font-size: 16px;
-      color: #444;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
     }
 
-    #appraisal-summary .summary-info div {
-      line-height: 1.4;
+    .score-badge {
+      background: #eff6ff;
+      color: #0073e6;
+      font-weight: 900;
+      font-size: 15px;
+      padding: 4px 12px;
+      border-radius: 50px;
+      line-height: 1;
     }
 
-    #appraisal-summary .summary-item {
-      background: linear-gradient(135deg, #ffffff, #f8f9fa);
-      padding: 1.2rem;
-      border-radius: 12px;
-      margin-top: 1.2rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      transition: all 0.3s ease-in-out;
-      border-left: 5px solid #007bff;
-    }
-
-    #appraisal-summary .summary-item:hover {
-      background: #eef2f7;
-    }
-
-    #appraisal-summary .summary-item i {
-      font-size: 1.6rem;
-      color: #007bff;
-    }
-
-    #appraisal-summary .summary-item h6 {
-      font-weight: bold;
-      margin: 0;
-      color: #2c3e50;
-    }
-
-    #appraisal-summary .summary-item p {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #6c757d;
-    }
-
-
-    #category-list .category-card {
-      transition: transform 0.3s ease-in-out, box-shadow 0.3s;
-      border-radius: 10px;
+    .btn-detail-action {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 50px;
+      background: #0073e6;
+      color: #ffffff;
       border: none;
-      background: linear-gradient(135deg, #ffffff, #f8f9fa);
-      cursor: pointer;
-    }
-
-    #category-list .category-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      cursor: pointer;
-    }
-
-    #category-list .icon-container {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 115, 230, 0.25);
       display: flex;
       align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
+      gap: 3px;
+      transition: all 0.2s ease;
     }
 
-    #category-list .icon {
-      font-size: 2rem;
-      color: white;
+    .btn-detail-action:hover {
+      background: #005bb5;
+      color: #ffffff;
     }
 
-    #category-list h5 {
-      font-weight: bold;
-      color: #333;
+    /* Summary Card Styling */
+    .summary-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      margin-bottom: 20px;
     }
 
-    #question-list .question-container {
-      background: white;
-      border-radius: 8px;
+    .summary-header {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
+      border-radius: 16px;
       padding: 20px;
+      color: #ffffff;
+      margin-bottom: 20px;
     }
 
-    #question-list .question-category {
-      font-size: 1rem;
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 0px;
-      text-align: center;
+    .summary-header h5 {
+      color: #ffffff !important;
+      font-weight: 800;
+      font-size: 18px;
+      margin-bottom: 12px;
     }
 
-    #question-list .question-progress {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: #555;
-      margin-bottom: 1rem;
-      text-align: center;
+    .summary-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 10px 16px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      color: #ffffff;
     }
 
-    #question-list .evaluator-input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 1rem;
+    .summary-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 14px;
     }
 
-    #question-list .btn {
-      padding: 10px 20px;
-      border-radius: 5px;
+    .summary-item i {
+      font-size: 24px;
+      color: #0073e6;
+      background: #eff6ff;
+      padding: 10px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .summary-item h6 {
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .summary-item p {
+      margin-bottom: 2px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    /* Question Container Styling */
+    .question-container {
+      background: #ffffff !important;
+      border-radius: 20px !important;
+      padding: 24px !important;
+      border: 1px solid #f1f5f9 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+      margin-bottom: 16px !important;
+    }
+
+    .question-category {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0073e6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .question-progress {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 3px 12px;
+      border-radius: 50px;
+      float: right;
+    }
+
+    .evaluator-input {
+      border-radius: 12px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      padding: 8px 14px !important;
+      font-weight: 800 !important;
+      font-size: 14px !important;
+      width: 100% !important;
+      max-width: 220px !important;
+      margin-bottom: 12px !important;
+      background: #f8fafc;
+    }
+
+    .evaluator-input:focus {
+      border-color: #0073e6 !important;
+      background: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+      outline: none;
+    }
+
+    .evaluator-note {
+      border-radius: 12px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      font-size: 13px !important;
+      padding: 10px 14px !important;
+      background: #f8fafc;
+    }
+
+    .evaluator-note:focus {
+      border-color: #0073e6 !important;
+      background: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+      outline: none;
     }
   </style>
 @endsection
 
 @section('content')
-  <div class="px-3" style="min-height: 100%; min-width: 100%; padding-bottom: 100px;">
-    <div class="py-3 {{ !isMobile() ? 'd-none' : '' }}" id="back-button-wrapper">
-      <div class="d-flex align-items-center gap-4" style="cursor: pointer;" id="title-back-container">
-        <i class="bi bi-chevron-left" style="font-size: 1.2rem;font-weight: 500;"></i>
-        <p class="m-0" style="font-size: 1.4rem; font-weight: 500;">Appraisal</p>
+  <div class="apr-page-wrapper">
+    <div class="apr-header-banner">
+      <div class="top-action-bar">
+        <a href="{{ route('main') }}" class="btn-back-link" id="btnAppraisalBack">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="header-page-title" id="page-header-title">Appraisal Pegawai</h1>
+        <div style="width: 38px;"></div>
       </div>
     </div>
 
-    <div class="mb-3" id="filter-container">
-      <div class="d-flex align-items-center gap-2 ">
-        <div class="search-container position-relative flex-grow-1" id="search-container">
-          <input type="text" class="form-control ps-5 search-input" name="query" id="search"
-            placeholder="Search...">
-          <i class="bi bi-search text-muted position-absolute search-icon"></i>
-        </div>
-        <h5 id="period-selected" class="period-selected"></h5>
-        <select id="periodDropdown" class="form-select period-dropdown"></select>
+    <div class="content-body">
+      <!-- Desktop Back Bar (chevron + Back) -->
+      <div id="desktop-back-bar" class="d-none d-md-block mb-3" style="display: none !important; text-align: left !important; width: 100% !important;">
+        <button type="button" class="btn btn-link text-decoration-none p-0 text-primary fw-bold" id="desktopBackBtn" style="font-size: 14px !important; margin: 0 !important; float: left !important; display: inline-flex !important; align-items: center !important;">
+          <i class="bi bi-chevron-left me-1"></i> Back
+        </button>
+        <div style="clear: both;"></div>
       </div>
-    </div>
 
-
-    <div id="employee-list"></div>
-    <div id="appraisal-summary"></div>
-    <div class="row" id="category-list">
-      <div class="col-md-4 mb-3" id="technical-category">
-        <div class="card text-center p-4 shadow category-card border" data-id="1">
-          <div class="icon-container icon-blue">
-            <i class="bi bi-tools icon"></i>
+      <div class="search-filter-card mb-3" id="filter-container">
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-md-7">
+            <div class="search-box-wrapper">
+              <input type="text" class="form-control search-input" name="query" id="search" placeholder="Cari nama pegawai...">
+              <i class="bi bi-search search-icon"></i>
+            </div>
           </div>
-          <h5>Technical Ability & Work Result</h5>
+          <div class="col-12 col-md-5">
+            <select id="periodDropdown" class="form-select period-dropdown"></select>
+          </div>
         </div>
       </div>
-      <div class="col-md-4 mb-3" id="behavior-category">
-        <div class="card text-center p-4 shadow category-card border" data-id="2">
-          <div class="icon-container icon-green">
-            <i class="bi bi-list-task icon"></i>
+
+      <div id="employee-list"></div>
+      <div id="appraisal-summary"></div>
+      <div class="row g-3" id="category-list">
+        <div class="col-12 col-md-4" id="technical-category">
+          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="1">
+            <div class="icon-container icon-blue">
+              <i class="bi bi-tools icon"></i>
+            </div>
+            <h6 class="fw-bold mt-2">Technical Ability & Work Result</h6>
           </div>
-          <h5>Behavior & Work Processes</h5>
+        </div>
+        <div class="col-12 col-md-4" id="behavior-category">
+          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="2">
+            <div class="icon-container icon-green">
+              <i class="bi bi-list-task icon"></i>
+            </div>
+            <h6 class="fw-bold mt-2">Behavior & Work Processes</h6>
+          </div>
+        </div>
+        <div class="col-12 col-md-4" id="leadership-category">
+          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="3">
+            <div class="icon-container icon-orange">
+              <i class="bi bi-person-badge icon"></i>
+            </div>
+            <h6 class="fw-bold mt-2">Leadership</h6>
+          </div>
         </div>
       </div>
-      <div class="col-md-4 mb-3" id="leadership-category">
-        <div class="card text-center p-4 shadow category-card border" data-id="3">
-          <div class="icon-container icon-orange">
-            <i class="bi bi-person-badge icon"></i>
-          </div>
-          <h5>Leadership</h5>
-        </div>
+      <div id="question-list"></div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary rounded-pill px-4" id="load-more" style="display: none;">Load More</button>
       </div>
     </div>
-    <div id="question-list"></div>
-
-    <div class="text-center">
-      <button class="btn btn-primary mt-2" id="load-more" style="display: none;">Load More</button>
-    </div>
-
   </div>
 
   <script>
@@ -418,26 +634,35 @@
             `{{ route('file', ['id' => '__ID__']) }}`.replace('__ID__', employee.photo_id) :
             `{{ asset('/images/image-no-user.png') }}`;
 
-          const componentScoreAndDetail = appraisalEmployee ? `<div class="text-center">
-                        <p class="mb-1 fw-semibold" style="font-size: 20px;">${appraisalEmployee.total_point ?? 0}</p>
-                        <button id="detail-employee-btn" class="btn btn-primary btn-sm" style="font-size: 12px;">Detail</button>
-                    </div>` : '';
+          const scoreValue = appraisalEmployee ? parseFloat(appraisalEmployee.total_point || 0).toFixed(2) : '-';
+          const scoreBadge = appraisalEmployee ? `
+            <div class="emp-score-box">
+              <span class="score-badge">${scoreValue}</span>
+              <button id="detail-employee-btn" class="btn-detail-action">
+                Detail <i class="bi bi-chevron-right ms-1"></i>
+              </button>
+            </div>
+          ` : `
+            <div class="emp-score-box">
+              <button class="btn-detail-action" style="background: #e2e8f0; color: #475569; box-shadow: none;">
+                Mulai <i class="bi bi-chevron-right ms-1"></i>
+              </button>
+            </div>
+          `;
 
           const card = `
-            <div class="card shadow-sm mb-3 fade-in ${cursorClass}"
-                style="border-radius: 12px; background: white; max-height: 110px; ${cursorStyle}"
+            <div class="emp-appraisal-card ${cursorClass}" style="${cursorStyle}"
                 data-id="${employee.id}" data-score="${appraisalEmployee ? '1' : ''}">
-              <div class="d-flex align-items-center">
-                <img src="${imageUrl}" alt="${employee.fullname}"
-                  style="margin-left: 4px; width: 90px; height: 90px; object-fit: cover; border-radius: 12px 0 0 12px;">
-                <div class="d-flex justify-content-between align-items-center gap-2 w-100 p-3">
-                    <div style="flex:1;">
-                        <p class="mb-0 fw-bold">${employee.fullname}</p>
-                        <p class="mb-0 text-muted" style="font-size: 14px;">${employee.organization?.name || ''}</p>
-                    </div>
-                   ${componentScoreAndDetail}
+              <div class="emp-avatar-box">
+                <img src="${imageUrl}" alt="${employee.fullname}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
+              </div>
+              <div class="emp-info-content">
+                <div class="emp-name">${employee.fullname}</div>
+                <div class="emp-org">
+                  <i class="bi bi-building me-1"></i>${employee.organization?.name || 'Pegawai'}
                 </div>
               </div>
+              ${scoreBadge}
             </div>
           `;
           employeeList.append(card);
@@ -1120,11 +1345,26 @@
         });
       };
 
+      function setNavState(state) {
+        window.currentNavState = state;
+        if (state === 'Back') {
+          $('#page-header-title').text('Detail Appraisal');
+          $('#desktop-back-bar').attr('style', 'display: block !important; text-align: left !important; width: 100% !important;');
+        } else {
+          $('#page-header-title').text('Appraisal Pegawai');
+          $('#desktop-back-bar').attr('style', 'display: none !important;');
+        }
+      }
+
+      $(document).on('click', '#desktopBackBtn', function(e) {
+        $('#btnAppraisalBack').trigger('click');
+      });
+
       $(document).on('change', '#periodDropdown', function(event) {
         const dropdown = event.target;
         selectedPeriod = allPeriodsEmployeeLogin.find(p => p.appraisal_period.id == dropdown.value);
 
-        if ($('#title-back-container p').text() === 'Appraisal') {
+        if ((window.currentNavState || 'Appraisal') === 'Appraisal') {
           fetchEmployees();
         } else {
           $('#load-more').hide();
@@ -1134,7 +1374,7 @@
 
       })
 
-      $(document).on('click', '#employee-list .card', function(event) {
+      $(document).on('click', '#employee-list .emp-appraisal-card, #employee-list .card', function(event) {
         const employeeId = $(this).data('id');
         const employeeScore = $(this).data('score');
         selectedEmployee = allEmployees.find(employee => employee.id === employeeId);
@@ -1160,7 +1400,7 @@
         );
         selectedPeriod = targetPeriod || activePeriod;
 
-        if (event.target.closest('#detail-employee-btn')) {
+        if (event.target.closest('#detail-employee-btn') || event.target.closest('.btn-detail-action')) {
           $('#employee-list').hide();
           $('#filter-container').show();
           $('#search-container').hide();
@@ -1169,7 +1409,7 @@
           );
           $('#load-more').hide();
           $('#question-list').show();
-          $('#title-back-container p').text('Back');
+          setNavState('Back');
           fetchQuestions(true);
           return;
         }
@@ -1232,7 +1472,7 @@
           $('#period-selected').show().text(
             selectedEmployee.fullname || 'No period selected'
           );
-          $('#title-back-container p').text('Back');
+          setNavState('Back');
           $('#load-more').hide();
           fetchSummary();
         } else if (userHasEvaluated) {
@@ -1245,7 +1485,7 @@
           $('#period-selected').show().text(
             selectedEmployee.fullname || 'No period selected'
           );
-          $('#title-back-container p').text('Back');
+          setNavState('Back');
           $('#load-more').hide();
           fetchSummary();
         } else {
@@ -1253,7 +1493,7 @@
           currentIndex = 0;
           $('#filter-container').hide();
           $('#load-more').hide();
-          $('#title-back-container p').text('Back');
+          setNavState('Back');
 
           showCategoriesForTemplate(function() {
             $('#category-list').show();
@@ -1307,10 +1547,12 @@
         filterData();
       }, 500));
 
-      $('#title-back-container').on('click', function() {
+      $(document).on('click', '#btnAppraisalBack, #title-back-container', function(e) {
+        e.preventDefault();
         $('#no-template-alert').remove();
-        if ($('#title-back-container p').text() === 'Appraisal') {
-          history.back();
+        const state = window.currentNavState || 'Appraisal';
+        if (state === 'Appraisal') {
+          window.location.href = "{{ route('main') }}";
         } else if (selectedEmployee && selectedCategory) {
           $('#question-list').hide();
           $('#appraisal-summary').hide();
@@ -1335,7 +1577,7 @@
           selectedEmployee = null;
           selectedCategory = null;
           selectedSummary = null;
-          $('#title-back-container p').text('Appraisal');
+          setNavState('Appraisal');
           renderEmployees(filteredEmployees.slice(0, loadLimit));
           updateLoadMoreButton();
         }

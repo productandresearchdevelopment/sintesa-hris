@@ -240,6 +240,10 @@
             </div>
           </div>
 
+          <button id="btnPwaInstallDesktop" class="btn btn-sm btn-primary rounded-pill px-3 d-none align-items-center gap-1 fw-semibold me-2" style="font-size: 12px; background-color: #0073e6; border: none;">
+            <i class="bi bi-download"></i> Install App
+          </button>
+
           <div class="separator"></div>
 
           <nav aria-label="breadcrumb" class="breadcrumb-header">
@@ -275,7 +279,7 @@
 <script>
   //   const ssoToken = "{{ session('token_sso') }}";
   const userId = "{{ $user->id }}";
-  const apiUrl = 'https://sso.qualita-indonesia.net/api/view/dropdown';
+  const apiUrl = "{{ env('SSO_API_URL', 'https://sso.sintesa-hris.com/api/view/dropdown') }}";
 
   const appsButton = document.getElementById('appsButton');
   const appsPanel = document.getElementById('appsPanel');

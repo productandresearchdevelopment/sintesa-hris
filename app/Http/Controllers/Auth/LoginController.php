@@ -42,7 +42,8 @@ class LoginController extends Controller
         if ($request->input('token')) $data['token'] = $request->input('token');
 
         $user = $request->input('username') ? User::with('role')->where(['username' => $data['username']])->first() : null;
-        $response = Curl::to('https://sso.qualita-indonesia.net/api/login')->withData($data)
+        $ssoBasePath = env('SSO_BASE_PATH', 'https://sso.sintesa-hris.com/api/');
+        $response = Curl::to($ssoBasePath . 'login')->withData($data)
             ->asJson()
             ->withBearer('abab')
             ->withTimeout(120)
@@ -54,7 +55,7 @@ class LoginController extends Controller
             $key = Str::uuid();
             Cookie::queue('session_key', $key);
             $url = $request->url();
-            return redirect('https://sso.qualita-indonesia.net/api/sso?url=' . $url . "&key=$key&token=" . $response->data->token_sso);
+            return redirect($ssoBasePath . 'sso?url=' . $url . "&key=$key&token=" . $response->data->token_sso);
         } else {
             if (isset($data['password'])) {
                 return $this->sendFailedLoginResponse($request, $response->message);

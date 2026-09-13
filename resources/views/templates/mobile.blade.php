@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="{{ asset('css/mobile.css') }}">
   <link rel="shortcut icon" href="{{ asset('images/logo-hr.ico') }}" type="image/ico">
 
+  <!-- PWA Manifest & Meta Tags -->
+  <link rel="manifest" href="{{ asset('manifest.json') }}">
+  <meta name="theme-color" content="#0073e6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sintesa HRIS">
+  <link rel="apple-touch-icon" href="{{ asset('images/logo-sintesa.jpg') }}">
+
   {{-- RESOURCES ICON PACK --}}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ asset('plugins/pe7icon/pe-icon-7-stroke/css/pe-icon-7-stroke.css') }}" />
@@ -43,6 +52,10 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 
   <style>
+    html, body {
+      background-color: #ffffff !important;
+    }
+
     #alertContainer {
       position: fixed;
       top: 20px;
@@ -57,6 +70,27 @@
       pointer-events: auto;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       border-radius: 8px;
+    }
+
+    .pwa-install-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 480px;
+      background: #ffffff;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 16px;
+      z-index: 99999;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translate(-50%, 100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
     }
   </style>
 
@@ -296,27 +330,82 @@
     <div class="loading-text text-white">Loading...</div>
   </div>
 
-  @yield('content')
+  <!-- PWA Install Banner -->
+  <div id="pwaInstallBanner" class="pwa-install-banner d-none">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center me-2">
+        <img src="{{ asset('images/logo-mini.png') }}" alt="App Icon" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover;" class="me-2 shadow-sm">
+        <div>
+          <div class="fw-bold" style="font-size: 13px; color: #1e293b;">Install Sintesa HRIS</div>
+          <small class="text-muted" style="font-size: 11px;">Akses cepat & dapat dibuka offline</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center">
+        <button id="btnPwaInstall" class="btn btn-sm btn-primary rounded-pill px-3 py-1 me-2 fw-semibold" style="font-size: 12px; background-color: #0073e6; border: none;">
+          Install
+        </button>
+        <button type="button" class="btn-close" style="font-size: 10px;" onclick="closePwaBanner()"></button>
+      </div>
+    </div>
+  </div>
 
-  {{-- <nav class="bottom-nav">
-    <a href="{{ route('main') }}" class="bottom-nav-item {{ request()->routeIs('main') ? 'active' : '' }}">
-      <i class="fas fa-calendar"></i>
-      <div>Home</div>
-    </a>
-    <a href="#" class="bottom-nav-item {{ request()->routeIs('') ? 'active' : '' }}">
-      <i class="fas fa-chart-bar"></i>
-      <div>Feed</div>
-    </a>
-    <a href="{{ route('profile.mobile') }}"
-      class="bottom-nav-item {{ request()->routeIs('profile.mobile') ? 'active' : '' }}">
-      <i class="fas fa-user"></i>
-      <div>Account</div>
-    </a>
-  </nav> --}}
+  @yield('content')
 
   @yield('scripts')
 
-  {{-- @include('components.chatbot') --}}
+  <script>
+    let deferredPrompt = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('PWA ServiceWorker registered with scope:', reg.scope);
+        }).catch(function(err) {
+          console.log('PWA ServiceWorker registration failed:', err);
+        });
+      });
+    }
+
+    // Capture Chrome/Android install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwaInstallBanner').classList.remove('d-none');
+    });
+
+    document.getElementById('btnPwaInstall')?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Install outcome:', outcome);
+        deferredPrompt = null;
+        closePwaBanner();
+      }
+    });
+
+    function closePwaBanner() {
+      document.getElementById('pwaInstallBanner').classList.add('d-none');
+    }
+
+    // Safari iOS helper check
+    const isIos = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    };
+    const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+    if (isIos() && !isInStandaloneMode()) {
+      // Prompt iOS users after 3 seconds if not installed
+      setTimeout(() => {
+        const iosBanner = document.getElementById('pwaInstallBanner');
+        if (iosBanner && iosBanner.classList.contains('d-none')) {
+          iosBanner.querySelector('.text-muted').innerText = 'Tekan Share lalu "Tambahkan ke Utama"';
+          iosBanner.querySelector('#btnPwaInstall').style.display = 'none';
+          iosBanner.classList.remove('d-none');
+        }
+      }, 3000);
+    }
+  </script>
 </body>
 
 </html>

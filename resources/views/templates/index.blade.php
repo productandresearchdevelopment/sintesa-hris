@@ -9,6 +9,15 @@
   <link rel="stylesheet" href="{{ asset('css/mobile.css') }}" />
   <link rel="shortcut icon" href="{{ asset('images/logo-hr.ico') }}" type="image/ico">
 
+  <!-- PWA Manifest & Meta Tags -->
+  <link rel="manifest" href="{{ asset('manifest.json') }}">
+  <meta name="theme-color" content="#0073e6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sintesa HRIS">
+  <link rel="apple-touch-icon" href="{{ asset('images/logo-sintesa.jpg') }}">
+
   {{-- SWEETALERT --}}
   <link rel="stylesheet" href="{{ asset('templates/mazer/css/sweetalert/sweetalert2.min.css') }}">
   <link rel="stylesheet" crossorigin
@@ -454,6 +463,41 @@
       }).fire();
     </script>
   @endif
+
+  <script>
+    let deferredPromptDesktop = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('PWA ServiceWorker registered with scope:', reg.scope);
+        }).catch(function(err) {
+          console.log('PWA ServiceWorker registration failed:', err);
+        });
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPromptDesktop = e;
+      const btn = document.getElementById('btnPwaInstallDesktop');
+      if (btn) {
+        btn.classList.remove('d-none');
+        btn.classList.add('d-inline-flex');
+      }
+    });
+
+    document.getElementById('btnPwaInstallDesktop')?.addEventListener('click', async () => {
+      if (deferredPromptDesktop) {
+        deferredPromptDesktop.prompt();
+        const { outcome } = await deferredPromptDesktop.userChoice;
+        console.log('Desktop Install outcome:', outcome);
+        deferredPromptDesktop = null;
+        const btn = document.getElementById('btnPwaInstallDesktop');
+        if (btn) btn.classList.add('d-none');
+      }
+    });
+  </script>
 
 </body>
 

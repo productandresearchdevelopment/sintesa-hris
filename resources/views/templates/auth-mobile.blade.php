@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="{{ asset('css/mobile.css') }}">
   <link rel="shortcut icon" href="{{ asset('images/logo-hr.ico') }}" type="image/ico">
 
+  <!-- PWA Manifest & Meta Tags -->
+  <link rel="manifest" href="{{ asset('manifest.json') }}">
+  <meta name="theme-color" content="#0073e6">
+  <meta name="mobile-web-app-capable" content="yes">
+
   {{-- RESOURCES ICON PACK --}}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="{{ asset('plugins/pe7icon/pe-icon-7-stroke/css/pe-icon-7-stroke.css') }}" />
@@ -114,6 +119,18 @@
   </div>
 
   @yield('content')
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('PWA ServiceWorker registered with scope:', reg.scope);
+        }).catch(function(err) {
+          console.log('PWA ServiceWorker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 
 </html>

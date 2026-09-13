@@ -53,5 +53,5 @@ return [
         'Curl' => Ixudra\Curl\Facades\Curl::class,
         'Agent' => Jenssegers\Agent\Facades\Agent::class,
     ])->toArray(),
-    'AI_API_URL' => env('AI_API_URL', 'https://devels.qualita-indonesia.net/hris-ai/'),
+    'AI_API_URL' => env('AI_API_URL', 'https://ai.sintesa-hris.com/'),
 ];

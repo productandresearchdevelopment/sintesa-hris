@@ -18,6 +18,6 @@ class TestEmailJob implements ShouldQueue
 
     public function handle() {
         $mail = new TestMail();
-        Mail::to(['andika2000@gmail.com','andika.gumelar@qualita-indonesia.com'])->send($mail);
+        Mail::to(['admin@sintesa-hris.com'])->send($mail);
     }
 }

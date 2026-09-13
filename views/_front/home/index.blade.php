@@ -109,6 +109,88 @@
       pointer-events: none;
     }
 
+    /* Quick Attendance Widget */
+    .quick-attendance-widget {
+      margin-top: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .att-status-badge {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .att-status-badge:active {
+      transform: scale(0.98);
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    .att-status-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .att-status-info i {
+      font-size: 22px;
+    }
+
+    .icon-pulse {
+      color: #fde047;
+      animation: pulseIcon 1.5s infinite;
+    }
+
+    @keyframes pulseIcon {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.8; }
+    }
+
+    .att-status-title {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #ffffff;
+    }
+
+    .att-status-desc {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 1px;
+    }
+
+    .btn-att-direct {
+      font-size: 11px;
+      font-weight: 800;
+      background: #ffffff;
+      color: #0073e6;
+      padding: 6px 12px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      white-space: nowrap;
+    }
+
+    .btn-att-direct.btn-out {
+      background: #fef2f2;
+      color: #ef4444;
+    }
+
+    .btn-att-direct.btn-done {
+      background: #ecfdf5;
+      color: #10b981;
+    }
+
     .menu-section {
       padding: 10px 20px 20px 20px;
     }
@@ -185,6 +267,84 @@
       box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
       border: 2px solid #ffffff;
     }
+
+    /* Bulletin Carousel Section */
+    .bulletin-section {
+      padding: 10px 20px 20px 20px;
+    }
+
+    .bulletin-carousel-card {
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .bulletin-carousel-card:active {
+      transform: scale(0.98);
+    }
+
+    .bulletin-card-img-box {
+      width: 100%;
+      height: 120px;
+      position: relative;
+      overflow: hidden;
+      background: #f1f5f9;
+    }
+
+    .bulletin-card-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bulletin-card-category {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 115, 230, 0.85);
+      backdrop-filter: blur(6px);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 50px;
+    }
+
+    .bulletin-card-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .bulletin-card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .bulletin-card-meta {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   </style>
 @endsection
 
@@ -224,8 +384,30 @@
       $titleCounts[$t] = ($titleCounts[$t] ?? 0) + 1;
     }
 
+    $todayAttendanceStatus = null;
+    if ($user->employ_id) {
+      $todayAttendanceStatus = \App\Models\Attendance::where('employee_id', $user->employ_id)
+        ->where('date', \Carbon\Carbon::today()->format('Y-m-d'))
+        ->first();
+    }
+
     $modules = [];
+    $hasBulletinModule = false;
+    $bulletinRoute = null;
+
     foreach ($rawModules as $m) {
+      $route = strtolower($m->route ?? '');
+      $name = strtolower($m->text ?? '');
+      if ($route === 'attendance.report') {
+        continue;
+      }
+
+      if (str_contains($name, 'bulletin') || str_contains($route, 'bulletin')) {
+        $hasBulletinModule = true;
+        $bulletinRoute = $m->route && Route::has($m->route) ? route($m->route) : ($m->url ?? '#');
+        continue;
+      }
+
       $displayTitle = $m->text ?? '';
       $parentText = $m->parent_text ?? '';
 
@@ -334,9 +516,50 @@
     </div>
 
     <div class="greeting-card">
-      <small class="text-uppercase opacity-75 fw-bold" style="letter-spacing: 1px; font-size: 0.68rem;">Sintesa HRIS Dashboard</small>
-      <h5 class="fw-bold mb-1 mt-1">{{ $greeting }}, {{ strtok($user->name, ' ') }}! 👋</h5>
+      <div class="small opacity-85 fw-semibold mb-1" style="font-size: 11.5px;">
+        <i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+      </div>
+      <h5 class="fw-bold mb-1">{{ $greeting }}, {{ strtok($user->name, ' ') }}! 👋</h5>
       <p class="mb-0 small opacity-90">Akses cepat ke seluruh modul dan layanan HR kamu</p>
+
+      @if (Route::has('attendance.index'))
+        <div class="quick-attendance-widget" onclick="window.location='{{ route('attendance.index') }}'">
+          @if (!$todayAttendanceStatus || !$todayAttendanceStatus->clock_in_time)
+            <div class="att-status-badge">
+              <div class="att-status-info">
+                <i class="bi bi-exclamation-circle-fill icon-pulse"></i>
+                <div>
+                  <div class="att-status-title">Belum Presensi Masuk</div>
+                  <div class="att-status-desc">Klik untuk presensi sekarang</div>
+                </div>
+              </div>
+              <span class="btn-att-direct">Presensi <i class="bi bi-chevron-right ms-1"></i></span>
+            </div>
+          @elseif ($todayAttendanceStatus->clock_in_time && !$todayAttendanceStatus->clock_out_time)
+            <div class="att-status-badge">
+              <div class="att-status-info">
+                <i class="bi bi-clock-history text-warning"></i>
+                <div>
+                  <div class="att-status-title">Presensi Masuk: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }}</div>
+                  <div class="att-status-desc">Jangan lupa presensi keluar</div>
+                </div>
+              </div>
+              <span class="btn-att-direct btn-out">Clock Out <i class="bi bi-chevron-right ms-1"></i></span>
+            </div>
+          @else
+            <div class="att-status-badge">
+              <div class="att-status-info">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <div>
+                  <div class="att-status-title">Presensi Hari Ini Selesai</div>
+                  <div class="att-status-desc">Masuk: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }} | Keluar: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_out_time)->format('H:i') }}</div>
+                </div>
+              </div>
+              <span class="btn-att-direct btn-done">Detail <i class="bi bi-chevron-right ms-1"></i></span>
+            </div>
+          @endif
+        </div>
+      @endif
     </div>
 
     <div class="menu-section">
@@ -360,6 +583,20 @@
         @endforeach
       </div>
     </div>
+
+    @if ($hasBulletinModule)
+      <div class="bulletin-section" id="bulletinSection" style="display: none;">
+        <div class="section-header">
+          <h3 class="section-title">Informasi & Buletin</h3>
+          @if ($bulletinRoute)
+            <a href="{{ $bulletinRoute }}" class="text-primary text-decoration-none fw-bold" style="font-size: 12px;">
+              Lihat Semua <i class="bi bi-chevron-right"></i>
+            </a>
+          @endif
+        </div>
+        <div class="owl-carousel owl-theme" id="bulletinCarouselContainer"></div>
+      </div>
+    @endif
   </div>
 
   <script>
@@ -432,6 +669,69 @@
           console.error('Gagal memuat notifikasi.');
         }
       });
+
+      @if ($hasBulletinModule && Route::has('bulletin.data'))
+        $.ajax({
+          url: '{{ route('bulletin.data') }}',
+          method: 'GET',
+          data: { trash: 1 },
+          success: function(response) {
+            const data = response ? (response.data || response) : [];
+            const container = $('#bulletinCarouselContainer');
+            container.empty();
+
+            if (data && data.length > 0) {
+              const items = data.slice(0, 6);
+              let count = 0;
+
+              items.forEach(function(b) {
+                const imgUrl = b.cover_image_id ?
+                  '{{ route('file', ':id') }}'.replace(':id', b.cover_image_id) :
+                  '{{ asset('/images/image-no-user.png') }}';
+                const viewUrl = '{{ route('bulletin.view', ':id') }}'.replace(':id', b.id);
+                const catName = b.category ? b.category.name : 'Buletin';
+                const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+                const cardHtml = `
+                  <div class="item">
+                    <div class="bulletin-carousel-card" onclick="window.location.href='${viewUrl}'">
+                      <div class="bulletin-card-img-box">
+                        <img src="${imgUrl}" alt="${b.title || 'Buletin'}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
+                        <span class="bulletin-card-category">${catName}</span>
+                      </div>
+                      <div class="bulletin-card-body">
+                        <div class="bulletin-card-title">${b.title || 'Buletin'}</div>
+                        <div class="bulletin-card-meta">
+                          <span><i class="bi bi-clock me-1"></i>${dateStr}</span>
+                          <span class="text-primary fw-bold">Baca <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+                container.append(cardHtml);
+                count++;
+              });
+
+              if (count > 0) {
+                $('#bulletinSection').show();
+                container.owlCarousel({
+                  margin: 14,
+                  loop: false,
+                  autoplay: false,
+                  dots: true,
+                  nav: false,
+                  responsive: {
+                    0: { items: 1.25 },
+                    480: { items: 1.8 },
+                    768: { items: 2.5 }
+                  }
+                });
+              }
+            }
+          }
+        });
+      @endif
     });
   </script>
 @endsection
