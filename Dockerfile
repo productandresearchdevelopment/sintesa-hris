@@ -7,7 +7,7 @@ COPY public ./public
 
 RUN npm install && npm run production
 
-FROM composer:2-alpine AS composer-builder
+FROM composer:2 AS composer-builder
 WORKDIR /app
 
 COPY composer.json ./
