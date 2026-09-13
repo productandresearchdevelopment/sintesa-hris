@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             OrgSeeder::class,
             EmploySeeder::class,
             AuthUserSeeder::class,
+            BulletinSeeder::class,
         ]);
     }
 }

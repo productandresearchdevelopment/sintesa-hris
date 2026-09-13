@@ -308,7 +308,9 @@
           <i class="bi bi-arrow-left"></i>
         </a>
         <h1 class="header-page-title">Data Pegawai</h1>
-        <div style="width: 38px;"></div>
+        <button type="button" class="btn-back-link edit-general" id="btnHeaderEdit" title="Ajukan Edit Data">
+          <i class="bi bi-pencil-square"></i>
+        </button>
       </div>
 
       <div class="user-hero-card">
@@ -636,8 +638,8 @@
 
         $('#tab-content').html(content);
 
-        $('.edit-general').on('click', function() {
-          openEditModal('general', data);
+        $(document).off('click', '.edit-general').on('click', '.edit-general', function() {
+          openEditModal('general', userEmployee || data);
         });
       }
 

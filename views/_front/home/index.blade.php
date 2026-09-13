@@ -391,38 +391,37 @@
         ->first();
     }
 
+    $hasBulletinModule = Route::has('bulletin.data');
+    $bulletinRoute = Route::has('bulletin.index') ? route('bulletin.index') : '#';
+
+    $mobileMenuConfig = [
+      'leave.index' => [
+        'text' => 'Leave',
+        'display_title' => 'Leave',
+        'route' => 'leave.index'
+      ],
+      'appraisal.question.template.index.mobile' => [
+        'text' => 'Assessment',
+        'display_title' => 'Assessment',
+        'route' => 'appraisal.question.template.index.mobile'
+      ],
+      'attendance.index' => [
+        'text' => 'Attendance',
+        'display_title' => 'Attendance',
+        'route' => 'attendance.index'
+      ],
+      'employee.index' => [
+        'text' => 'Employee',
+        'display_title' => 'Employee',
+        'route' => 'employee.index'
+      ],
+    ];
+
     $modules = [];
-    $hasBulletinModule = false;
-    $bulletinRoute = null;
-
-    foreach ($rawModules as $m) {
-      $route = strtolower($m->route ?? '');
-      $name = strtolower($m->text ?? '');
-      if ($route === 'attendance.report') {
-        continue;
+    foreach ($mobileMenuConfig as $routeKey => $cfg) {
+      if (Route::has($routeKey)) {
+        $modules[] = (object) $cfg;
       }
-
-      if (str_contains($name, 'bulletin') || str_contains($route, 'bulletin')) {
-        $hasBulletinModule = true;
-        $bulletinRoute = $m->route && Route::has($m->route) ? route($m->route) : ($m->url ?? '#');
-        continue;
-      }
-
-      $displayTitle = $m->text ?? '';
-      $parentText = $m->parent_text ?? '';
-
-      if (($titleCounts[trim($displayTitle)] ?? 0) > 1) {
-        if ($parentText === 'Appraisal') {
-          $displayTitle = 'Appraisal ' . ($displayTitle === 'Organization' ? 'Org' : $displayTitle);
-        } elseif ($parentText === 'Master Data') {
-          $displayTitle = $displayTitle;
-        } elseif ($parentText) {
-          $displayTitle = $parentText . ' ' . $displayTitle;
-        }
-      }
-
-      $m->display_title = $displayTitle;
-      $modules[] = $m;
     }
 
     $getModuleMeta = function($mod) {
@@ -584,7 +583,7 @@
       </div>
     </div>
 
-    @if ($hasBulletinModule)
+    @if (Route::has('bulletin.data'))
       <div class="bulletin-section" id="bulletinSection" style="display: none;">
         <div class="section-header">
           <h3 class="section-title">Informasi & Buletin</h3>
@@ -670,7 +669,7 @@
         }
       });
 
-      @if ($hasBulletinModule && Route::has('bulletin.data'))
+      @if (Route::has('bulletin.data'))
         $.ajax({
           url: '{{ route('bulletin.data') }}',
           method: 'GET',
