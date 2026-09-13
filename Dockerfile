@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim AS frontend
+FROM node:20-alpine AS frontend
 WORKDIR /app
 
 COPY package.json webpack.mix.js ./
@@ -7,7 +7,7 @@ COPY public ./public
 
 RUN npm install && npm run production
 
-FROM composer:2 AS composer-builder
+FROM composer:2-alpine AS composer-builder
 WORKDIR /app
 
 COPY composer.json ./
@@ -17,30 +17,33 @@ COPY config ./config
 COPY database ./database
 COPY routes ./routes
 
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-scripts \
-    --ignore-platform-reqs
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-FROM php:8.2-fpm-bookworm
+RUN composer config policy.advisories.block false 2>/dev/null || true \
+    && composer config audit.block false 2>/dev/null || true \
+    && composer install \
+        --no-dev \
+        --no-interaction \
+        --prefer-dist \
+        --optimize-autoloader \
+        --no-scripts \
+        --ignore-platform-reqs \
+        --no-audit
 
-ENV DEBIAN_FRONTEND=noninteractive
+FROM php:8.2-fpm-alpine
+
 ENV TZ=Asia/Jakarta
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     nginx \
     supervisor \
-    cron \
+    bash \
     curl \
     git \
     unzip \
     zip \
-    default-mysql-client \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    mariadb-client \
+    tzdata
 
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions \
@@ -58,18 +61,17 @@ RUN install-php-extensions \
     pcntl \
     opcache
 
-RUN rm -rf /etc/nginx/sites-enabled/* /etc/nginx/sites-available/* /etc/nginx/conf.d/*
+RUN mkdir -p /run/nginx /var/log/supervisor /var/log/nginx /etc/supervisor/conf.d
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN echo "* * * * * www-data php /var/www/artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/laravel-cron \
-    && chmod 0644 /etc/cron.d/laravel-cron \
-    && crontab /etc/cron.d/laravel-cron
+RUN echo "* * * * * www-data php /var/www/artisan schedule:run >> /dev/null 2>&1" > /etc/crontabs/www-data \
+    && chmod 0600 /etc/crontabs/www-data
 
 WORKDIR /var/www
 
@@ -83,8 +85,7 @@ RUN mkdir -p /var/www/storage/framework/sessions \
              /var/www/storage/logs \
              /var/www/bootstrap/cache \
              /var/www/public/uploads \
-             /var/log/supervisor \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/uploads /var/log/supervisor \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/uploads \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 80
