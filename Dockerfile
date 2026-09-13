@@ -61,7 +61,7 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN echo "* * * * * www-data php /var/www/artisan schedule:run >> /dev/null 2>&1" > /etc/crontabs/www-data \
+RUN echo "* * * * * php /var/www/artisan schedule:run >> /dev/null 2>&1" > /etc/crontabs/www-data \
     && chmod 0600 /etc/crontabs/www-data
 
 WORKDIR /var/www
