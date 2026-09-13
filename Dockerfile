@@ -28,7 +28,7 @@ RUN composer config policy.advisories.block false 2>/dev/null || true \
         --optimize-autoloader \
         --no-scripts \
         --ignore-platform-reqs \
-        --no-audit
+        --no-security-blocking
 
 FROM php:8.2-fpm-alpine
 
