@@ -3,9 +3,7 @@
 /app/Http/Middleware/AuthRoles (origin).php
 /app/Http/Middleware/AuthDeviceRoles (origin).php
 
-/Dockerfile
 /docker-compose.yml
-/dockers/
 
 /bootstrap/cache/*
 /public/hot
@@ -45,5 +43,4 @@ gcs.json
 
 **/node_modules
 **/package-lock.json
-**/Dockerfile
 **/.env
