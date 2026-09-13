@@ -29,7 +29,14 @@ use App\Controllers\Front\Employees\EmployeeRequest;
 use App\Controllers\Front\Leaves\Type;
 use App\Controllers\Front\Notifications\Notification;
 use App\Http\Controllers\Main;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/health', fn(): JsonResponse => response()->json([
+    'status' => 'healthy',
+    'app' => 'hris-sintesa',
+    'timestamp' => now()->toIso8601String(),
+]))->name('health');
 
 Main::routes();
 
