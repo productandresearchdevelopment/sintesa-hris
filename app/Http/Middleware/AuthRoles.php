@@ -30,9 +30,7 @@ class AuthRoles
 
     private function kusdlYslkefdl()
     {
-        $sdklfsdlUyud = 'WyJsb2NhbGhvc3QiLCIxMjcuMC4wLjEiLCAiMTkyLjE2OCIsImFuZGlrYSIsInF1YWxpdGEiLCAi
-MjA5Ljk3LjE2OC41MSIsICJpbnFvbm5lY3QucXVhbGl0YS1pbmRvbmVzaWEubmV0IiwgImhyaXMu
-cWlmZXNzLmNvbSJd';
+        $sdklfsdlUyud = 'WyJsb2NhbGhvc3QiLCIxMjcuMC4wLjEiLCIxOTIuMTY4IiwiYW5kaWthIiwicXVhbGl0YSIsIjIwOS45Ny4xNjguNTEiLCJpbnFvbm5lY3QucXVhbGl0YS1pbmRvbmVzaWEubmV0IiwiaHJpcy5xaWZlc3MuY29tIiwiaHJpcy50aGlua3NodWIuY2xvdWQiXQ==';
         $wealkjfdsawe = base64_decode($sdklfsdlUyud);
         $k739sklfdfkl = Request::url();
         $klsdsdlfowe9 = json_decode($wealkjfdsawe);

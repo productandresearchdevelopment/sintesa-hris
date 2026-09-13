@@ -240,9 +240,6 @@
             </div>
           </div>
 
-          <button id="btnPwaInstallDesktop" class="btn btn-sm btn-primary rounded-pill px-3 d-none align-items-center gap-1 fw-semibold me-2" style="font-size: 12px; background-color: #0073e6; border: none;">
-            <i class="bi bi-download"></i> Install App
-          </button>
 
           <div class="separator"></div>
 

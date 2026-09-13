@@ -11,15 +11,17 @@
   @endphp
 
   @if ($isAccordion)
-    <!-- Menu Direktori Item -->
-    <div class="sidebar-label">
-      <div class="sidebar-label-wrapper">
-        <div class="sidebar-label-text">
-          <strong>{{ $item->text }}</strong>
+    @if ($hasChildren)
+      <!-- Menu Direktori Item -->
+      <div class="sidebar-label">
+        <div class="sidebar-label-wrapper">
+          <div class="sidebar-label-text">
+            <strong>{{ $item->text }}</strong>
+          </div>
+          @require('sidebar-menu', ['items' => $item->children, 'level' => $level])
         </div>
-        @require('sidebar-menu', ['items' => $item->children, 'level' => $level])
       </div>
-    </div>
+    @endif
   @elseif($isItem)
     <!-- Simple Item -->
     <ul class="nav flex-column">

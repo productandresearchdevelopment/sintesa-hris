@@ -2401,7 +2401,7 @@ class AuthModuleSeeder extends Seeder
     'is_active' => 1,
     'is_locked' => 1,
     'auth' => NULL,
-    'device' => NULL,
+    'device' => 1,
     'description' => NULL,
     'created_by' => '394c94ca-d220-4799-83a8-d6ccafc0b1af',
     'updated_by' => '394c94ca-d220-4799-83a8-d6ccafc0b1af',

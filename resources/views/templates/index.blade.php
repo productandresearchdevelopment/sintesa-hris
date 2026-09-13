@@ -464,40 +464,6 @@
     </script>
   @endif
 
-  <script>
-    let deferredPromptDesktop = null;
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js').then(function(reg) {
-          console.log('PWA ServiceWorker registered with scope:', reg.scope);
-        }).catch(function(err) {
-          console.log('PWA ServiceWorker registration failed:', err);
-        });
-      });
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPromptDesktop = e;
-      const btn = document.getElementById('btnPwaInstallDesktop');
-      if (btn) {
-        btn.classList.remove('d-none');
-        btn.classList.add('d-inline-flex');
-      }
-    });
-
-    document.getElementById('btnPwaInstallDesktop')?.addEventListener('click', async () => {
-      if (deferredPromptDesktop) {
-        deferredPromptDesktop.prompt();
-        const { outcome } = await deferredPromptDesktop.userChoice;
-        console.log('Desktop Install outcome:', outcome);
-        deferredPromptDesktop = null;
-        const btn = document.getElementById('btnPwaInstallDesktop');
-        if (btn) btn.classList.add('d-none');
-      }
-    });
-  </script>
 
 </body>
 

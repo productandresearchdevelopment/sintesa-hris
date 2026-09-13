@@ -24,7 +24,7 @@ class EmployeeRequest extends Controller
 
         $query->orderBy('created_at', 'DESC');
 
-        if ($request->user()->role->name !== 'HRGA') {
+        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
             $query->where('employ_id', $employId);
         }
 
@@ -339,6 +339,13 @@ class EmployeeRequest extends Controller
 
     public function approve(Request $request)
     {
+        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menyetujui/menolak pengajuan ini.'
+            ], 403);
+        }
+
         try {
             $id = $request->input('id');
             $note = $request->input('note');
@@ -462,6 +469,13 @@ class EmployeeRequest extends Controller
 
     public function reject(Request $request)
     {
+        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menyetujui/menolak pengajuan ini.'
+            ], 403);
+        }
+
         try {
             $id = $request->input('id');
             $note = $request->input('note');
