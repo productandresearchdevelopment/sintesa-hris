@@ -1,14 +1,3 @@
-FROM node:18-alpine AS frontend
-WORKDIR /app
-
-ENV NODE_OPTIONS="--openssl-legacy-provider"
-
-COPY package.json webpack.mix.js ./
-COPY resources ./resources
-COPY public ./public
-
-RUN npm install && npm run production
-
 FROM composer:2 AS composer-builder
 WORKDIR /app
 
@@ -79,7 +68,6 @@ WORKDIR /var/www
 
 COPY --chown=www-data:www-data . /var/www
 COPY --chown=www-data:www-data --from=composer-builder /app/vendor /var/www/vendor
-COPY --chown=www-data:www-data --from=frontend /app/public /var/www/public
 
 RUN mkdir -p /var/www/storage/framework/sessions \
              /var/www/storage/framework/views \
