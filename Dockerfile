@@ -1,5 +1,7 @@
-FROM node:20-alpine AS frontend
+FROM node:18-alpine AS frontend
 WORKDIR /app
+
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 COPY package.json webpack.mix.js ./
 COPY resources ./resources
