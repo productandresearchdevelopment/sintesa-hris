@@ -1,0 +1,62 @@
+name: CI/CD HRIS Sintesa - Prod BlueGreen
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Build and push HRIS image (PROD)
+        id: build
+        run: |
+          IMAGE=ghcr.io/${{ secrets.REGISTRY_OWNER }}/hris-sintesa:prod-${{ github.sha }}
+          CACHE_IMAGE=ghcr.io/${{ secrets.REGISTRY_OWNER }}/hris-sintesa:cache-prod
+
+          docker buildx build \
+            --cache-from type=registry,ref=${CACHE_IMAGE} \
+            --cache-to   type=registry,ref=${CACHE_IMAGE},mode=max \
+            --tag $IMAGE \
+            --push \
+            .
+
+          echo "IMAGE=$IMAGE" >> $GITHUB_OUTPUT
+
+      - name: Deploy HRIS Sintesa Prod BlueGreen
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT }}
+          timeout: 180s
+          command_timeout: 30m
+          debug: true
+          script: |
+            set -e
+
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
+              -u ${{ secrets.GHCR_USER }} \
+              --password-stdin
+
+            IMAGE="${{ steps.build.outputs.IMAGE }}"
+            echo "Pulling image: $IMAGE"
+            docker pull "$IMAGE"
+
+            export IMAGE="$IMAGE"
+            echo "Deploying HRIS Sintesa Prod $IMAGE"
+            /var/www/hris-sintesa/deploy/deploy_prod_bluegreen.sh
