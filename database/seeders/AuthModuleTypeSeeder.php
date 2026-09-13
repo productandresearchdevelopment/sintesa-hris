@@ -96,8 +96,10 @@ class AuthModuleTypeSeeder extends Seeder
   ),
 );
 
-        foreach ($data as $item) {
-            DB::table('auth_module_type')->updateOrInsert(['id' => $item['id']], $item);
+        foreach (array_chunk($data, 100) as $chunk) {
+            foreach ($chunk as $item) {
+                DB::table('auth_module_type')->updateOrInsert(['id' => $item['id']], $item);
+            }
         }
     }
 }

@@ -9,6 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
+            AuthApiSeeder::class,
             FileManagerSeeder::class,
             AuthAppsSeeder::class,
             AuthModuleTypeSeeder::class,
@@ -16,6 +17,16 @@ class DatabaseSeeder extends Seeder
             AuthRoleSeeder::class,
             AuthRoleAppsSeeder::class,
             AuthRoleModuleSeeder::class,
+            CompanySeeder::class,
+            DivisionSeeder::class,
+            OfficeSeeder::class,
+            JobsSeeder::class,
+            CitySeeder::class,
+            GlobalDataSeeder::class,
+            PlacementSeeder::class,
+            OrgSeeder::class,
+            EmploySeeder::class,
+            AuthUserSeeder::class,
         ]);
     }
 }
