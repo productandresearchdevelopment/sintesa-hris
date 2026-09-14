@@ -441,7 +441,7 @@
         <a href="{{ route('main') }}" class="btn-back-link" id="btnAppraisalBack">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="header-page-title" id="page-header-title">Appraisal Pegawai</h1>
+        <h1 class="header-page-title" id="page-header-title">Employee Assessment</h1>
         <div style="width: 38px;"></div>
       </div>
     </div>
@@ -459,7 +459,7 @@
         <div class="row g-2 align-items-center">
           <div class="col-12 col-md-7">
             <div class="search-box-wrapper">
-              <input type="text" class="form-control search-input" name="query" id="search" placeholder="Cari nama pegawai...">
+              <input type="text" class="form-control search-input" name="query" id="search" placeholder="Search employee name...">
               <i class="bi bi-search search-icon"></i>
             </div>
           </div>
@@ -645,7 +645,7 @@
           ` : `
             <div class="emp-score-box">
               <button class="btn-detail-action" style="background: #e2e8f0; color: #475569; box-shadow: none;">
-                Mulai <i class="bi bi-chevron-right ms-1"></i>
+                Start <i class="bi bi-chevron-right ms-1"></i>
               </button>
             </div>
           `;
@@ -659,7 +659,7 @@
               <div class="emp-info-content">
                 <div class="emp-name">${employee.fullname}</div>
                 <div class="emp-org">
-                  <i class="bi bi-building me-1"></i>${employee.organization?.name || 'Pegawai'}
+                  <i class="bi bi-building me-1"></i>${employee.organization?.name || 'Employee'}
                 </div>
               </div>
               ${scoreBadge}
@@ -819,7 +819,7 @@
         summaryContainer.html(`
             <div class="summary-card">
             <div class="summary-header">
-                <h5 class="mb-0 text-center">Periode ${data.period}</h5>
+                <h5 class="mb-0 text-center">Period ${data.period}</h5>
                 ${additionalInfoHTML}
             </div>
 
@@ -1000,7 +1000,7 @@
                     min="1" max="10" value="${savedEvaluator1 || savedEvaluator2}">
                 <label>Note:</label>
                 <textarea class="evaluator-note form-control" data-evaluator="both" data-id="${question.id}"
-                        rows="2" placeholder="Tambahkan catatan...">${savedEvaluator1Note || savedEvaluator2Note}</textarea>
+                        rows="2" placeholder="Add note...">${savedEvaluator1Note || savedEvaluator2Note}</textarea>
             `;
           evaluatorHtml = evaluatorBothHtml;
         } else {
@@ -1010,7 +1010,7 @@
                     min="1" max="10" value="${savedEvaluator1}">
                 <label>Note:</label>
                 <textarea class="evaluator-note form-control" data-evaluator="1" data-id="${question.id}"
-                        rows="2" placeholder="Tambahkan catatan...">${savedEvaluator1Note}</textarea>
+                        rows="2" placeholder="Add note...">${savedEvaluator1Note}</textarea>
             ` : '';
 
           const evaluator2Html = evaluator2Enabled ? `
@@ -1019,7 +1019,7 @@
                     min="1" max="10" value="${savedEvaluator2}">
                 <label>Note:</label>
                 <textarea class="evaluator-note form-control" data-evaluator="2" data-id="${question.id}"
-                        rows="2" placeholder="Tambahkan catatan...">${savedEvaluator2Note}</textarea>
+                        rows="2" placeholder="Add note...">${savedEvaluator2Note}</textarea>
             ` : '';
 
           evaluatorHtml = evaluator1Html + evaluator2Html;
@@ -1153,7 +1153,7 @@
         for (let i = 0; i < allQuestions.length; i++) {
           if (!allAnswers[i] || (allAnswers[i].evaluator1_point === '' && allAnswers[i].evaluator1 === '') ||
             (allAnswers[i].evaluator2_point === '' && allAnswers[i].evaluator2 === '')) {
-            showAlert('danger', `Mohon isi semua jawaban sebelum submit!`);
+            showAlert('danger', `Please answer all questions before submitting!`);
             return false;
           }
         }
@@ -1161,7 +1161,7 @@
       }
 
       function submitAnswers() {
-        if (!validateAnswers()) return showAlert('danger', 'Mohon isi semua jawaban sebelum submit!');
+        if (!validateAnswers()) return showAlert('danger', 'Please answer all questions before submitting!');
 
         let evaluatorRole = null;
         if (questionData.organization?.authorized1 == userOrgId &&
@@ -1348,10 +1348,10 @@
       function setNavState(state) {
         window.currentNavState = state;
         if (state === 'Back') {
-          $('#page-header-title').text('Detail Appraisal');
+          $('#page-header-title').text('Assessment Details');
           $('#desktop-back-bar').attr('style', 'display: block !important; text-align: left !important; width: 100% !important;');
         } else {
-          $('#page-header-title').text('Appraisal Pegawai');
+          $('#page-header-title').text('Employee Assessment');
           $('#desktop-back-bar').attr('style', 'display: none !important;');
         }
       }

@@ -38,6 +38,8 @@ Route::get('/health', fn(): JsonResponse => response()->json([
     'timestamp' => now()->toIso8601String(),
 ]))->name('health');
 
+Route::redirect('/main', '/');
+
 Main::routes();
 
 Route::middleware(['auth', 'roles'])->group(function () {

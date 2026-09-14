@@ -11,7 +11,7 @@
   <link rel="shortcut icon" href="{{ asset('images/logo-hr.ico') }}" type="image/ico">
 
   <!-- PWA Manifest & Meta Tags -->
-  <link rel="manifest" href="{{ asset('manifest.json') }}">
+  <link rel="manifest" href="{{ asset('manifest.json?v=2') }}">
   <meta name="theme-color" content="#0073e6">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">

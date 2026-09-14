@@ -313,7 +313,7 @@
         <div class="row g-2">
           <div class="col-md-6">
             <select name="month" class="select-translucent-blue" id="desktop-month-selector" onchange="this.form.submit()">
-              <option value="">Semua Bulan</option>
+              <option value="">All Months</option>
               @for ($i = 1; $i <= 12; $i++)
                 <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
                   {{ date('F', mktime(0, 0, 0, $i, 1)) }}
@@ -406,11 +406,11 @@
         <a href="{{ route('attendance.index') }}" class="btn-back-link">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="header-page-title">Laporan Kehadiran</h1>
+        <h1 class="header-page-title">Attendance Report</h1>
         <div class="header-actions-group">
           @if ($isHR)
             <button type="button" class="btn-action-glass" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
-              <i class="bi bi-plus-lg"></i> Tambah
+              <i class="bi bi-plus-lg"></i> Add
             </button>
           @endif
           <a href="{{ route('attendance.export.excel', request()->all()) }}" class="btn-action-glass">
@@ -424,14 +424,14 @@
       <!-- Filter Card -->
       <div class="filter-card">
         <div class="filter-card-title">
-          <i class="bi bi-funnel-fill text-primary"></i> Filter Laporan Presensi
+          <i class="bi bi-funnel-fill text-primary"></i> Attendance Report Filter
         </div>
 
         <form action="{{ route('attendance.report') }}" method="GET" id="reportForm">
           <div class="row g-2">
             <div class="col-6">
               <select name="month" class="filter-select-custom" id="month-selector">
-                <option value="">Semua Bulan</option>
+                <option value="">All Months</option>
                 @for ($i = 1; $i <= 12; $i++)
                   <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
                     {{ date('F', mktime(0, 0, 0, $i, 1)) }}
@@ -457,7 +457,7 @@
             @if ($isHR)
               <div class="col-12 mt-2">
                 <select name="org_id" class="filter-select-custom" id="org-selector">
-                  <option value="">Semua Organisasi</option>
+                  <option value="">All Organizations</option>
                   @foreach ($orgTree as $org)
                     <option value="{{ $org['id'] }}" {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
                       {{ $org['name'] }}
@@ -468,7 +468,7 @@
 
               <div class="col-12 mt-2">
                 <select name="employee_id" class="filter-select-custom" id="employee-selector">
-                  <option value="">Semua Pegawai</option>
+                  <option value="">All Employees</option>
                   @foreach ($employeesList as $emp)
                     <option value="{{ $emp->id }}" {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>
                       {{ $emp->fullname }}
@@ -515,12 +515,12 @@
                 <div class="d-flex gap-2">
                   @if ($log['clock_in_photo'])
                     <a href="{{ $log['clock_in_photo'] }}" target="_blank" class="media-btn-link">
-                      <i class="bi bi-image"></i> Foto Masuk
+                      <i class="bi bi-image"></i> In Photo
                     </a>
                   @endif
                   @if ($log['clock_out_photo'])
                     <a href="{{ $log['clock_out_photo'] }}" target="_blank" class="media-btn-link">
-                      <i class="bi bi-image"></i> Foto Keluar
+                      <i class="bi bi-image"></i> Out Photo
                     </a>
                   @endif
                 </div>
@@ -538,8 +538,8 @@
         @else
           <div class="record-card text-center py-4">
             <i class="bi bi-calendar-x text-muted" style="font-size: 36px;"></i>
-            <h5 class="fw-bold text-dark mt-2 mb-1">Tidak Ada Data Presensi</h5>
-            <p class="small text-muted mb-0">Tidak ditemukan catatan presensi pada periode yang dipilih</p>
+            <h5 class="fw-bold text-dark mt-2 mb-1">No Attendance Data</h5>
+            <p class="small text-muted mb-0">No attendance records found for the selected period</p>
           </div>
         @endif
       </div>
@@ -551,7 +551,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold">Edit Presensi</h5>
+          <h5 class="modal-title fw-bold">Edit Attendance</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="editAttendanceForm">
@@ -559,31 +559,31 @@
           <input type="hidden" name="id" id="edit-id">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">Pegawai</label>
+              <label class="form-label small fw-bold text-muted">Employee</label>
               <input type="text" class="form-control-plaintext fw-bold" id="edit-name" readonly>
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">Tanggal</label>
+              <label class="form-label small fw-bold text-muted">Date</label>
               <input type="text" class="form-control-plaintext text-muted" id="edit-date" readonly>
             </div>
             <div class="row">
               <div class="col-6">
                 <div class="mb-3">
-                  <label class="form-label small fw-bold text-muted">Jam Masuk</label>
+                  <label class="form-label small fw-bold text-muted">Clock In Time</label>
                   <input type="time" class="form-control" name="clock_in" id="edit-clock-in" style="border-radius: 10px;">
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
-                  <label class="form-label small fw-bold text-muted">Jam Keluar</label>
+                  <label class="form-label small fw-bold text-muted">Clock Out Time</label>
                   <input type="time" class="form-control" name="clock_out" id="edit-clock-out" style="border-radius: 10px;">
                 </div>
               </div>
             </div>
           </div>
           <div class="modal-footer border-0">
-            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary fw-bold">Simpan</button>
+            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary fw-bold">Save</button>
           </div>
         </form>
       </div>
@@ -596,43 +596,43 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
           <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title fw-bold">Tambah Record Presensi</h5>
+            <h5 class="modal-title fw-bold">Add Attendance Record</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="createAttendanceForm">
             @csrf
             <div class="modal-body">
               <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Pilih Pegawai <span class="text-danger">*</span></label>
+                <label class="form-label small fw-bold text-muted">Select Employee <span class="text-danger">*</span></label>
                 <select name="employee_id" id="create-employee-id" class="form-select" style="border-radius: 10px;" required>
-                  <option value="">-- Pilih Pegawai --</option>
+                  <option value="">-- Select Employee --</option>
                   @foreach ($employeesList as $emp)
                     <option value="{{ $emp->id }}">{{ $emp->fullname }}</option>
                   @endforeach
                 </select>
               </div>
               <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Tanggal <span class="text-danger">*</span></label>
+                <label class="form-label small fw-bold text-muted">Date <span class="text-danger">*</span></label>
                 <input type="date" class="form-control" name="date" id="create-date" value="{{ date('Y-m-d') }}" style="border-radius: 10px;" required>
               </div>
               <div class="row">
                 <div class="col-6">
                   <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Jam Masuk</label>
+                    <label class="form-label small fw-bold text-muted">Clock In Time</label>
                     <input type="time" class="form-control" name="clock_in" id="create-clock-in" style="border-radius: 10px;">
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Jam Keluar</label>
+                    <label class="form-label small fw-bold text-muted">Clock Out Time</label>
                     <input type="time" class="form-control" name="clock_out" id="create-clock-out" style="border-radius: 10px;">
                   </div>
                 </div>
               </div>
             </div>
             <div class="modal-footer border-0">
-              <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-primary fw-bold">Simpan</button>
+              <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary fw-bold">Save</button>
             </div>
           </form>
         </div>
@@ -667,7 +667,7 @@
       $('#editAttendanceForm').submit(function(e) {
         e.preventDefault();
         const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true).text('Menyimpan...');
+        submitBtn.prop('disabled', true).text('Saving...');
 
         $.ajax({
           url: '{{ route('attendance.update') }}',
@@ -677,13 +677,13 @@
             if (response.success) {
               window.location.reload();
             } else {
-              showAlert('danger', response.message || 'Gagal mengubah presensi');
-              submitBtn.prop('disabled', false).text('Simpan');
+              showAlert('danger', response.message || 'Failed to update attendance');
+              submitBtn.prop('disabled', false).text('Save');
             }
           },
           error: function(xhr) {
-            showAlert('danger', xhr.responseJSON?.message || 'Error mengubah presensi');
-            submitBtn.prop('disabled', false).text('Simpan');
+            showAlert('danger', xhr.responseJSON?.message || 'Error updating attendance');
+            submitBtn.prop('disabled', false).text('Save');
           }
         });
       });
@@ -691,7 +691,7 @@
       $('#createAttendanceForm').submit(function(e) {
         e.preventDefault();
         const submitBtn = $(this).find('button[type="submit"]');
-        submitBtn.prop('disabled', true).text('Menyimpan...');
+        submitBtn.prop('disabled', true).text('Saving...');
 
         $.ajax({
           url: '{{ route('attendance.store') }}',
@@ -701,13 +701,13 @@
             if (response.success) {
               window.location.reload();
             } else {
-              showAlert('danger', response.message || 'Gagal membuat presensi');
-              submitBtn.prop('disabled', false).text('Simpan');
+              showAlert('danger', response.message || 'Failed to create attendance');
+              submitBtn.prop('disabled', false).text('Save');
             }
           },
           error: function(xhr) {
-            showAlert('danger', xhr.responseJSON?.message || 'Error membuat presensi');
-            submitBtn.prop('disabled', false).text('Simpan');
+            showAlert('danger', xhr.responseJSON?.message || 'Error creating attendance');
+            submitBtn.prop('disabled', false).text('Save');
           }
         });
       });

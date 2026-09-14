@@ -352,13 +352,13 @@
   @php
     $hour = (int) date('H');
     if ($hour >= 5 && $hour < 12) {
-      $greeting = 'Selamat Pagi';
+      $greeting = 'Good Morning';
     } elseif ($hour >= 12 && $hour < 15) {
-      $greeting = 'Selamat Siang';
+      $greeting = 'Good Afternoon';
     } elseif ($hour >= 15 && $hour < 18) {
-      $greeting = 'Selamat Sore';
+      $greeting = 'Good Afternoon';
     } else {
-      $greeting = 'Selamat Malam';
+      $greeting = 'Good Evening';
     }
 
     $rawModules = [];
@@ -503,12 +503,12 @@
 
           <div class="dropdown-item d-flex align-items-center gap-2"
             onclick="window.location='{{ route('profile.mobile') }}'">
-            <i class="bi bi-person-circle text-primary"></i> Profil Saya
+            <i class="bi bi-person-circle text-primary"></i> My Profile
           </div>
 
           <div class="dropdown-item d-flex align-items-center gap-2 text-danger"
             onclick="event.preventDefault(); window.location='{{ route('logout') }}'">
-            <i class="bi bi-box-arrow-right"></i> Keluar
+            <i class="bi bi-box-arrow-right"></i> Logout
           </div>
         </div>
       </div>
@@ -516,10 +516,10 @@
 
     <div class="greeting-card">
       <div class="small opacity-85 fw-semibold mb-1" style="font-size: 11.5px;">
-        <i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+        <i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::now()->format('l, d F Y') }}
       </div>
       <h5 class="fw-bold mb-1">{{ $greeting }}, {{ strtok($user->name, ' ') }}! 👋</h5>
-      <p class="mb-0 small opacity-90">Akses cepat ke seluruh modul dan layanan HR kamu</p>
+      <p class="mb-0 small opacity-90">Quick access to all your HR modules and services</p>
 
       @if (Route::has('attendance.index'))
         <div class="quick-attendance-widget" onclick="window.location='{{ route('attendance.index') }}'">
@@ -528,19 +528,19 @@
               <div class="att-status-info">
                 <i class="bi bi-exclamation-circle-fill icon-pulse"></i>
                 <div>
-                  <div class="att-status-title">Belum Presensi Masuk</div>
-                  <div class="att-status-desc">Klik untuk presensi sekarang</div>
+                  <div class="att-status-title">Not Checked In Yet</div>
+                  <div class="att-status-desc">Click to check in now</div>
                 </div>
               </div>
-              <span class="btn-att-direct">Presensi <i class="bi bi-chevron-right ms-1"></i></span>
+              <span class="btn-att-direct">Check In <i class="bi bi-chevron-right ms-1"></i></span>
             </div>
           @elseif ($todayAttendanceStatus->clock_in_time && !$todayAttendanceStatus->clock_out_time)
             <div class="att-status-badge">
               <div class="att-status-info">
                 <i class="bi bi-clock-history text-warning"></i>
                 <div>
-                  <div class="att-status-title">Presensi Masuk: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }}</div>
-                  <div class="att-status-desc">Jangan lupa presensi keluar</div>
+                  <div class="att-status-title">Clocked In: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }}</div>
+                  <div class="att-status-desc">Don't forget to clock out</div>
                 </div>
               </div>
               <span class="btn-att-direct btn-out">Clock Out <i class="bi bi-chevron-right ms-1"></i></span>
@@ -550,11 +550,11 @@
               <div class="att-status-info">
                 <i class="bi bi-check-circle-fill text-success"></i>
                 <div>
-                  <div class="att-status-title">Presensi Hari Ini Selesai</div>
-                  <div class="att-status-desc">Masuk: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }} | Keluar: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_out_time)->format('H:i') }}</div>
+                  <div class="att-status-title">Attendance Completed Today</div>
+                  <div class="att-status-desc">In: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }} | Out: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_out_time)->format('H:i') }}</div>
                 </div>
               </div>
-              <span class="btn-att-direct btn-done">Detail <i class="bi bi-chevron-right ms-1"></i></span>
+              <span class="btn-att-direct btn-done">Details <i class="bi bi-chevron-right ms-1"></i></span>
             </div>
           @endif
         </div>
@@ -563,8 +563,8 @@
 
     <div class="menu-section">
       <div class="section-header">
-        <h3 class="section-title">Modul Layanan</h3>
-        <small class="text-muted fw-semibold" style="font-size: 12px;">{{ count($modules) }} Modul</small>
+        <h3 class="section-title">Service Modules</h3>
+        <small class="text-muted fw-semibold" style="font-size: 12px;">{{ count($modules) }} Modules</small>
       </div>
 
       <div class="menu-grid">
@@ -586,10 +586,10 @@
     @if (Route::has('bulletin.data'))
       <div class="bulletin-section" id="bulletinSection" style="display: none;">
         <div class="section-header">
-          <h3 class="section-title">Informasi & Buletin</h3>
+          <h3 class="section-title">Information & Bulletin</h3>
           @if ($bulletinRoute)
             <a href="{{ $bulletinRoute }}" class="text-primary text-decoration-none fw-bold" style="font-size: 12px;">
-              Lihat Semua <i class="bi bi-chevron-right"></i>
+              View All <i class="bi bi-chevron-right"></i>
             </a>
           @endif
         </div>
@@ -665,7 +665,7 @@
           });
         },
         error: function() {
-          console.error('Gagal memuat notifikasi.');
+          console.error('Failed to load notifications.');
         }
       });
 
@@ -688,21 +688,21 @@
                   '{{ route('file', ':id') }}'.replace(':id', b.cover_image_id) :
                   '{{ asset('/images/image-no-user.png') }}';
                 const viewUrl = '{{ route('bulletin.view', ':id') }}'.replace(':id', b.id);
-                const catName = b.category ? b.category.name : 'Buletin';
-                const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                const catName = b.category ? b.category.name : 'Bulletin';
+                const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
                 const cardHtml = `
                   <div class="item">
                     <div class="bulletin-carousel-card" onclick="window.location.href='${viewUrl}'">
                       <div class="bulletin-card-img-box">
-                        <img src="${imgUrl}" alt="${b.title || 'Buletin'}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
+                        <img src="${imgUrl}" alt="${b.title || 'Bulletin'}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
                         <span class="bulletin-card-category">${catName}</span>
                       </div>
                       <div class="bulletin-card-body">
-                        <div class="bulletin-card-title">${b.title || 'Buletin'}</div>
+                        <div class="bulletin-card-title">${b.title || 'Bulletin'}</div>
                         <div class="bulletin-card-meta">
                           <span><i class="bi bi-clock me-1"></i>${dateStr}</span>
-                          <span class="text-primary fw-bold">Baca <i class="bi bi-arrow-right"></i></span>
+                          <span class="text-primary fw-bold">Read <i class="bi bi-arrow-right"></i></span>
                         </div>
                       </div>
                     </div>

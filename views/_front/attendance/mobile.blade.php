@@ -450,7 +450,7 @@
         <a href="{{ route('main') }}" class="btn-back-link">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="header-page-title">Presensi Kehadiran</h1>
+        <h1 class="header-page-title">Attendance</h1>
         <div style="width: 38px;"></div>
       </div>
 
@@ -472,7 +472,7 @@
           <div class="clock-icon-circle clock-in-bg">
             <i class="bi bi-box-arrow-in-right"></i>
           </div>
-          <div class="clock-action-label">MASUK (CLOCK IN)</div>
+          <div class="clock-action-label">CLOCK IN</div>
           <div class="clock-action-time">
             {{ $todayAttendance && $todayAttendance->clock_in_time ? \Carbon\Carbon::parse($todayAttendance->clock_in_time)->format('H:i') : '--:--' }}
           </div>
@@ -484,7 +484,7 @@
           <div class="clock-icon-circle clock-out-bg">
             <i class="bi bi-box-arrow-right"></i>
           </div>
-          <div class="clock-action-label">KELUAR (CLOCK OUT)</div>
+          <div class="clock-action-label">CLOCK OUT</div>
           <div class="clock-action-time">
             {{ $todayAttendance && $todayAttendance->clock_out_time ? \Carbon\Carbon::parse($todayAttendance->clock_out_time)->format('H:i') : '--:--' }}
           </div>
@@ -496,7 +496,7 @@
         <div class="stat-mini-card">
           <div>
             <div class="stat-mini-val text-success">{{ $monthStats['on_time'] }}</div>
-            <div class="stat-mini-label">Tepat Waktu</div>
+            <div class="stat-mini-label">On Time</div>
           </div>
           <div class="stat-icon-box" style="background: #ecfdf5; color: #10b981;">
             <i class="bi bi-check-circle-fill"></i>
@@ -506,7 +506,7 @@
         <div class="stat-mini-card">
           <div>
             <div class="stat-mini-val text-warning">{{ $monthStats['late'] }}</div>
-            <div class="stat-mini-label">Terlambat</div>
+            <div class="stat-mini-label">Late</div>
           </div>
           <div class="stat-icon-box" style="background: #fffbe0; color: #d97706;">
             <i class="bi bi-clock-history"></i>
@@ -516,7 +516,7 @@
         <div class="stat-mini-card">
           <div>
             <div class="stat-mini-val text-danger">{{ $monthStats['absent'] }}</div>
-            <div class="stat-mini-label">Tidak Hadir</div>
+            <div class="stat-mini-label">Absent</div>
           </div>
           <div class="stat-icon-box" style="background: #fef2f2; color: #ef4444;">
             <i class="bi bi-x-circle-fill"></i>
@@ -526,7 +526,7 @@
         <div class="stat-mini-card">
           <div>
             <div class="stat-mini-val text-primary">{{ $monthStats['working'] }}</div>
-            <div class="stat-mini-label">Jam Kerja</div>
+            <div class="stat-mini-label">Work Hours</div>
           </div>
           <div class="stat-icon-box" style="background: #eff6ff; color: #0073e6;">
             <i class="bi bi-briefcase-fill"></i>
@@ -537,9 +537,9 @@
       <!-- Attendance Log Card -->
       <div class="log-card">
         <div class="log-card-header">
-          <h3 class="log-card-title">Riwayat Presensi Terakhir</h3>
+          <h3 class="log-card-title">Recent Attendance Logs</h3>
           <a href="{{ route('attendance.report') }}" class="log-view-all-link">
-            Lihat Laporan <i class="bi bi-arrow-right"></i>
+            View Report <i class="bi bi-arrow-right"></i>
           </a>
         </div>
 
@@ -559,7 +559,7 @@
         @empty
           <div class="text-center py-4">
             <i class="bi bi-calendar-x text-muted" style="font-size: 32px;"></i>
-            <p class="mt-2 text-muted small mb-0">Belum ada catatan presensi bulan ini</p>
+            <p class="mt-2 text-muted small mb-0">No attendance records found this month</p>
           </div>
         @endforelse
       </div>
@@ -572,7 +572,7 @@
     $(document).ready(function() {
       function updateLiveClock() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
         const timeStr12 = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
         $('#clockLiveTime').text(timeStr);
         $('#desktopLiveTime').text(timeStr12);
@@ -586,9 +586,9 @@
       const error = urlParams.get('error');
 
       if (success === 'clockin') {
-        showAlert('success', 'Presensi Masuk berhasil dicatat!');
+        showAlert('success', 'Clock in recorded successfully!');
       } else if (success === 'clockout') {
-        showAlert('success', 'Presensi Keluar berhasil dicatat!');
+        showAlert('success', 'Clock out recorded successfully!');
       } else if (error) {
         showAlert('danger', error);
       }
@@ -598,7 +598,7 @@
       if (type === 'in') {
         const btn = document.getElementById('clockin-button');
         if (btn.classList.contains('disabled')) {
-          showAlert('warning', 'Kamu sudah melakukan presensi masuk hari ini');
+          showAlert('warning', 'You have already clocked in today');
           return;
         }
         window.location.href = "{{ route('attendance.check', ['type' => 'in']) }}";
@@ -607,9 +607,9 @@
         if (btn.classList.contains('disabled')) {
           const clockInTime = document.getElementById('clockin-button').querySelector('.clock-action-time').innerText;
           if (clockInTime === '--:--') {
-            showAlert('info', 'Kamu harus presensi masuk terlebih dahulu');
+            showAlert('info', 'You must clock in first');
           } else {
-            showAlert('warning', 'Kamu sudah melakukan presensi keluar hari ini');
+            showAlert('warning', 'You have already clocked out today');
           }
           return;
         }

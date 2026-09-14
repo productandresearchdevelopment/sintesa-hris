@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sintesa-hris-v5';
+const CACHE_NAME = 'sintesa-hris-v6';
 const urlsToCache = [
   '/css/mobile.css',
   '/images/icons/icon-192x192.png',

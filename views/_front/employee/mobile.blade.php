@@ -307,8 +307,8 @@
         <a href="{{ route('main') }}" class="btn-back-link">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="header-page-title">Data Pegawai</h1>
-        <button type="button" class="btn-back-link edit-general" id="btnHeaderEdit" title="Ajukan Edit Data">
+        <h1 class="header-page-title">Employee Data</h1>
+        <button type="button" class="btn-back-link edit-general" id="btnHeaderEdit" title="Request Data Edit">
           <i class="bi bi-pencil-square"></i>
         </button>
       </div>
@@ -340,28 +340,28 @@
             <i class="bi bi-person-vcard-fill"></i> General
           </button>
           <button class="nav-item" data-tab="contract">
-            <i class="bi bi-file-earmark-text-fill"></i> Kontrak
+            <i class="bi bi-file-earmark-text-fill"></i> Contract
           </button>
           <button class="nav-item" data-tab="career">
-            <i class="bi bi-graph-up-arrow"></i> Karir
+            <i class="bi bi-graph-up-arrow"></i> Career
           </button>
           <button class="nav-item" data-tab="citizen">
-            <i class="bi bi-card-heading"></i> Identitas
+            <i class="bi bi-card-heading"></i> Identity
           </button>
           <button class="nav-item" data-tab="education">
-            <i class="bi bi-mortarboard-fill"></i> Pendidikan
+            <i class="bi bi-mortarboard-fill"></i> Education
           </button>
           <button class="nav-item" data-tab="family">
-            <i class="bi bi-people-fill"></i> Keluarga
+            <i class="bi bi-people-fill"></i> Family
           </button>
           <button class="nav-item" data-tab="experience">
-            <i class="bi bi-briefcase-fill"></i> Pengalaman
+            <i class="bi bi-briefcase-fill"></i> Experience
           </button>
           <button class="nav-item" data-tab="training">
-            <i class="bi bi-award-fill"></i> Pelatihan
+            <i class="bi bi-award-fill"></i> Training
           </button>
         </div>
-        <button type="button" class="btn-tab-scroll-right" id="btnTabScrollRight" title="Geser Tab Ke Kanan">
+        <button type="button" class="btn-tab-scroll-right" id="btnTabScrollRight" title="Scroll Tab Right">
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>
@@ -390,10 +390,10 @@
           <div class="mt-2 mb-3 p-2 bg-light rounded-3 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2 overflow-hidden">
               <i class="bi bi-file-earmark-arrow-down-fill fs-4 text-primary"></i>
-              <span class="small fw-bold text-dark text-truncate">${file.filename_origin || 'File Lampiran'}</span>
+              <span class="small fw-bold text-dark text-truncate">${file.filename_origin || 'Attachment File'}</span>
             </div>
             <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3">
-              <i class="bi bi-download"></i> Unduh
+              <i class="bi bi-download"></i> Download
             </a>
           </div>
         `;
@@ -430,8 +430,8 @@
             responseDataAllTables = await fetchAllTableData();
             populateTabContent(tab, response);
           } catch (error) {
-            console.error('Gagal mengambil data pegawai.', error);
-            showAlert('danger', 'Gagal memuat data pegawai.');
+            console.error('Failed to fetch employee data.', error);
+            showAlert('danger', 'Failed to load employee data.');
           } finally {
             hideLoading();
           }
@@ -460,7 +460,7 @@
                 let val = item[f.key];
                 if (f.nestedKey) val = item[f.key]?.[f.nestedKey];
                 if (['start_date', 'end_date', 'date', 'graduate', 'birth_date'].includes(f.key) && val) {
-                  val = new Date(val).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                  val = new Date(val).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
                 }
 
                 fieldsHtml += `
@@ -487,7 +487,7 @@
               <div class="empty-state-box">
                 <i class="bi ${iconClass} empty-state-icon"></i>
                 <h6 class="fw-bold text-dark mb-1">${emptyTitle}</h6>
-                <p class="small text-muted mb-0">Tidak ada rincian data ditemukan</p>
+                <p class="small text-muted mb-0">No data details found</p>
               </div>
             `;
           }
@@ -501,138 +501,138 @@
             content = `
               <div class="emp-card">
                 <div class="emp-card-header">
-                  <span><i class="bi bi-person-badge-fill text-primary me-1"></i> Identitas Pegawai</span>
+                  <span><i class="bi bi-person-badge-fill text-primary me-1"></i> Employee Identity</span>
                   <span class="badge bg-primary-subtle text-primary">${data.nik || '-'}</span>
                 </div>
                 <div class="emp-field-group">
-                  ${generateEmpField('NAMA LENGKAP', data.fullname, true)}
-                  ${generateEmpField('NAMA PANGGILAN', data.nickname)}
-                  ${generateEmpField('TANGGAL MASUK', data.join_date)}
-                  ${generateEmpField('PERUSAHAAN', data.company?.name, true)}
-                  ${generateEmpField('ORGANISASI', data.organization?.name, true)}
-                  ${generateEmpField('DIVISI', data.division?.name)}
-                  ${generateEmpField('PENEMPATAN', data.placement?.name)}
-                  ${generateEmpField('SISA CUTI', data.leave_saldo !== undefined ? data.leave_saldo + ' Hari' : '-')}
+                  ${generateEmpField('FULL NAME', data.fullname, true)}
+                  ${generateEmpField('NICKNAME', data.nickname)}
+                  ${generateEmpField('JOIN DATE', data.join_date)}
+                  ${generateEmpField('COMPANY', data.company?.name, true)}
+                  ${generateEmpField('ORGANIZATION', data.organization?.name, true)}
+                  ${generateEmpField('DIVISION', data.division?.name)}
+                  ${generateEmpField('PLACEMENT', data.placement?.name)}
+                  ${generateEmpField('LEAVE BALANCE', data.leave_saldo !== undefined ? data.leave_saldo + ' Days' : '-')}
                 </div>
               </div>
 
               <div class="emp-card">
                 <div class="emp-card-header">
-                  <span><i class="bi bi-envelope-at-fill text-primary me-1"></i> Kontak & Alamat</span>
+                  <span><i class="bi bi-envelope-at-fill text-primary me-1"></i> Contact & Address</span>
                 </div>
                 <div class="emp-field-group">
                   ${generateEmpField('EMAIL', data.email, true)}
-                  ${generateEmpField('NO. TELEPON', data.phone, true)}
-                  ${generateEmpField('ALAMAT TINGGAL', data.address, true)}
-                  ${generateEmpField('KOTA TINGGAL', data.address_city?.city)}
-                  ${generateEmpField('PROVINSI TINGGAL', data.address_province?.province)}
-                  ${generateEmpField('ALAMAT KTP', data.address_permanent, true)}
+                  ${generateEmpField('PHONE NUMBER', data.phone, true)}
+                  ${generateEmpField('RESIDENTIAL ADDRESS', data.address, true)}
+                  ${generateEmpField('RESIDENTIAL CITY', data.address_city?.city)}
+                  ${generateEmpField('RESIDENTIAL PROVINCE', data.address_province?.province)}
+                  ${generateEmpField('ID CARD ADDRESS', data.address_permanent, true)}
                 </div>
               </div>
 
               <div class="emp-card">
                 <div class="emp-card-header">
-                  <span><i class="bi bi-info-circle-fill text-primary me-1"></i> Data Pribadi & Rekening</span>
+                  <span><i class="bi bi-info-circle-fill text-primary me-1"></i> Personal Data & Bank Account</span>
                 </div>
                 <div class="emp-field-group">
-                  ${generateEmpField('TEMPAT LAHIR', data.birth_place)}
-                  ${generateEmpField('TANGGAL LAHIR', data.birth_date)}
-                  ${generateEmpField('JENIS KELAMIN', data.gender?.name)}
-                  ${generateEmpField('STATUS NIKAH', data.marital?.name)}
-                  ${generateEmpField('AGAMA', data.religion?.name)}
+                  ${generateEmpField('PLACE OF BIRTH', data.birth_place)}
+                  ${generateEmpField('DATE OF BIRTH', data.birth_date)}
+                  ${generateEmpField('GENDER', data.gender?.name)}
+                  ${generateEmpField('MARITAL STATUS', data.marital?.name)}
+                  ${generateEmpField('RELIGION', data.religion?.name)}
                   ${generateEmpField('BANK', data.bank?.name)}
-                  ${generateEmpField('NO. REKENING', data.bank_account, true)}
+                  ${generateEmpField('ACCOUNT NUMBER', data.bank_account, true)}
                 </div>
               </div>
 
               <div class="emp-card">
                 <div class="emp-card-header">
-                  <span><i class="bi bi-telephone-plus-fill text-danger me-1"></i> Kontak Darurat</span>
+                  <span><i class="bi bi-telephone-plus-fill text-danger me-1"></i> Emergency Contact</span>
                 </div>
                 <div class="emp-field-group">
-                  ${generateEmpField('HUBUNGAN', data.emergency_relation?.name)}
-                  ${generateEmpField('NAMA KONTAK', data.emergency_contact_name)}
-                  ${generateEmpField('NO. TELEPON', data.emergency_contact_phone, true)}
+                  ${generateEmpField('RELATIONSHIP', data.emergency_relation?.name)}
+                  ${generateEmpField('CONTACT NAME', data.emergency_contact_name)}
+                  ${generateEmpField('PHONE NUMBER', data.emergency_contact_phone, true)}
                 </div>
               </div>
 
               <button class="btn-action-primary edit-general" ${hasPendingApproval ? "disabled" : ""}>
-                <i class="bi bi-pencil-square"></i> ${hasPendingApproval ? "Permohonan Dalam Proses" : "Ajukan Perubahan Data"}
+                <i class="bi bi-pencil-square"></i> ${hasPendingApproval ? "Request In Progress" : "Request Data Change"}
               </button>
             `;
             break;
 
           case 'contract':
             const contractFields = [
-              { label: 'STATUS KONTRAK', key: 'status', nestedKey: 'name' },
-              { label: 'TGL MULAI', key: 'start_date' },
-              { label: 'TGL SELESAI', key: 'end_date' },
-              { label: 'KETERANGAN', key: 'description', full: true }
+              { label: 'CONTRACT STATUS', key: 'status', nestedKey: 'name' },
+              { label: 'START DATE', key: 'start_date' },
+              { label: 'END DATE', key: 'end_date' },
+              { label: 'DESCRIPTION', key: 'description', full: true }
             ];
-            content = generateEmpCards(data.contracts, contractFields, 'Belum Ada Data Kontrak', 'bi-file-earmark-text');
+            content = generateEmpCards(data.contracts, contractFields, 'No Contract Data Available', 'bi-file-earmark-text');
             break;
 
           case 'career':
             const careerFields = [
-              { label: 'STATUS KARIR', key: 'career', nestedKey: 'name' },
-              { label: 'TANGGAL', key: 'date' },
-              { label: 'ORGANISASI', key: 'organization', nestedKey: 'name', full: true },
-              { label: 'PENEMPATAN', key: 'placement', nestedKey: 'name', full: true },
-              { label: 'KETERANGAN', key: 'description', full: true }
+              { label: 'CAREER STATUS', key: 'career', nestedKey: 'name' },
+              { label: 'DATE', key: 'date' },
+              { label: 'ORGANIZATION', key: 'organization', nestedKey: 'name', full: true },
+              { label: 'PLACEMENT', key: 'placement', nestedKey: 'name', full: true },
+              { label: 'DESCRIPTION', key: 'description', full: true }
             ];
-            content = generateEmpCards(data.careers, careerFields, 'Belum Ada Data Karir', 'bi-graph-up-arrow');
+            content = generateEmpCards(data.careers, careerFields, 'No Career Data Available', 'bi-graph-up-arrow');
             break;
 
           case 'citizen':
             const citizenFields = [
-              { label: 'DOKUMEN IDENTITAS', key: 'citizen', nestedKey: 'name' },
-              { label: 'NOMOR / VALUE', key: 'value' },
-              { label: 'KETERANGAN', key: 'description', full: true }
+              { label: 'IDENTITY DOCUMENT', key: 'citizen', nestedKey: 'name' },
+              { label: 'NUMBER / VALUE', key: 'value' },
+              { label: 'DESCRIPTION', key: 'description', full: true }
             ];
-            content = generateEmpCards(data.citizens, citizenFields, 'Belum Ada Data Identitas', 'bi-card-heading');
+            content = generateEmpCards(data.citizens, citizenFields, 'No Identity Data Available', 'bi-card-heading');
             break;
 
           case 'education':
             const educationFields = [
-              { label: 'JENJANG', key: 'education', nestedKey: 'name' },
-              { label: 'JURUSAN', key: 'major', nestedKey: 'name' },
-              { label: 'INSTITUSI / SEKOLAH', key: 'institution', full: true },
-              { label: 'TAHUN LULUS', key: 'graduate' },
-              { label: 'IPK / NILAI', key: 'ipk' }
+              { label: 'DEGREE LEVEL', key: 'education', nestedKey: 'name' },
+              { label: 'MAJOR', key: 'major', nestedKey: 'name' },
+              { label: 'INSTITUTION / SCHOOL', key: 'institution', full: true },
+              { label: 'GRADUATION YEAR', key: 'graduate' },
+              { label: 'GPA / SCORE', key: 'ipk' }
             ];
-            content = generateEmpCards(data.educations, educationFields, 'Belum Ada Data Pendidikan', 'bi-mortarboard');
+            content = generateEmpCards(data.educations, educationFields, 'No Education Data Available', 'bi-mortarboard');
             break;
 
           case 'family':
             const familyFields = [
-              { label: 'NAMA ANGGOTA', key: 'name', full: true },
-              { label: 'HUBUNGAN', key: 'relation', nestedKey: 'name' },
-              { label: 'NIK KELUARGA', key: 'nik' },
-              { label: 'PEKERJAAN', key: 'occupation', nestedKey: 'name' },
-              { label: 'NO. TELEPON', key: 'phone' }
+              { label: 'MEMBER NAME', key: 'name', full: true },
+              { label: 'RELATIONSHIP', key: 'relation', nestedKey: 'name' },
+              { label: 'FAMILY ID (NIK)', key: 'nik' },
+              { label: 'OCCUPATION', key: 'occupation', nestedKey: 'name' },
+              { label: 'PHONE NUMBER', key: 'phone' }
             ];
-            content = generateEmpCards(data.families, familyFields, 'Belum Ada Data Keluarga', 'bi-people');
+            content = generateEmpCards(data.families, familyFields, 'No Family Data Available', 'bi-people');
             break;
 
           case 'experience':
             const expFields = [
-              { label: 'PERUSAHAAN', key: 'name', full: true },
-              { label: 'JABATAN / POSISI', key: 'job_title', full: true },
-              { label: 'PERIODE', key: 'start_date' },
-              { label: 'SAMPAI', key: 'end_date' },
-              { label: 'ALASAN RESIGN', key: 'reason_leaving', full: true }
+              { label: 'COMPANY', key: 'name', full: true },
+              { label: 'JOB TITLE / POSITION', key: 'job_title', full: true },
+              { label: 'START DATE', key: 'start_date' },
+              { label: 'END DATE', key: 'end_date' },
+              { label: 'REASON FOR LEAVING', key: 'reason_leaving', full: true }
             ];
-            content = generateEmpCards(data.job_experiences, expFields, 'Belum Ada Pengalaman Kerja', 'bi-briefcase');
+            content = generateEmpCards(data.job_experiences, expFields, 'No Work Experience Data', 'bi-briefcase');
             break;
 
           case 'training':
             const trainingFields = [
-              { label: 'JUDUL PELATIHAN', key: 'title', full: true },
-              { label: 'LOKASI', key: 'location', full: true },
-              { label: 'TGL MULAI', key: 'start_date' },
-              { label: 'TGL SELESAI', key: 'end_date' }
+              { label: 'TRAINING TITLE', key: 'title', full: true },
+              { label: 'LOCATION', key: 'location', full: true },
+              { label: 'START DATE', key: 'start_date' },
+              { label: 'END DATE', key: 'end_date' }
             ];
-            content = generateEmpCards(data.trainings, trainingFields, 'Belum Ada Data Pelatihan', 'bi-award');
+            content = generateEmpCards(data.trainings, trainingFields, 'No Training Data Available', 'bi-award');
             break;
         }
 
@@ -645,20 +645,20 @@
 
       function openEditModal(tab, data) {
         let fields = [
-          { label: 'Nama Lengkap', key: 'fullname' },
+          { label: 'Full Name', key: 'fullname' },
           { label: 'NIK', key: 'nik' },
-          { label: 'Nama Panggilan', key: 'nickname' },
-          { label: 'Tanggal Masuk', key: 'join_date', type: 'date' },
-          { label: 'Alamat Email', key: 'email', type: 'email' },
-          { label: 'No. Telepon', key: 'phone' },
-          { label: 'Tempat Lahir', key: 'birth_place' },
-          { label: 'Tanggal Lahir', key: 'birth_date', type: 'date' },
-          { label: 'Alamat Tempat Tinggal', key: 'address' }
+          { label: 'Nickname', key: 'nickname' },
+          { label: 'Join Date', key: 'join_date', type: 'date' },
+          { label: 'Email Address', key: 'email', type: 'email' },
+          { label: 'Phone Number', key: 'phone' },
+          { label: 'Place of Birth', key: 'birth_place' },
+          { label: 'Date of Birth', key: 'birth_date', type: 'date' },
+          { label: 'Residential Address', key: 'address' }
         ];
 
         let modalContent = `
           <div class="modal-header">
-            <h5 class="modal-title fw-bold">Ajukan Perubahan Data</h5>
+            <h5 class="modal-title fw-bold">Request Data Change</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -679,8 +679,8 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Batal</button>
-            <button type="button" class="btn btn-primary fw-bold save-item">Kirim Request</button>
+            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary fw-bold save-item">Submit Request</button>
           </div>
         `;
 
@@ -703,14 +703,14 @@
             processData: false,
             success: function(response) {
               hideLoading();
-              showAlert('success', response.message || 'Permohonan berhasil dikirim!');
+              showAlert('success', response.message || 'Request submitted successfully!');
               $('#editModal').modal('hide');
               userEmployee = null;
               loadTabContent('general');
             },
             error: function(xhr) {
               hideLoading();
-              showAlert('danger', xhr.responseJSON?.message || 'Gagal mengirim permohonan.');
+              showAlert('danger', xhr.responseJSON?.message || 'Failed to submit request.');
             }
           });
         });
