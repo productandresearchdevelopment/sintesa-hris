@@ -8,7 +8,7 @@
       folderSort: false,
       root: {
         id: '0',
-        text: 'PT Qualita Indonesia',
+        text: 'PT Sintesa Talenta Asia',
         expanded: true,
         selectable: false
       },

@@ -13,7 +13,7 @@
       },
       root: {
         id: '0',
-        text: 'PT Qualita Indonesia',
+        text: 'PT Sintesa Talenta Asia',
         icon: '{{ asset('images/icons/home.png') }}',
         expanded: true
       },
@@ -57,7 +57,7 @@
         var field = me.getField(fieldName);
         if (field) {
           field.setValue('0');
-          field.setRawValue('PT Qualita Indonesia');
+          field.setRawValue('PT Sintesa Talenta Asia');
         }
         return;
       }

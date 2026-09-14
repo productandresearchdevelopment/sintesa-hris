@@ -230,7 +230,7 @@
         ],
         root: {
           id: '0',
-          text: 'PT Qualita Indonesia',
+          text: 'PT Sintesa Talenta Asia',
           icon: '{{ asset('images/icons/home.png') }}',
           expanded: true
         },
