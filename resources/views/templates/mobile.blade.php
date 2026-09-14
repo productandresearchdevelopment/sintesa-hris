@@ -18,6 +18,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Sintesa HRIS">
   <link rel="apple-touch-icon" href="{{ asset('images/logo-sintesa.jpg') }}">
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/icons/icon-512x512.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
 
   {{-- RESOURCES ICON PACK --}}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
