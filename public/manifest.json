@@ -2,7 +2,7 @@
   "name": "Sintesa HRIS",
   "short_name": "Sintesa HRIS",
   "description": "Aplikasi Sintesa HRIS - PT Sintesa Talenta Asia",
-  "start_url": "/main",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0073e6",
