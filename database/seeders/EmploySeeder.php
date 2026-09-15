@@ -20,7 +20,7 @@ class EmploySeeder extends Seeder
                 'fullname' => 'System Developer',
                 'nickname' => 'Developer',
                 'email' => 'developer@sintesa.com',
-                'org_id' => 3, // IT Dept
+                'org_id' => 4, // Head IT
                 'division_id' => 2, // IT Division
             ],
             [
@@ -30,7 +30,7 @@ class EmploySeeder extends Seeder
                 'fullname' => 'Super Administrator',
                 'nickname' => 'Superadmin',
                 'email' => 'superadmin@sintesa.com',
-                'org_id' => 1, // Head Office
+                'org_id' => 1, // Director
                 'division_id' => 1, // HRGA Division
             ],
             [
@@ -40,7 +40,7 @@ class EmploySeeder extends Seeder
                 'fullname' => 'HRGA Administrator',
                 'nickname' => 'HRGA',
                 'email' => 'hrga@sintesa.com',
-                'org_id' => 2, // HRGA Dept
+                'org_id' => 3, // Head HRGA
                 'division_id' => 1, // HRGA Division
             ],
             [
@@ -50,7 +50,7 @@ class EmploySeeder extends Seeder
                 'fullname' => 'Operations Manager',
                 'nickname' => 'Manager',
                 'email' => 'manager@sintesa.com',
-                'org_id' => 5, // Operations Dept
+                'org_id' => 9, // Manager Operation
                 'division_id' => 4, // Operations Division
             ],
             [
@@ -60,8 +60,88 @@ class EmploySeeder extends Seeder
                 'fullname' => 'Operational Staff',
                 'nickname' => 'Staff',
                 'email' => 'staff@sintesa.com',
-                'org_id' => 5, // Operations Dept
+                'org_id' => 13, // Staff Operation
                 'division_id' => 4, // Operations Division
+            ],
+            [
+                'username' => 'head_fin',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000006',
+                'nik' => 'EMP-006',
+                'fullname' => 'Head Finance & Accounting',
+                'nickname' => 'Head Fin',
+                'email' => 'head_fin@sintesa.com',
+                'org_id' => 2,
+                'division_id' => 3,
+            ],
+            [
+                'username' => 'head_ops',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000007',
+                'nik' => 'EMP-007',
+                'fullname' => 'Head Operations',
+                'nickname' => 'Head Ops',
+                'email' => 'head_ops@sintesa.com',
+                'org_id' => 5,
+                'division_id' => 4,
+            ],
+            [
+                'username' => 'mgr_fin',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000008',
+                'nik' => 'EMP-008',
+                'fullname' => 'Manager Finance & Accounting',
+                'nickname' => 'Mgr Fin',
+                'email' => 'mgr_fin@sintesa.com',
+                'org_id' => 6,
+                'division_id' => 3,
+            ],
+            [
+                'username' => 'mgr_hrga',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000009',
+                'nik' => 'EMP-009',
+                'fullname' => 'Manager HRGA',
+                'nickname' => 'Mgr HRGA',
+                'email' => 'mgr_hrga@sintesa.com',
+                'org_id' => 7,
+                'division_id' => 1,
+            ],
+            [
+                'username' => 'mgr_it',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000010',
+                'nik' => 'EMP-010',
+                'fullname' => 'Manager Information Technology',
+                'nickname' => 'Mgr IT',
+                'email' => 'mgr_it@sintesa.com',
+                'org_id' => 8,
+                'division_id' => 2,
+            ],
+            [
+                'username' => 'stf_fin',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000011',
+                'nik' => 'EMP-011',
+                'fullname' => 'Staff Finance & Accounting',
+                'nickname' => 'Staff Fin',
+                'email' => 'stf_fin@sintesa.com',
+                'org_id' => 10,
+                'division_id' => 3,
+            ],
+            [
+                'username' => 'stf_hrga',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000012',
+                'nik' => 'EMP-012',
+                'fullname' => 'Staff HRGA',
+                'nickname' => 'Staff HRGA',
+                'email' => 'stf_hrga@sintesa.com',
+                'org_id' => 11,
+                'division_id' => 1,
+            ],
+            [
+                'username' => 'stf_it',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000013',
+                'nik' => 'EMP-013',
+                'fullname' => 'Staff Information Technology',
+                'nickname' => 'Staff IT',
+                'email' => 'stf_it@sintesa.com',
+                'org_id' => 12,
+                'division_id' => 2,
             ],
         ];
 
@@ -106,6 +186,7 @@ class EmploySeeder extends Seeder
                 [
                     'id' => $contractId,
                     'employ_id' => $employId,
+                    'status_id' => 1507, // PERMANENT
                     'start_date' => '2024-01-01 00:00:00',
                     'end_date' => '2026-12-31 23:59:59',
                     'description' => 'Kontrak Kerja PKWT ' . $u['fullname'],

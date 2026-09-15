@@ -1,0 +1,242 @@
+<?php
+
+namespace Database\Seeders\Appraisals;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class AppraisalQuestionTemplateSeeder extends Seeder
+{
+    public function run()
+    {
+        $data = array (
+  0 => 
+  array (
+    'id' => 1,
+    'title' => 'Director',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 1,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Director',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  1 => 
+  array (
+    'id' => 2,
+    'title' => 'Head Finance & Accounting',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 3,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Head Finance & Accounting',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  2 => 
+  array (
+    'id' => 3,
+    'title' => 'Head HRGA',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 1,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Head HRGA',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  3 => 
+  array (
+    'id' => 4,
+    'title' => 'Head Information Technology',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 2,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Head Information Technology',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  4 => 
+  array (
+    'id' => 5,
+    'title' => 'Head Operations',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 4,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Head Operations',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  5 => 
+  array (
+    'id' => 6,
+    'title' => 'Manager Finance & Accounting',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 3,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Manager Finance & Accounting',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  6 => 
+  array (
+    'id' => 7,
+    'title' => 'Manager HRGA',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 1,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Manager HRGA',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  7 => 
+  array (
+    'id' => 8,
+    'title' => 'Manager Information Technology',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 2,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Manager Information Technology',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  8 => 
+  array (
+    'id' => 9,
+    'title' => 'Manager Operation',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 4,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Manager Operation',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  9 => 
+  array (
+    'id' => 10,
+    'title' => 'Staff Finance & Accounting',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 3,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Staff Finance & Accounting',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  10 => 
+  array (
+    'id' => 11,
+    'title' => 'Staff HRGA',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 1,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Staff HRGA',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  11 => 
+  array (
+    'id' => 12,
+    'title' => 'Staff Information Technology',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 2,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Staff Information Technology',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+  12 => 
+  array (
+    'id' => 13,
+    'title' => 'Staff Operation',
+    'period_year' => '2026',
+    'period_smt' => 1,
+    'division_id' => 4,
+    'is_locked' => 0,
+    'is_archived' => 0,
+    'description' => 'Appraisal Template for Staff Operation',
+    'created_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'updated_by' => '7df26957-6614-4c96-bde0-340ead4504ee',
+    'deleted_by' => NULL,
+    'created_at' => '2026-09-15 11:40:00',
+    'updated_at' => '2026-09-15 11:40:00',
+    'deleted_at' => NULL,
+  ),
+);
+
+        foreach (array_chunk($data, 100) as $chunk) {
+            foreach ($chunk as $item) {
+                DB::table('iq_appraisal_question_template')->updateOrInsert(['id' => $item['id']], $item);
+            }
+        }
+    }
+}

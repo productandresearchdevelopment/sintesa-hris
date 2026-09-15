@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             PlacementSeeder::class,
             OrgSeeder::class,
             EmploySeeder::class,
+            Appraisals\AppraisalMasterSeeder::class,
             AuthUserSeeder::class,
             BulletinSeeder::class,
         ]);
