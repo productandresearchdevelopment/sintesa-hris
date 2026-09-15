@@ -29,7 +29,19 @@ class AppraisalPeriodOrganization extends Controller
 
     public function data(Request $request, $counter = true)
     {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+
         $query = Mod::with(['organization', 'appraisal_period', 'appraisal_question_template']);
+
+        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
+            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            if ($userCompany) {
+                $query->whereHas('organization', function ($q) use ($userCompany) {
+                    $q->where('company_id', $userCompany);
+                });
+            }
+        }
 
         $result = Query::open($query, [], $counter);
 

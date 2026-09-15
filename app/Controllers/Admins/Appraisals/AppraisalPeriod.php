@@ -30,7 +30,18 @@ class AppraisalPeriod extends Controller
 
     public function data(Request $request, $counter = true)
     {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
         $query = Mod::with(['appraisal_period_organizations']);
+
+        if (!$isSuperUser && $userCompany) {
+            $query->whereHas('appraisal_period_organizations.organization', function ($q) use ($userCompany) {
+                $q->where('company_id', $userCompany);
+            });
+        }
 
         if (!$request->trash) {
             $query->withTrashed();

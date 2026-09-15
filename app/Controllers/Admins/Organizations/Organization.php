@@ -28,6 +28,15 @@ class Organization extends Controller
         $company = $request->input('company_id');
         $filter  = $request->input('filter');
 
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
+        if (!$isSuperUser && $userCompany) {
+            $company = $userCompany;
+        }
+
         $base = Mod::query();
 
         if ($filter === 'trash') {

@@ -30,7 +30,19 @@ class AppraisalEmployee extends Controller
 
     public function data(Request $request, $counter = true)
     {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+
         $query = Mod::with(['period', 'employee', 'template', 'evaluator1', 'evaluator2', 'appraisal_employee_questions', 'appraisal_employee_summaries']);
+
+        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
+            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            if ($userCompany) {
+                $query->whereHas('employee', function ($q) use ($userCompany) {
+                    $q->where('company_id', $userCompany);
+                });
+            }
+        }
 
         if (!$request->trash) {
             $query->withTrashed();
@@ -78,6 +90,13 @@ class AppraisalEmployee extends Controller
             'appraisal_employees.period',
             'appraisal_employees.period.appraisal_period',
         ]);
+
+        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
+            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            if ($userCompany) {
+                $query->where('company_id', $userCompany);
+            }
+        }
 
         if ($request->filled('organization')) {
             $userOrg = $request->organization;

@@ -240,8 +240,18 @@ class Attendance extends Controller
             $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
         }
 
+        $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
+        $isSuperUser = in_array($userRole, ['developer', 'superadmin']);
+        $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
+
         $query = IqAttendance::whereBetween('date', [$startDate, $endDate])
             ->with(['employee', 'employee.organization']);
+
+        if (!$isSuperUser && $userCompany) {
+            $query->whereHas('employee', function ($q) use ($userCompany) {
+                $q->where('company_id', $userCompany);
+            });
+        }
 
         if (!$isHR) {
             $userOrgId = $employee ? $employee->org_id : null;
@@ -286,9 +296,12 @@ class Attendance extends Controller
         ];
     }
 
-    private function getOrganizationTreeOptions($allowedOrgIds = null)
+    private function getOrganizationTreeOptions($allowedOrgIds = null, $userCompany = null)
     {
         $orgQuery = \App\Models\Organization::orderBy('name');
+        if ($userCompany !== null) {
+            $orgQuery->where('company_id', $userCompany);
+        }
         if ($allowedOrgIds !== null) {
             $orgQuery->whereIn('id', $allowedOrgIds);
         }
@@ -351,17 +364,22 @@ class Attendance extends Controller
         $month = $request->month ?? Carbon::now()->month;
         $year = $request->year ?? Carbon::now()->year;
 
-        $userRole = strtolower(optional(Auth::user()->role)->name);
+        $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
+        $isSuperUser = in_array($userRole, ['developer', 'superadmin']);
         $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin']);
+        $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
 
         $allowedOrgIds = null;
         if (!$isHR && $employee) {
             $allowedOrgIds = array_merge([$employee->org_id], $this->getAllChildOrganizations($employee->org_id));
         }
 
-        $orgTree = $this->getOrganizationTreeOptions($allowedOrgIds);
+        $orgTree = $this->getOrganizationTreeOptions($allowedOrgIds, !$isSuperUser ? $userCompany : null);
 
         $empQuery = IqEmployee::orderBy('fullname');
+        if (!$isSuperUser && $userCompany) {
+            $empQuery->where('company_id', $userCompany);
+        }
         if (!$isHR && $allowedOrgIds !== null) {
             $empQuery->whereIn('org_id', $allowedOrgIds);
         }

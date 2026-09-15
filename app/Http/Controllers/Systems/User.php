@@ -24,11 +24,13 @@ class User extends Controller
         $user = $request->user();
         $view = 'systems.users.main';
 
-        if (strtolower($user->role->name) === 'developer') {
+        $roleName = strtolower(optional($user->role)->name ?? '');
+        if ($roleName === 'developer') {
             $roles = Role::all();
+        } elseif ($roleName === 'superadmin') {
+            $roles = Role::whereRaw('LOWER(name) != ?', ['developer'])->get();
         } else {
-            $roles = Role::whereRaw('LOWER(name) != ?', ['developer'])
-                ->get();
+            $roles = Role::whereRaw('LOWER(name) NOT IN (?, ?)', ['developer', 'superadmin'])->get();
         }
 
         $params = [
@@ -42,15 +44,22 @@ class User extends Controller
     public function data(Request $request)
     {
         $user   = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
         $search = ['id', 'name', 'username', 'last_ip', 'email', 'phone'];
         $query  = Auth\User::with(['role', 'organization', 'employee']);
 
-        // if ($user->username != 'devel') {
-        //     $query->where(function ($q) use ($user) {
-        //         $q->where('role_id', '>', $user->role_id);
-        //         $q->orwhere('id', $user->id);
-        //     });
-        // }
+        if (!$isSuperUser && $userCompany) {
+            $query->where(function ($q) use ($userCompany) {
+                $q->whereHas('employee', function ($q2) use ($userCompany) {
+                    $q2->where('company_id', $userCompany);
+                })->orWhereHas('organization', function ($q2) use ($userCompany) {
+                    $q2->where('company_id', $userCompany);
+                });
+            });
+        }
 
         // FILTER USER ---------------------------------------------------------------------------------------------
         if ($filter = $request->input('role')) $query->where('role_id', $filter);

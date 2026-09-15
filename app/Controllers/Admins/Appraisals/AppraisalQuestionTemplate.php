@@ -56,7 +56,15 @@ class AppraisalQuestionTemplate extends Controller
     {
         $query = Mod::with(['division', 'appraisal_questions']);
         $user = $request->user();
-        $roleName = strtolower(optional($user->role)->name);
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
+        if (!$isSuperUser && $userCompany) {
+            $query->whereHas('templates_organizations', function ($q2) use ($userCompany) {
+                $q2->where('company_id', $userCompany);
+            });
+        }
 
         if (!$request->filled('archived')) {
             $query->where('is_archived', 0);

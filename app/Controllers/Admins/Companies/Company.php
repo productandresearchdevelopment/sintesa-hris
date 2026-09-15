@@ -20,7 +20,16 @@ class Company extends Controller
 
     public function data(Request $request)
     {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
         $query = Mod::select('*');
+
+        if (!$isSuperUser && $userCompany) {
+            $query->where('id', $userCompany);
+        }
 
         if (!$request->trash) {
             $query->withTrashed();

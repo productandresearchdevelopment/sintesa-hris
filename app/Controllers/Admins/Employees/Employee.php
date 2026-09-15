@@ -618,12 +618,26 @@ class Employee extends Controller
             $query->withTrashed();
         }
 
-        if ($request->filled('company') && $request->company !== 'all' && $request->company != 0) {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
+        if (!$isSuperUser && $userCompany) {
+            $query->where('company_id', $userCompany);
+        } elseif ($request->filled('company') && $request->company !== 'all' && $request->company != 0) {
             $query->where('company_id', $request->company);
         }
+
         if ($request->filled('organization') && $request->organization !== 'all' && $request->organization != 0) {
             $organizationIds = $this->getDescendantOrganizationIds($request->organization);
             $query->whereIn('org_id', $organizationIds);
+        } elseif (!$isSuperUser) {
+            $userOrg = optional(optional($user)->employee)->org_id ?? optional($user)->organization_id;
+            if ($userOrg) {
+                $organizationIds = $this->getDescendantOrganizationIds($userOrg);
+                $query->whereIn('org_id', $organizationIds);
+            }
         }
         if ($request->filled('division') && $request->division !== 'all' && $request->division != 0) {
             $query->where('division_id', $request->division);

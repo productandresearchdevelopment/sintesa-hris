@@ -23,6 +23,15 @@ class Division extends Controller
         $query = Mod::with(['company']);
         $company = $request->input('company_id');
 
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
+        if (!$isSuperUser && $userCompany) {
+            $company = $userCompany;
+        }
+
         if ($company) {
             $query->where('company_id', $company);
         }
