@@ -435,7 +435,7 @@
       color: #ffffff;
     }
 
-    /* Summary Card Styling */
+    /* Summary Card Stylig */
     .summary-card {
       background: #ffffff;
       border-radius: 20px;
