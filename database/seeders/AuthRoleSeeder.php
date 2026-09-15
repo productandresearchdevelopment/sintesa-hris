@@ -41,12 +41,12 @@ class AuthRoleSeeder extends Seeder
                 'deleted_at' => null,
             ],
             [
-                'id' => 14,
-                'name' => 'MANAGER',
-                'alias' => 'MN',
-                'home' => 2015,
-                'color' => '00FFFF',
-                'description' => 'Manager Role',
+                'id' => 11,
+                'name' => 'ADMINISTRATOR',
+                'alias' => 'ADMIN',
+                'home' => 2044,
+                'color' => '0066CC',
+                'description' => 'Administrator Role',
                 'property' => null,
                 'created_by' => null,
                 'updated_by' => null,
@@ -74,7 +74,7 @@ class AuthRoleSeeder extends Seeder
                 'id' => 17,
                 'name' => 'STAFF',
                 'alias' => 'ST',
-                'home' => 2015,
+                'home' => 2137,
                 'color' => 'CC99FF',
                 'description' => 'Staff / Employee Role',
                 'property' => null,
@@ -87,7 +87,6 @@ class AuthRoleSeeder extends Seeder
             ],
         ];
 
-        // Delete any roles not in this allowed list (1, 10, 14, 15, 17)
         $allowedIds = array_column($roles, 'id');
         DB::table('auth_role')->whereNotIn('id', $allowedIds)->delete();
 

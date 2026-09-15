@@ -43,6 +43,20 @@ class AuthUserSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            [
+                'id' => 'b1a11111-0000-0000-0000-000000000001',
+                'role_id' => 11, // ADMINISTRATOR
+                'organization_id' => null,
+                'employ_id' => 'e0000000-0000-0000-0000-000000000003',
+                'username' => 'admin',
+                'email' => 'admin@sintesa.com',
+                'password' => $password,
+                'name' => 'Administrator',
+                'email_validation_at' => $now,
+                'email_validation_sent_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
             // PT Dieboldnixdorf Users
             [
                 'id' => (string) Str::uuid(),

@@ -17,9 +17,11 @@
     }
 
     me.hexToRgba = function(hex, opacity) {
-      let r = parseInt(hex.substring(1, 3), 16);
-      let g = parseInt(hex.substring(3, 5), 16);
-      let b = parseInt(hex.substring(5, 7), 16);
+      if (!hex) return `rgba(0, 123, 255, ${opacity})`;
+      hex = hex.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16) || 0;
+      let g = parseInt(hex.substring(2, 4), 16) || 0;
+      let b = parseInt(hex.substring(4, 6), 16) || 0;
       return `rgba(${r}, ${g}, ${b}, ${opacity})`;
     }
 
@@ -32,7 +34,7 @@
           bulletins: data.bulletins ?
             data.bulletins.map(b => ({
               ...b,
-              image_url: b.cover_image_id ? fileRoute.replace(':id', b.cover_image_id) : 'default-image.jpg'
+              image_url: b.cover_image_id ? fileRoute.replace(':id', b.cover_image_id) : '{{ asset('images/noimage.png') }}'
             })) : []
         };
 

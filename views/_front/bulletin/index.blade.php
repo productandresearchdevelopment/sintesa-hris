@@ -417,7 +417,15 @@
       const user = @json($user);
 
       function lightenColor(color, percent) {
-        let num = parseInt(color.replace("#", ""), 16);
+        if (!color || typeof color !== 'string') {
+          return "#e0f2fe";
+        }
+        let cleanColor = color.replace("#", "");
+        if (cleanColor.length === 3) {
+          cleanColor = cleanColor.split('').map(c => c + c).join('');
+        }
+        let num = parseInt(cleanColor, 16);
+        if (isNaN(num)) return "#e0f2fe";
         let r = (num >> 16) + percent * 255;
         let g = (num >> 8 & 0x00FF) + percent * 255;
         let b = (num & 0x0000FF) + percent * 255;
@@ -439,11 +447,16 @@
       }
 
       function renderHighlight(bulletin) {
-        $('#highlight-cover').attr('src', '{{ route('file', ':id') }}'.replace(':id', bulletin.cover_image_id));
-        $('#highlight-category').text(bulletin.category.name);
+        const coverSrc = bulletin.cover_image_id ?
+          '{{ route('file', ':id') }}'.replace(':id', bulletin.cover_image_id) :
+          '{{ asset('images/noimage.png') }}';
+        $('#highlight-cover').attr('src', coverSrc);
+        const catName = bulletin?.category?.name || 'Uncategorized';
+        const catColor = bulletin?.category?.color || '#0073e6';
+        $('#highlight-category').text(catName);
         $('#highlight-category').css({
-          'background-color': lightenColor(bulletin.category.color, 0.4),
-          'color': bulletin.category.color
+          'background-color': lightenColor(catColor, 0.4),
+          'color': catColor
         });
         $('#highlight-title').text(bulletin.title);
         $('#highlight-description').text(bulletin.description || "");
@@ -465,7 +478,7 @@
         data.forEach(bulletin => {
           const bulletinHTML = createBulletinHTML(bulletin, 'grid');
           const element = $(bulletinHTML).addClass('fade-in');
-          $('#bulletin-list').append(element);
+          $('#bulletin-grid').append(element);
         });
       }
 
@@ -478,8 +491,11 @@
       }
 
       function createBulletinHTML(bulletin, type) {
-        const bulletinImage = '{{ route('file', ':id') }}'.replace(':id', bulletin.cover_image_id);
-        const categoryColor = bulletin.category.color;
+        const bulletinImage = bulletin.cover_image_id ?
+          '{{ route('file', ':id') }}'.replace(':id', bulletin.cover_image_id) :
+          '{{ asset('images/noimage.png') }}';
+        const categoryColor = bulletin?.category?.color || '#0073e6';
+        const categoryName = bulletin?.category?.name || 'Uncategorized';
         const lighterCategoryColor = lightenColor(categoryColor, 0.4);
 
 
@@ -488,12 +504,12 @@
             <div class="side-bulletin">
                 <img src="${bulletinImage}" alt="Side Image">
                 <div class="text-overlay">
-                    <span class="bulletin-category" style="background-color: ${lighterCategoryColor}; color: ${categoryColor};">${bulletin.category.name}</span>
+                    <span class="bulletin-category" style="background-color: ${lighterCategoryColor}; color: ${categoryColor};">${categoryName}</span>
                     <div class="side-bulletin-title">${bulletin.title}</div>
                     <div class="side-actions mt-2">
                         <button id="side-read-more-button" class="btn btn-sm btn-info read-more-bulletin" data-id="${bulletin.id}">Read More</button>
                         ${bulletin?.created_by?.id === user?.id && user?.role?.name === 'ADMIN BULLETIN' ? `<button id="side-edit-button" class="btn btn-sm btn-warning edit-bulletin" data-id="${bulletin.id}">Edit</button>
-                                                                                                                                            <button id="side-delete-button" class="btn btn-sm btn-danger delete-bulletin" data-id="${bulletin.id}">Delete</button>` : ''}
+                                                                                                                                                <button id="side-delete-button" class="btn btn-sm btn-danger delete-bulletin" data-id="${bulletin.id}">Delete</button>` : ''}
                     </div>
                 </div>
             </div>`;
@@ -503,7 +519,7 @@
                 <div class="card">
                     <div class="position-relative">
                         <img src="${bulletinImage}" class="card-img-top" alt="Bulletin Image">
-                        <span class="bulletin-category position-absolute" style="top: 10px; right: 10px; background-color: ${lighterCategoryColor}; color: ${categoryColor}; padding: 0.3rem 0.5rem;">${bulletin.category.name}</span>
+                        <span class="bulletin-category position-absolute" style="top: 10px; right: 10px; background-color: ${lighterCategoryColor}; color: ${categoryColor}; padding: 0.3rem 0.5rem;">${categoryName}</span>
                     </div>
                     <div class="card-body p-3">
                         <div class="text-muted">${formatDate(bulletin.created_at)}</div>
@@ -511,7 +527,7 @@
                         <div class="card-actions mt-2">
                             <button id="card-read-more-button" class="btn btn-sm btn-info read-more-bulletin" data-id="${bulletin.id}">Read More</button>
                             ${bulletin?.created_by?.id === user?.id && user?.role?.name === 'ADMIN BULLETIN' ? `<button id="card-edit-button" class="btn btn-sm btn-warning edit-bulletin" data-id="${bulletin.id}">Edit</button>
-                                                                                                                                                <button id="card-delete-button" class="btn btn-sm btn-danger delete-bulletin" data-id="${bulletin.id}">Delete</button>` : ''}
+                                                                                                                                                    <button id="card-delete-button" class="btn btn-sm btn-danger delete-bulletin" data-id="${bulletin.id}">Delete</button>` : ''}
                         </div>
                     </div>
                 </div>

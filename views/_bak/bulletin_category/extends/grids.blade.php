@@ -49,7 +49,7 @@
 
       me.menus = Ext.create('Ext.menu.Menu', {
         items: [
-          @if ($user->hasRoute('category.push'))
+          @if ($user->hasRoute('bulletin.category.push'))
             {
               text: 'Create',
               iconCls: 'icon-add',
@@ -83,7 +83,7 @@
             },
           @endif
 
-          @if ($user->hasRoute('category.restore') || $user->hasRoute('owners.forcedelete'))
+          @if ($user->hasRoute('bulletin.category.restore') || $user->hasRoute('bulletin.category.forcedelete'))
             '-',
             @if ($user->hasRoute('bulletin.category.restore'))
               {

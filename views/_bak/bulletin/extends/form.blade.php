@@ -267,24 +267,68 @@
         _method: 'PUT',
         id: rec.data.id,
         title: rec.data.title,
-        category_id: rec.data.category.id,
+        category_id: rec.data.category ? rec.data.category.id : null,
         content: rec.data.content,
         description: rec.data.description,
-        is_pinned: rec.data.is_pinned,
-        file: coverImageId
+        is_pinned: rec.data.is_pinned
       });
 
+      me.form.down('filefield[name=file]').reset();
       me.form.url = '{{ route('bulletin.update') }}';
     };
 
     me.save = function() {
-      me.submit(me.form.url, {
-        success: function(form, action) {
-          grids.storeLoad();
-          me.close();
+      var form = me.form.getForm();
+      if (!form.isValid()) {
+        Ext.Msg.alert('Warning', 'Please complete all required fields.');
+        return;
+      }
+      var values = form.getValues();
+
+      var formData = new FormData();
+      formData.append('_token', values._token || '{{ csrf_token() }}');
+      formData.append('_method', values._method || 'POST');
+      if (values.id) formData.append('id', values.id);
+      formData.append('title', values.title || '');
+      formData.append('category_id', values.category_id || '');
+      formData.append('content', values.content || '');
+      if (values.description) formData.append('description', values.description);
+      formData.append('is_pinned', values.is_pinned ? 1 : 0);
+
+      var fileField = me.form.down('filefield[name=file]');
+      var fileInput = (fileField && fileField.fileInputEl && fileField.fileInputEl.dom && fileField.fileInputEl.dom.files)
+        ? fileField.fileInputEl.dom.files[0]
+        : null;
+
+      if (fileInput) {
+        formData.append('file', fileInput);
+      }
+
+      me.form.getEl().mask('Saving...');
+      Ext.Ajax.request({
+        url: me.form.url,
+        rawData: formData,
+        headers: {
+          'Content-Type': null
         },
-        failure: function(form, action) {
-          Ext.Msg.alert('Error', action.result ? action.result.message : 'Server error');
+        success: function(response) {
+          me.form.getEl().unmask();
+          var res = Ext.decode(response.responseText);
+          if (res && res.success) {
+            grids.storeLoad();
+            me.close();
+          } else {
+            Ext.Msg.alert('Error', (res && res.message) ? res.message : 'Failed to save bulletin.');
+          }
+        },
+        failure: function(response) {
+          me.form.getEl().unmask();
+          var message = 'Server error';
+          try {
+            var res = Ext.decode(response.responseText);
+            if (res && res.message) message = res.message;
+          } catch(e) {}
+          Ext.Msg.alert('Error', message);
         }
       });
     };

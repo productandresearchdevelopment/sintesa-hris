@@ -29,7 +29,7 @@ class Bulletin extends Controller
             'user' => $user
         ];
 
-        if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
+        if (!in_array($user->role->name, ['DEVELOPER', 'SUPERADMIN', 'ADMINISTRATOR', 'HRGA'])) {
             $view = isMobile() ? '_front.bulletin.mobile' : '_front.bulletin.index';
             return view($view, $params);
         } else {
@@ -117,14 +117,19 @@ class Bulletin extends Controller
     }
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
+        $rules = [
+            'title'       => 'required|string',
             'category_id' => 'required|integer|exists:iq_bulletin_category,id',
-            'file' => 'nullable|mimes:jpeg,jpg,png,svg,gif,webp|max:5120',
-            'content' => 'required|string',
+            'content'     => 'required|string',
             'description' => 'nullable|string',
-            'is_pinned' => 'nullable|boolean',
-        ], [
+            'is_pinned'   => 'nullable|boolean',
+        ];
+
+        if ($request->hasFile('file')) {
+            $rules['file'] = 'nullable|mimes:jpeg,jpg,png,svg,gif,webp|max:5120';
+        }
+
+        $validator = Validator::make($request->all(), $rules, [
             'title.required' => 'Judul harus diisi.',
             'title.string' => 'Judul harus berupa teks.',
             'category_id.required' => 'Kategori harus dipilih.',
@@ -139,7 +144,7 @@ class Bulletin extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all()),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -150,7 +155,7 @@ class Bulletin extends Controller
             $cover = FileUpload::upload('file', 'cover-bulletin');
 
             if (!$cover) {
-                return ['success' => false, 'message' => 'Cover image not found'];
+                return response()->json(['success' => false, 'message' => 'Cover image upload failed']);
             }
         }
 
@@ -164,28 +169,33 @@ class Bulletin extends Controller
             'cover_image_id' => $file ? $file->id : null,
             'content' => $request->input('content'),
             'description' => $description,
-            'is_pinned' => $request->input('is_pinned'),
+            'is_pinned' => $request->input('is_pinned') ? 1 : 0,
         ]);
 
-        return ['success' => true, 'data' => $bulletin, 'message' => 'Success create bulletin'];
+        return response()->json(['success' => true, 'data' => $bulletin, 'message' => 'Success create bulletin']);
     }
 
     public function edit(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'id'          => 'required|integer|exists:iq_bulletin,id',
             'title'       => 'required|string',
             'category_id' => 'required|integer|exists:iq_bulletin_category,id',
-            'file'        => 'nullable|mimes:jpeg,jpg,png,svg,gif,webp|max:5120',
             'content'     => 'required|string',
             'description' => 'nullable|string',
             'is_pinned'   => 'nullable|boolean',
-        ]);
+        ];
+
+        if ($request->hasFile('file')) {
+            $rules['file'] = 'nullable|mimes:jpeg,jpg,png,svg,gif,webp|max:5120';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all()),
                 'errors'  => $validator->errors(),
             ], 422);
         }
@@ -197,6 +207,19 @@ class Bulletin extends Controller
                 'message' => 'Bulletin not found',
             ], 404);
         }
+
+        $description = $this->extractDescription(
+            $request->input('content'),
+            $request->input('description')
+        );
+
+        $updateData = [
+            'title'       => $request->input('title'),
+            'category_id' => $request->input('category_id'),
+            'content'     => $request->input('content'),
+            'description' => $description,
+            'is_pinned'   => $request->input('is_pinned'),
+        ];
 
         if ($request->hasFile('file')) {
             if ($bulletin->cover_image_id) {
@@ -219,21 +242,10 @@ class Bulletin extends Controller
                 ]);
             }
 
-            $bulletin->cover_image_id = $newFile->id;
+            $updateData['cover_image_id'] = $newFile->id;
         }
 
-        $description = $this->extractDescription(
-            $request->input('content'),
-            $request->input('description')
-        );
-
-        $bulletin->update([
-            'title'       => $request->input('title'),
-            'category_id' => $request->input('category_id'),
-            'content'     => $request->input('content'),
-            'description' => $description,
-            'is_pinned'   => $request->input('is_pinned'),
-        ]);
+        $bulletin->update($updateData);
 
         return response()->json([
             'success' => true,

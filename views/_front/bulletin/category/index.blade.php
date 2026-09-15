@@ -167,7 +167,7 @@
     @media only screen and (min-width: 1024px) {
       .our_solution_category {
         /* width: 50%;
-                                                                                                                                                                                                                                                                                                                                                                                                                        margin: 0 auto; */
+                                                                                                                                                                                                                                                                                                                                                                                                                          margin: 0 auto; */
       }
     }
   </style>
@@ -244,7 +244,15 @@
       let currentQuery = '';
 
       function lightenColor(color, percent) {
-        let num = parseInt(color.replace("#", ""), 16);
+        if (!color || typeof color !== 'string') {
+          return "#e0f2fe";
+        }
+        let cleanColor = color.replace("#", "");
+        if (cleanColor.length === 3) {
+          cleanColor = cleanColor.split('').map(c => c + c).join('');
+        }
+        let num = parseInt(cleanColor, 16);
+        if (isNaN(num)) return "#e0f2fe";
         let r = (num >> 16) + percent * 255;
         let g = (num >> 8 & 0x00FF) + percent * 255;
         let b = (num & 0x0000FF) + percent * 255;
@@ -300,6 +308,8 @@
             } else {
               response.data.forEach(category => {
                 const categoryDescription = category.description ? `<p>${category.description}</p>` : '';
+                const catColor = category.color || '#0073e6';
+                const catAlias = category.alias || category.name || '';
 
                 const categoryHTML = `
               <div class="col-12 col-md-4">
@@ -309,7 +319,7 @@
                       <div class="hover_color_bubble"></div>
                       <div class="solu_title">
                         <h3>${category.name}</h3>
-                        <span style="background-color: ${lightenColor(category.color, 0.4)}; color: ${category.color};">${category.alias}</span>
+                        <span style="background-color: ${lightenColor(catColor, 0.4)}; color: ${catColor};">${catAlias}</span>
                       </div>
                       <div class="so_top_count mb-3">
                         <span class="bulletin-count badge bg-primary">${category.bulletins.length || 0} Bulletins</span>

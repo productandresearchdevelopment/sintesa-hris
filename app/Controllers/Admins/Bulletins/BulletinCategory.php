@@ -17,7 +17,7 @@ class BulletinCategory extends Controller
         $user = $request->user();
         $params = ['user' => $user];
 
-        if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
+        if (!in_array($user->role->name, ['DEVELOPER', 'SUPERADMIN', 'ADMINISTRATOR', 'HRGA'])) {
             return view('_front.bulletin.category.index', $params);
         } else {
             return view('_bak.bulletin_category.main', $params);

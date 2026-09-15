@@ -13,7 +13,7 @@ class EmploySeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $users = [
-            // Admin & Developer Accounts
+            // DEVELOPER, SUPERADMIN & ADMINISTRATOR
             [
                 'username' => 'developer',
                 'employ_id' => 'e0000000-0000-0000-0000-000000000001',
@@ -36,8 +36,19 @@ class EmploySeeder extends Seeder
                 'org_id' => null,
                 'division_id' => null,
             ],
+            [
+                'username' => 'admin',
+                'employ_id' => 'e0000000-0000-0000-0000-000000000003',
+                'nik' => 'EMP-003',
+                'fullname' => 'Administrator',
+                'nickname' => 'Admin',
+                'email' => 'admin@sintesa.com',
+                'company_id' => null,
+                'org_id' => null,
+                'division_id' => null,
+            ],
 
-            // PT Dieboldnixdorf Employees
+            // PT DIEBOLDNIXDORF
             [
                 'username' => 'hr_diebold',
                 'employ_id' => 'e0000000-0000-0000-0001-000000000001',
@@ -83,7 +94,7 @@ class EmploySeeder extends Seeder
                 'division_id' => 4,
             ],
 
-            // PT Hitachi Employees
+            // PT HITACHI
             [
                 'username' => 'hr_hitachi',
                 'employ_id' => 'e0000000-0000-0000-0002-000000000001',
@@ -158,10 +169,24 @@ class EmploySeeder extends Seeder
                     'org_id' => $u['org_id'],
                     'division_id' => $u['division_id'],
                     'placement_id' => 1,
-                    'gender_id' => 1001,
+                    'gender_id' => in_array($u['username'], ['dewi_diebold', 'siti_hitachi', 'hr_hitachi', 'nurul_hitachi']) ? 1002 : 1001,
+                    'marital_id' => 1101,
+                    'religion_id' => 1201,
                     'shift_start_time' => '08:00:00',
                     'shift_end_time' => '17:00:00',
                     'address' => 'Jl. Sudirman No. 100, Jakarta',
+                    'address_city_id' => 131,
+                    'address_province_id' => 131,
+                    'address_permanent' => 'Jl. Sudirman No. 100, Jakarta',
+                    'address_permanent_city_id' => 131,
+                    'address_permanent_province_id' => 131,
+                    'bank_id' => 1303,
+                    'bank_account' => '5270123456',
+                    'bank_alias' => $u['fullname'],
+                    'emergency_relation_id' => 1901,
+                    'emergency_contact_name' => 'Keluarga ' . $u['nickname'],
+                    'emergency_contact_phone' => '081298765432',
+                    'emergency_contact_address' => 'Jl. Sudirman No. 100, Jakarta',
                     'last_contract_id' => null,
                     'last_career_id' => null,
                     'created_at' => $now,
@@ -208,6 +233,7 @@ class EmploySeeder extends Seeder
                 [
                     'id' => (string) Str::uuid(),
                     'employ_id' => $employId,
+                    'citizen_id' => 1401,
                     'value' => '317100000000' . rand(1000, 9999),
                     'description' => 'KTP Elektronik',
                 ]

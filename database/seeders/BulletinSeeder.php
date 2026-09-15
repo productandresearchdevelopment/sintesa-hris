@@ -16,34 +16,61 @@ class BulletinSeeder extends Seeder
         if (!$catPengumuman) {
             $cat1 = DB::table('iq_bulletin_category')->insertGetId([
                 'name' => 'Announcement',
+                'alias' => 'ANNOUNCEMENT',
+                'color' => '0073E6',
+                'description' => 'Official corporate announcements and memos',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         } else {
             $cat1 = $catPengumuman->id;
-            DB::table('iq_bulletin_category')->where('id', $cat1)->update(['name' => 'Announcement']);
+            DB::table('iq_bulletin_category')->where('id', $cat1)->update([
+                'name' => 'Announcement',
+                'alias' => 'ANNOUNCEMENT',
+                'color' => '0073E6',
+                'description' => 'Official corporate announcements and memos',
+                'updated_at' => now(),
+            ]);
         }
 
         if (!$catHR) {
             $cat2 = DB::table('iq_bulletin_category')->insertGetId([
                 'name' => 'HR Information',
+                'alias' => 'HR INFO',
+                'color' => '10B981',
+                'description' => 'Human resource updates, policies, and regulations',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         } else {
             $cat2 = $catHR->id;
-            DB::table('iq_bulletin_category')->where('id', $cat2)->update(['name' => 'HR Information']);
+            DB::table('iq_bulletin_category')->where('id', $cat2)->update([
+                'name' => 'HR Information',
+                'alias' => 'HR INFO',
+                'color' => '10B981',
+                'description' => 'Human resource updates, policies, and regulations',
+                'updated_at' => now(),
+            ]);
         }
 
         if (!$catTraining) {
             $cat3 = DB::table('iq_bulletin_category')->insertGetId([
                 'name' => 'Training & Development',
+                'alias' => 'TRAINING',
+                'color' => 'F59E0B',
+                'description' => 'Training programs, workshops, and career learning',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         } else {
             $cat3 = $catTraining->id;
-            DB::table('iq_bulletin_category')->where('id', $cat3)->update(['name' => 'Training & Development']);
+            DB::table('iq_bulletin_category')->where('id', $cat3)->update([
+                'name' => 'Training & Development',
+                'alias' => 'TRAINING',
+                'color' => 'F59E0B',
+                'description' => 'Training programs, workshops, and career learning',
+                'updated_at' => now(),
+            ]);
         }
 
         // Link categories to organizations in iq_bulletin_category_organization
@@ -87,7 +114,7 @@ class BulletinSeeder extends Seeder
 
                         <h4 class="fw-bold text-dark mt-4 mb-3" style="font-size: 16px; text-align: left !important;"><i class="bi bi-gear-wide-connected text-primary me-2"></i>1. Hard Skills Prioritas 2026</h4>
                         <p class="small text-secondary" style="text-align: left !important;">Kemampuan teknis yang terukur sangat penting untuk meningkatkan efisiensi operasional dan kualitas hasil kerja:</p>
-                        
+
                         <div class="skills-grid my-3">
                             <div class="p-3 mb-2" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-align: left !important;">
                                 <div class="d-flex align-items-center gap-2 mb-1">
@@ -121,7 +148,7 @@ class BulletinSeeder extends Seeder
 
                         <h4 class="fw-bold text-dark mt-4 mb-3" style="font-size: 16px; text-align: left !important;"><i class="bi bi-people-fill text-success me-2"></i>2. Soft Skills Esensial</h4>
                         <p class="small text-secondary" style="text-align: left !important;">Keterampilan interpersonal membentuk budaya kerja yang kolaboratif dan sehat:</p>
-                        
+
                         <ul class="list-unstyled ps-0" style="text-align: left !important;">
                             <li class="d-flex align-items-start gap-2 mb-3">
                                 <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0 mt-0.5"></i>
