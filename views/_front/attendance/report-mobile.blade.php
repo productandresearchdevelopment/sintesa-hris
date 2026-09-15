@@ -16,7 +16,7 @@
 
     .report-header-banner {
       background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
-      padding: 16px 20px 48px 20px;
+      padding: 16px 20px 44px 20px;
       color: #ffffff;
       position: relative;
       border-bottom-left-radius: 28px;
@@ -24,23 +24,10 @@
       box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);
     }
 
-    .report-header-banner::after {
-      content: '';
-      position: absolute;
-      right: -20px;
-      bottom: -30px;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      pointer-events: none;
-    }
-
     .top-action-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
     }
 
     .btn-back-link {
@@ -57,9 +44,31 @@
       font-size: 18px;
       text-decoration: none;
       transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .btn-back-link:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-dots-more {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-dots-more:active {
       transform: scale(0.92);
       background: rgba(255, 255, 255, 0.3);
     }
@@ -72,32 +81,6 @@
       color: #ffffff;
     }
 
-    .header-actions-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .btn-action-glass {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 12px;
-      padding: 6px 12px;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-
-    .btn-action-glass:active {
-      background: rgba(255, 255, 255, 0.35);
-    }
-
     .content-body {
       padding: 0 16px;
       margin-top: -24px;
@@ -106,13 +89,63 @@
     }
 
     @media (min-width: 769px) {
-      .att-header-banner {
+      .report-header-banner {
         display: none !important;
       }
       .content-body {
         margin-top: 0 !important;
         padding: 0 !important;
       }
+    }
+
+    /* Summary Card Styling */
+    .summary-card-att {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 18px 20px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 12px;
+    }
+
+    .summary-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .summary-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .btn-summary-action {
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary-action {
+      background: #0073e6;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 115, 230, 0.25);
+    }
+
+    .btn-primary-action:active {
+      transform: scale(0.96);
+      background: #005bb5;
     }
 
     /* Filter Card */
@@ -122,43 +155,46 @@
       padding: 16px;
       border: 1px solid #f1f5f9;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .filter-card-title {
       font-size: 13px;
       font-weight: 800;
-      color: #475569;
-      margin-bottom: 10px;
+      color: #0f172a;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
     }
 
     .filter-select-custom {
       width: 100%;
+      height: 44px;
       background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 8px 12px;
-      font-size: 13px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 0 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #0f172a;
       outline: none;
+      transition: all 0.2s ease;
     }
 
     .filter-select-custom:focus {
       border-color: #0073e6;
       background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15);
     }
 
     /* Attendance Record Cards for Mobile */
     .record-card {
       background: #ffffff;
-      border-radius: 18px;
-      padding: 16px;
+      border-radius: 20px;
+      padding: 18px 20px;
       border: 1px solid #f1f5f9;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
       margin-bottom: 12px;
     }
 
@@ -407,30 +443,59 @@
           <i class="bi bi-arrow-left"></i>
         </a>
         <h1 class="header-page-title">Attendance Report</h1>
-        <div class="header-actions-group">
-          @if ($isHR)
-            <button type="button" class="btn-action-glass" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
-              <i class="bi bi-plus-lg"></i> Add
-            </button>
-          @endif
-          <a href="{{ route('attendance.export.excel', request()->all()) }}" class="btn-action-glass">
-            <i class="bi bi-download"></i> Excel
-          </a>
+        <div class="dropdown">
+          <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2" style="z-index: 99999;">
+            <li>
+              <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3" href="{{ route('attendance.export.excel', request()->all()) }}">
+                <i class="bi bi-file-earmark-excel fs-6"></i> Export Excel
+              </a>
+            </li>
+            @if ($isHR)
+              <li>
+                <button type="button" class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-primary py-2 rounded-3" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
+                  <i class="bi bi-plus-circle fs-6"></i> Add Attendance
+                </button>
+              </li>
+            @endif
+          </ul>
         </div>
       </div>
     </div>
 
     <div class="content-body">
+      <!-- Attendance Summary Header Card -->
+      <div class="summary-card-att mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="summary-label">Attendance Records</span>
+            <h4 class="summary-value mb-0">{{ isset($formattedLogs) ? count($formattedLogs) : 0 }} <small style="font-size: 13px; font-weight: 600; color: #64748b;">Logs</small></h4>
+          </div>
+          @if ($isHR)
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn-summary-action btn-primary-action" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
+                <i class="bi bi-plus-lg me-1"></i> Add Record
+              </button>
+            </div>
+          @endif
+        </div>
+      </div>
+
       <!-- Filter Card -->
       <div class="filter-card">
         <div class="filter-card-title">
-          <i class="bi bi-funnel-fill text-primary"></i> Attendance Report Filter
+          <span><i class="bi bi-funnel-fill text-primary me-1"></i> Attendance Filter</span>
+          <a href="{{ route('attendance.report') }}" class="text-decoration-none text-muted fw-bold" style="font-size: 11.5px;">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+          </a>
         </div>
 
         <form action="{{ route('attendance.report') }}" method="GET" id="reportForm">
           <div class="row g-2">
             <div class="col-6">
-              <select name="month" class="filter-select-custom" id="month-selector">
+              <select name="month" class="filter-select-custom" id="month-selector" onchange="this.form.submit()">
                 <option value="">All Months</option>
                 @for ($i = 1; $i <= 12; $i++)
                   <option value="{{ $i }}" {{ $month == $i ? 'selected' : '' }}>
@@ -441,7 +506,7 @@
             </div>
 
             <div class="col-6">
-              <select name="year" class="filter-select-custom" id="year-selector">
+              <select name="year" class="filter-select-custom" id="year-selector" onchange="this.form.submit()">
                 @php
                   $currentYear = date('Y');
                   $startYear = $currentYear - 3;
@@ -455,8 +520,8 @@
             </div>
 
             @if ($isHR)
-              <div class="col-12 mt-2">
-                <select name="org_id" class="filter-select-custom" id="org-selector">
+              <div class="col-12">
+                <select name="org_id" class="filter-select-custom" id="org-selector" onchange="this.form.submit()">
                   <option value="">All Organizations</option>
                   @foreach ($orgTree as $org)
                     <option value="{{ $org['id'] }}" {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
@@ -466,8 +531,8 @@
                 </select>
               </div>
 
-              <div class="col-12 mt-2">
-                <select name="employee_id" class="filter-select-custom" id="employee-selector">
+              <div class="col-12">
+                <select name="employee_id" class="filter-select-custom" id="employee-selector" onchange="this.form.submit()">
                   <option value="">All Employees</option>
                   @foreach ($employeesList as $emp)
                     <option value="{{ $emp->id }}" {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>

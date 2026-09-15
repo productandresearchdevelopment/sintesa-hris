@@ -74,95 +74,106 @@
     }
 
     .location-info {
-      background-color: white;
-      border-radius: 12px;
-      padding: 15px;
+      background-color: #ffffff;
+      border-radius: 20px;
+      padding: 18px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
     }
 
     .info-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      align-items: center;
     }
 
     .info-label {
-      color: #6c757d;
-      font-size: 14px;
+      color: #64748b;
+      font-size: 13.5px;
+      font-weight: 600;
     }
 
     .info-value {
-      font-weight: 500;
+      font-weight: 700;
       font-size: 14px;
+      color: #0f172a;
     }
 
     .work-from-dropdown {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #495057;
+      background-color: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
       cursor: pointer;
-      min-width: 100px;
+      min-width: 110px;
+      transition: all 0.2s ease;
     }
 
     .work-from-dropdown:focus {
       outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      border-color: #0073e6;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15);
+      background-color: #ffffff;
     }
 
     .status-badge {
       display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
+      padding: 5px 12px;
+      border-radius: 50px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 800;
     }
 
     .in-range {
-      background-color: #d1fae5;
-      color: #047857;
+      background-color: #ecfdf5;
+      color: #059669;
     }
 
     .out-range {
-      background-color: #fee2e2;
-      color: #b91c1c;
+      background-color: #fef2f2;
+      color: #dc2626;
     }
 
     .anywhere-mode {
-      background-color: #dbeafe;
-      color: #1d4ed8;
+      background-color: #eff6ff;
+      color: #0073e6;
     }
 
     .button-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
       margin-top: 20px;
     }
 
     .btn-cancel {
-      background-color: #f3f4f6;
-      color: #4b5563;
+      background-color: #f1f5f9;
+      color: #475569;
       border: none;
-      border-radius: 10px;
+      border-radius: 50px;
       padding: 12px;
-      font-weight: 600;
+      font-weight: 800;
+      font-size: 14px;
       text-align: center;
+      transition: all 0.2s ease;
     }
 
     .btn-confirm {
-      background-color: var(--primary-color);
+      background: linear-gradient(135deg, #0073e6 0%, #005bb5 100%);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 50px;
       padding: 12px;
-      font-weight: 600;
+      font-weight: 800;
+      font-size: 14px;
       text-align: center;
+      box-shadow: 0 4px 14px rgba(0, 115, 230, 0.35);
+      transition: all 0.2s ease;
     }
 
     .confirmation-overlay {
@@ -171,30 +182,33 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 9999;
     }
 
     .confirmation-box {
       background-color: white;
       width: 90%;
-      max-width: 350px;
-      border-radius: 12px;
-      padding: 20px;
+      max-width: 360px;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
     .confirmation-title {
-      font-weight: 600;
+      font-weight: 800;
       font-size: 18px;
-      margin-bottom: 15px;
+      color: #0f172a;
+      margin-bottom: 12px;
     }
 
     .confirmation-message {
       font-size: 14px;
-      color: #4b5563;
+      color: #475569;
       margin-bottom: 20px;
     }
 
@@ -206,14 +220,18 @@
 @endsection
 
 @section('content')
-  <div class="px-3" style="min-height: 100%; padding-bottom: 100px;">
-    <div class="py-3">
-      <div class="d-flex align-items-center gap-4" style="cursor: pointer;"
-        onclick="window.location.href='{{ route('attendance.index') }}'">
-        <i class="bi bi-chevron-left" style="font-size: 1.2rem;"></i>
-        <p class="m-0" style="font-size: 1.1rem;">{{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</p>
+  <div class="px-0" style="min-height: 100vh; padding-bottom: 40px; background: #ffffff;">
+    <div class="att-header-banner mb-3" style="background: linear-gradient(135deg, #0073e6 0%, #00a651 100%); padding: 16px 20px 44px 20px; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);">
+      <div class="top-action-bar d-flex align-items-center justify-content-between">
+        <a href="{{ route('attendance.index') }}" class="btn-back-link" style="width: 38px; height: 38px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: none; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; text-decoration: none;">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="header-page-title" style="font-size: 17px; font-weight: 700; color: #ffffff; margin: 0;">{{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</h1>
+        <div style="width: 38px;"></div>
       </div>
     </div>
+
+    <div class="px-3" style="margin-top: -24px; position: relative; z-index: 10;">
 
     <div class="camera-container">
       <video id="camera-feed" autoplay playsinline></video>

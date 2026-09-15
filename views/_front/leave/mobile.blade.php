@@ -2,204 +2,563 @@
 
 @section('head')
   <style>
-    .input-search-container #searchInput,
-    .input-search-container #searchBtn {
-      height: 44px;
-      font-size: 1.2rem;
-      border-radius: 10px;
+    html, body {
+      background-color: #ffffff !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
-    #filter-dropdown {
+    .leave-page-wrapper {
+      min-height: 100vh;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      padding-bottom: 40px;
+    }
+
+    .leave-header-banner {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%);
+      padding: 16px 20px 44px 20px;
+      color: #ffffff;
+      position: relative;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);
+    }
+
+    .top-action-bar {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      gap: 1rem;
     }
 
-    #filter-dropdown .dropdown {
-      flex: 1;
+    .btn-back-link {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
-    #filter-dropdown .dropdown .btn-filter {
-      border-radius: 10px;
-      background-color: #f8f9fa;
-      color: var(--bs-secondary-color);
-      border: 1px solid #ddd;
-      font-weight: 500;
-      font-size: 1rem;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      width: 100%;
+    .btn-back-link:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Card List  */
-    .card-list-leave {
-      border-radius: 20px;
-      border: 1px solid #ddd;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1rem;
-      background: white;
+    .header-page-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .btn-header-add {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-header-add:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .content-body {
+      padding: 0 16px;
+      margin-top: -24px;
+      z-index: 10;
       position: relative;
     }
 
-    .card-list-title {
-      border-left: 4px solid var(--primary-color);
-      padding-left: 20px;
+    @media (min-width: 769px) {
+      .leave-header-banner {
+        display: none !important;
+      }
+      .leave-page-wrapper {
+        padding: 20px 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .content-body {
+        margin-top: 0 !important;
+        padding: 0 !important;
+      }
     }
 
-    .status-badge {
-      font-size: 0.8rem;
-      padding: 0.5rem 1rem;
-      border-radius: 999px;
+    /* Summary Card Styling */
+    .leave-summary-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 18px 20px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 12px;
+    }
+
+    .summary-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+
+    .btn-summary-action {
+      font-size: 13.5px;
+      font-weight: 800;
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: none;
       display: inline-flex;
       align-items: center;
-      font-weight: 500;
-    }
-
-    .status-badge.approved {
-      background-color: var(--green-light);
-      color: var(--green-color);
-    }
-
-    .status-badge.rejected {
-      background-color: var(--red-light);
-      color: var(--red-color);
-    }
-
-    .status-badge.pending {
-      background-color: var(--yellow-light);
-      color: var(--yellow-color);
-    }
-
-    .meta-info {
-      font-size: 0.875rem;
-      color: var(--gray-medium);
-    }
-
-    .meta-info i {
-      margin-right: 0.25rem;
-    }
-
-    .action-dots {
+      justify-content: center;
+      transition: all 0.2s ease;
       cursor: pointer;
-      padding: 0.5rem;
+    }
+
+    .btn-primary-action {
+      background: linear-gradient(135deg, #0073e6 0%, #005bb5 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 115, 230, 0.35);
+    }
+
+    .btn-primary-action:active {
+      transform: scale(0.95);
+    }
+
+    .btn-dots-more {
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      transition: background-color 0.2s;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
-    .dot {
-      width: 4px;
-      height: 4px;
-      background-color: var(--gray-medium);
-      border-radius: 50%;
-      margin: 2px 0;
+    .btn-dots-more:active {
+      transform: scale(0.92);
+      background: #e2e8f0;
     }
 
-    .dropdown-menu-list {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 0.8rem 1rem;
+    /* Search & Filter Card Styling */
+    .search-filter-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 12px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
     }
 
-    .dropdown-menu-list .action-item {
-      font-size: 1rem;
-      font-weight: 400;
+    .search-box-wrapper {
+      position: relative;
     }
 
-    .dropdown-menu-list .action-item i {
-      margin-right: 10px
+    .search-input {
+      border-radius: 14px !important;
+      padding-left: 38px !important;
+      height: 44px !important;
+      border: 1px solid #e2e8f0 !important;
+      font-size: 13.5px !important;
+      background: #f8fafc !important;
+    }
+
+    .search-input:focus {
+      background: #ffffff !important;
+      border-color: #0073e6 !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+    }
+
+    .search-icon {
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #94a3b8;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .btn-filter {
+      border-radius: 14px !important;
+      background-color: #f8fafc !important;
+      color: #334155 !important;
+      border: 1px solid #e2e8f0 !important;
+      font-weight: 700 !important;
+      font-size: 12.5px !important;
+      height: 44px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 0 14px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .btn-filter:focus, .btn-filter:active {
+      border-color: #0073e6 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+    }
+
+    /* Filter Dropdown Menu Customization */
+    #filter-container .dropdown-menu {
+      max-height: 260px !important;
+      overflow-y: auto !important;
+      border-radius: 18px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+      padding: 6px !important;
+      min-width: 200px !important;
+      max-width: 280px !important;
+      z-index: 99999 !important;
+      background: #ffffff !important;
+    }
+
+    #filter-container .dropdown-menu::-webkit-scrollbar {
+      width: 5px;
+    }
+    #filter-container .dropdown-menu::-webkit-scrollbar-track {
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+    #filter-container .dropdown-menu::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    #filter-container .dropdown-item {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 10px 14px !important;
+      border-radius: 12px !important;
+      color: #334155 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.35 !important;
+      transition: all 0.15s ease !important;
+    }
+
+    #filter-container .dropdown-item:hover,
+    #filter-container .dropdown-item:focus,
+    #filter-container .dropdown-item.active {
+      background-color: #eff6ff !important;
+      color: #0073e6 !important;
+    }
+
+    /* Card List Styling */
+    .card-list-leave {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .card-list-leave:hover {
+      box-shadow: 0 6px 20px rgba(0, 115, 230, 0.08);
+      border-color: #e2e8f0;
+    }
+
+    .leave-type-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #0073e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .emp-name-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+
+    .leave-type-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0073e6;
+    }
+
+    .leave-date-text {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
     }
 
     .duration-badge {
-      background-color: #EEEDFA;
-      color: #6E7591
+      background-color: #eff6ff !important;
+      color: #0073e6 !important;
+      font-weight: 800 !important;
+      font-size: 11.5px !important;
+      padding: 4px 10px !important;
+      border-radius: 50px !important;
+      line-height: 1 !important;
     }
 
-    input[type="date"] {
-      display: block;
-      -webkit-appearance: textfield;
-      -moz-appearance: textfield;
-      min-height: 1.2em;
-      padding: 6px 12px;
-      min-width: 95%;
-      width: 100%;
+    /* Status Badges */
+    .status-badge-custom {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 50px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.2;
+    }
+
+    .status-badge-custom.approved {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+
+    .status-badge-custom.rejected,
+    .status-badge-custom.cancelled {
+      background-color: #fef2f2;
+      color: #dc2626;
+    }
+
+    .status-badge-custom.pending,
+    .status-badge-custom.process,
+    .status-badge-custom.checked {
+      background-color: #fffbeb;
+      color: #d97706;
+    }
+
+    .action-dots {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .action-dots:active {
+      transform: scale(0.92);
+      background: #e2e8f0;
+    }
+
+    .dropdown-menu-list {
+      border-radius: 16px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+      padding: 6px !important;
+    }
+
+    .dropdown-menu-list .action-item {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      padding: 8px 12px !important;
+      border-radius: 10px !important;
+      color: #334155 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      cursor: pointer !important;
+      transition: background 0.15s ease !important;
+    }
+
+    .dropdown-menu-list .action-item:hover {
+      background: #f1f5f9 !important;
+      color: #0073e6 !important;
+    }
+
+    /* Modal Form Customization */
+    .modal-content {
+      border-radius: 24px !important;
+      border: none !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+      overflow: hidden !important;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%) !important;
+      color: #ffffff !important;
+      padding: 16px 20px !important;
+      border: none !important;
+    }
+
+    .modal-header .modal-title {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      font-size: 17px !important;
+    }
+
+    .modal-header .btn-close {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    .modal-body {
+      padding: 20px !important;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+      border-radius: 14px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      padding: 10px 14px !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      background-color: #f8fafc !important;
+    }
+
+    .modal-body .form-control:focus,
+    .modal-body .form-select:focus {
+      border-color: #0073e6 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #f1f5f9 !important;
+      padding: 14px 20px !important;
+      background: #ffffff !important;
     }
   </style>
 @endsection
 
 @section('content')
-  <div class="px-3" style="min-height: 100%; min-width: 100%; padding-bottom: 100px;">
-    <div class="py-3">
-      <div class="d-flex align-items-center gap-4" style="cursor: pointer;" onclick="history.back()">
-        <i class="bi bi-chevron-left" style="font-size: 1.2rem;font-weight: 500;"></i>
-        <p class="m-0" style="font-size: 1.4rem; font-weight: 500;">Leave</p>
+  <div class="leave-page-wrapper">
+    <div class="leave-header-banner">
+      <div class="top-action-bar">
+        <a href="{{ route('main') }}" class="btn-back-link" id="btnLeaveBack">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="header-page-title">Leave Management</h1>
+        <div style="width: 38px;"></div>
       </div>
     </div>
-    <div class="col">
-      <div class="button-add-container my-3 ">
-        <button type="button" class="btn btn-primary fw-semibold" data-action="add" data-bs-target="#modalLeaveForm">
-          <i class="bi bi-plus-lg"></i> Add New
-        </button>
-      </div>
-      @if ($user->hasRoute('leave.export.excel'))
-        <div class="button-export-excel-container my-3 ">
-          <button type="button" class="btn btn-primary fw-semibold" data-action="export-excel"
-            data-bs-target="#modalLeaveForm">
-            <i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
-          </button>
-        </div>
-      @endif
-      <div class="row mb-3">
-        <div class="input-group input-group-sm mb-0 input-search-container gap-2 ">
-          <input type="text" class="form-control" name="search" id="searchInput" placeholder="Search...">
-          <div class="input-group-append">
-            <i type="button" class="input-group-text bi bi-search" id="searchBtn"></i>
+
+    <div class="content-body">
+      <!-- Leave Quota Summary Card -->
+      <div class="leave-summary-card mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="summary-label">Remaining Leave</span>
+            <h4 class="summary-value mb-0">{{ $currentEmployee->leave_saldo ?? 0 }} <small style="font-size: 13px; font-weight: 600; color: #64748b;">Days</small></h4>
           </div>
-        </div>
-      </div>
-      <div class="row align-items-center mb-3">
-        <div class="d-flex flex-row justify-content-between" id="filter-dropdown">
-          <div class="dropdown">
-            <button class="btn btn-filter dropdown-toggle" type="button" id="leaveTypeDropdown" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Leave Type
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn-summary-action btn-primary-action" data-action="add" data-bs-target="#modalLeaveForm">
+              <i class="bi bi-plus-lg me-1"></i> Add Leave
             </button>
-            <ul class="dropdown-menu" aria-labelledby="leaveTypeDropdown" id="leaveTypeFilter">
-              <li><a class="dropdown-item" href="#" data-leave-type="all">All</a></li>
-              @foreach ($types as $type)
-                <li><a class="dropdown-item" href="#" data-leave-type="{{ $type->id }}">{{ $type->name }}</a>
-                </li>
-              @endforeach
-            </ul>
-          </div>
-          <div class="dropdown">
-            <button class="btn btn-filter dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Status
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="statusDropdown" id="statusFilter">
-              <li><a class="dropdown-item" href="#" data-status="all">All</a></li>
-              <li><a class="dropdown-item" href="#" data-status="pending">Pending</a></li>
-              <li><a class="dropdown-item" href="#" data-status="approved">Approved</a></li>
-              <li><a class="dropdown-item" href="#" data-status="rejected">Rejected</a></li>
-            </ul>
-          </div>
-          <div class="dropdown">
-            <button class="btn btn-filter dropdown-toggle" type="button" id="viewDropdown" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Ongoing
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="viewDropdown" id="viewFilter">
-              <li><a class="dropdown-item" href="#" data-view="ongoing">Ongoing</a></li>
-              <li><a class="dropdown-item" href="#" data-view="archived">Archived</a></li>
-            </ul>
+            @if ($user->hasRoute('leave.export.excel'))
+              <div class="dropdown">
+                <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2">
+                  <li>
+                    <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3" href="#" data-action="export-excel" data-bs-target="#modalLeaveForm">
+                      <i class="bi bi-file-earmark-spreadsheet fs-6"></i> Export Excel
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            @endif
           </div>
         </div>
       </div>
 
-    </div>
-    <div class="card-list" id="leaveCardList">
-      <!-- Data akan diisi secara dinamis oleh JavaScript -->
+      <!-- Search & Filter Card -->
+      <div class="search-filter-card mb-3" id="filter-container">
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-md-5">
+            <div class="search-box-wrapper">
+              <input type="text" class="form-control search-input" name="search" id="searchInput" placeholder="Search leave records...">
+              <i class="bi bi-search search-icon" id="searchBtn"></i>
+            </div>
+          </div>
+          <div class="col-12 col-md-7">
+            <div class="d-flex gap-2" id="filter-dropdown">
+              <div class="dropdown flex-grow-1">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="leaveTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-funnel me-1"></i> Type
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="leaveTypeDropdown" id="leaveTypeFilter">
+                  <li><a class="dropdown-item fw-semibold" href="#" data-leave-type="all">All Types</a></li>
+                  @foreach ($types as $type)
+                    <li><a class="dropdown-item fw-semibold" href="#" data-leave-type="{{ $type->id }}">{{ $type->name }}</a></li>
+                  @endforeach
+                </ul>
+              </div>
+              <div class="dropdown flex-grow-1">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-tag me-1"></i> Status
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="statusDropdown" id="statusFilter">
+                  <li><a class="dropdown-item fw-semibold" href="#" data-status="all">All Status</a></li>
+                  <li><a class="dropdown-item fw-semibold" href="#" data-status="pending">Pending</a></li>
+                  <li><a class="dropdown-item fw-semibold" href="#" data-status="approved">Approved</a></li>
+                  <li><a class="dropdown-item fw-semibold" href="#" data-status="rejected">Rejected</a></li>
+                </ul>
+              </div>
+              <div class="dropdown flex-grow-1">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="viewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-archive me-1"></i> Ongoing
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="viewDropdown" id="viewFilter">
+                  <li><a class="dropdown-item fw-semibold" href="#" data-view="ongoing">Ongoing</a></li>
+                  <li><a class="dropdown-item fw-semibold" href="#" data-view="archived">Archived</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave Card List -->
+      <div class="card-list" id="leaveCardList">
+        <!-- Data akan diisi secara dinamis oleh JavaScript -->
+      </div>
     </div>
   </div>
 
@@ -355,45 +714,45 @@
 
       function getStatusDetails(item) {
         let status = 'Pending';
-        let statusClass = 'bg-warning';
-        let statusTitle = 'Awaiting for approval';
-        let iconStatus = 'bi bi-person';
+        let statusClass = 'pending';
+        let statusTitle = 'Awaiting approval';
+        let iconStatus = 'bi bi-clock-history';
 
         if (item.cancel_at) {
           status = 'Cancelled';
-          statusClass = 'bg-danger';
+          statusClass = 'cancelled';
           statusTitle = `Cancelled at: ${item.cancel_at}`;
-          iconStatus = 'bi bi-x-circle text-danger';
+          iconStatus = 'bi bi-x-circle';
         } else if (item.approved1_status === 0) {
           status = 'Rejected';
-          statusClass = 'bg-danger';
+          statusClass = 'rejected';
           statusTitle = `Rejected by: ${item.approver1 ? item.approver1.name : 'Unknown'}`;
-          iconStatus = 'bi bi-x-circle text-danger';
+          iconStatus = 'bi bi-x-circle';
         } else if (item.approved2_status === 0) {
           status = 'Rejected';
-          statusClass = 'bg-danger';
+          statusClass = 'rejected';
           statusTitle = `Rejected by: ${item.approver2 ? item.approver2.name : 'Unknown'}`;
-          iconStatus = 'bi bi-x-circle text-danger';
+          iconStatus = 'bi bi-x-circle';
         } else if (item.allowed_status === 0) {
           status = 'Rejected';
-          statusClass = 'bg-danger';
+          statusClass = 'rejected';
           statusTitle = `Rejected by: ${item.allowed ? item.allowed.name : 'Unknown'}`;
-          iconStatus = 'bi bi-x-circle text-danger';
+          iconStatus = 'bi bi-x-circle';
         } else if (item.allowed_status === 1) {
           status = 'Approved';
-          statusClass = 'bg-success';
+          statusClass = 'approved';
           statusTitle = `Approved by: ${item.allowed ? item.allowed.name : 'Unknown'}`;
-          iconStatus = 'bi bi-check-circle text-success';
+          iconStatus = 'bi bi-check-circle-fill';
         } else if (item.approved2_status === 1) {
           status = 'Process';
-          statusClass = 'bg-primary';
+          statusClass = 'process';
           statusTitle = `Processed by: ${item.approver2 ? item.approver2.name : 'Unknown'}`;
-          iconStatus = 'bi bi-check-circle text-success';
+          iconStatus = 'bi bi-check-circle';
         } else if (item.approved1_status === 1) {
           status = 'Checked';
-          statusClass = 'bg-info';
+          statusClass = 'checked';
           statusTitle = `Checked by: ${item.approver1 ? item.approver1.name : 'Unknown'}`;
-          iconStatus = 'bi bi-check-circle text-success';
+          iconStatus = 'bi bi-check-circle';
         }
 
         return {
@@ -485,40 +844,41 @@
 
       function createMobileCard(item, dateListLeave, status, statusClass, statusTitle, iconStatus, actionButton,
         rejectOrCancelButton) {
+        const empName = item.employee?.nickname || item.employee?.fullname || 'Employee';
+        const typeName = item.type ? item.type.name : 'Leave Request';
+
         return `
         <div class="card-list-leave fade-in">
-            <div class="card-body p-3">
-                <div class="card-list-title d-flex flex-column gap-1 mb-4">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <h5 class="card-title mb-0">${item.employee.nickname || item.employee.fullname}</h5>
-                        <div class="dropdown">
-                            <div class="action-dots" data-bs-toggle="dropdown">
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                            </div>
-                            <ul class="dropdown-menu dropdown-menu-list">
-                                ${actionButton ? `<li>${actionButton}</li>` : ''}
-                                ${rejectOrCancelButton ? `<li>${rejectOrCancelButton}</li>` : ''}
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <p class="mb-1" style="font-size: 1rem; font-weight: 500; color: #6c757d;">${item.type ? item.type.name : 'N/A'}</p>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center ">
-                        <span class="" style="font-size: 1rem; color: #6c757d;">${dateListLeave}</span>
-                        <span class="duration-badge badge">${item.duration} Days</span>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 align-items-center justify-content-between">
-                    <div>
-                        <i class="${iconStatus}"></i>
-                        <span class="text-muted small">${statusTitle}</span>
-                    </div>
-                    <div class="status-badge badge ${statusClass}" title="${statusTitle}">${status}</div>
-                </div>
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="leave-type-icon">
+                <i class="bi bi-calendar2-event"></i>
+              </div>
+              <div>
+                <div class="emp-name-title">${empName}</div>
+                <div class="leave-type-name">${typeName}</div>
+              </div>
             </div>
+            <div class="dropdown">
+              <div class="action-dots" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+              </div>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-list">
+                ${actionButton ? `<li>${actionButton}</li>` : ''}
+                ${rejectOrCancelButton ? `<li>${rejectOrCancelButton}</li>` : ''}
+              </ul>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light">
+            <div class="d-flex align-items-center gap-2">
+              <span class="leave-date-text"><i class="bi bi-calendar3 me-1"></i>${dateListLeave}</span>
+              <span class="duration-badge">${item.duration} Days</span>
+            </div>
+            <div class="status-badge-custom ${statusClass}" title="${statusTitle}">
+              <i class="${iconStatus}"></i> ${status}
+            </div>
+          </div>
         </div>`;
       }
 
@@ -538,21 +898,27 @@
         fetchData();
       });
 
-      $(document).on('click', '#leaveTypeFilter .dropdown-item', function() {
+      $(document).on('click', '#leaveTypeFilter .dropdown-item', function(e) {
+        e.preventDefault();
         selectedLeaveType = $(this).data('leave-type');
-        $(this).closest('.dropdown').find('.btn').text($(this).text());
+        const text = $(this).text().trim();
+        $(this).closest('.dropdown').find('.btn').html('<i class="bi bi-funnel me-1"></i> ' + text);
         fetchData();
       });
 
-      $(document).on('click', '#statusFilter .dropdown-item', function() {
+      $(document).on('click', '#statusFilter .dropdown-item', function(e) {
+        e.preventDefault();
         selectedStatus = $(this).data('status');
-        $(this).closest('.dropdown').find('.btn').text($(this).text());
+        const text = $(this).text().trim();
+        $(this).closest('.dropdown').find('.btn').html('<i class="bi bi-tag me-1"></i> ' + text);
         fetchData();
       });
 
-      $(document).on('click', '#viewFilter .dropdown-item', function() {
+      $(document).on('click', '#viewFilter .dropdown-item', function(e) {
+        e.preventDefault();
         selectedView = $(this).data('view');
-        $(this).closest('.dropdown').find('.btn').text($(this).text());
+        const text = $(this).text().trim();
+        $(this).closest('.dropdown').find('.btn').html('<i class="bi bi-archive me-1"></i> ' + text);
         fetchData();
       });
 

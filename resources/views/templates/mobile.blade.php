@@ -64,6 +64,7 @@
   <style>
     html, body {
       background-color: #ffffff !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     #alertContainer {
@@ -101,6 +102,136 @@
     @keyframes slideUp {
       from { transform: translate(-50%, 100%); opacity: 0; }
       to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    /* Global Mobile Dropdown & Select2 Consistency */
+    .dropdown-menu {
+      max-height: 260px !important;
+      overflow-y: auto !important;
+      border-radius: 18px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+      padding: 6px !important;
+      min-width: 180px !important;
+      max-width: 290px !important;
+      z-index: 99999 !important;
+      background: #ffffff !important;
+    }
+
+    .dropdown-menu::-webkit-scrollbar,
+    .select2-results__options::-webkit-scrollbar {
+      width: 5px;
+    }
+    .dropdown-menu::-webkit-scrollbar-track,
+    .select2-results__options::-webkit-scrollbar-track {
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+    .dropdown-menu::-webkit-scrollbar-thumb,
+    .select2-results__options::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .dropdown-item {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 10px 14px !important;
+      border-radius: 12px !important;
+      color: #334155 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.35 !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus,
+    .dropdown-item.active {
+      background-color: #eff6ff !important;
+      color: #0073e6 !important;
+    }
+
+    /* Global Mobile Modal Consistency */
+    .modal-content {
+      border-radius: 24px !important;
+      border: none !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #0073e6 0%, #00a651 100%) !important;
+      color: #ffffff !important;
+      padding: 16px 20px !important;
+      border: none !important;
+    }
+
+    .modal-header .modal-title {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      font-size: 17px !important;
+    }
+
+    .modal-header .btn-close {
+      filter: brightness(0) invert(1) !important;
+      opacity: 0.8;
+    }
+    .modal-header .btn-close:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 20px !important;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+      border-radius: 14px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      padding: 10px 14px !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+
+    .modal-body .form-control:focus,
+    .modal-body .form-select:focus {
+      border-color: #0073e6 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
+      outline: none !important;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #f1f5f9 !important;
+      padding: 14px 20px !important;
+      background: #ffffff !important;
+    }
+
+    .modal-footer .btn-primary,
+    .modal-footer .save-item {
+      background: linear-gradient(135deg, #0073e6 0%, #005bb5 100%) !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 50px !important;
+      padding: 10px 24px !important;
+      font-size: 13.5px !important;
+      font-weight: 800 !important;
+      box-shadow: 0 4px 14px rgba(0, 115, 230, 0.35) !important;
+    }
+
+    .modal-footer .btn-light,
+    .modal-footer .btn-secondary {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border: none !important;
+      border-radius: 50px !important;
+      padding: 10px 20px !important;
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
     }
   </style>
 

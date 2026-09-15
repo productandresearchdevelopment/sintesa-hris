@@ -95,6 +95,12 @@
       }
     }
 
+    @media (max-width: 768px) {
+      #desktop-back-bar {
+        display: none !important;
+      }
+    }
+
     .search-filter-card {
       background: #ffffff;
       border-radius: 20px;
@@ -183,22 +189,184 @@
     }
 
     .select2-dropdown {
-      border-radius: 14px !important;
+      border-radius: 18px !important;
       border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
       overflow: hidden !important;
       z-index: 99999 !important;
+      background: #ffffff !important;
+      padding: 6px !important;
+    }
+
+    .select2-results__options {
+      max-height: 250px !important;
+      overflow-y: auto !important;
+    }
+
+    .select2-results__options::-webkit-scrollbar {
+      width: 5px;
+    }
+    .select2-results__options::-webkit-scrollbar-track {
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+    .select2-results__options::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
     }
 
     .select2-results__option {
       font-size: 13px !important;
       font-weight: 600 !important;
       padding: 10px 14px !important;
+      border-radius: 12px !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.35 !important;
     }
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-      background-color: #0073e6 !important;
-      color: #ffffff !important;
+      background-color: #eff6ff !important;
+      color: #0073e6 !important;
+    }
+
+    /* Assessment Category Cards Redesign */
+    .category-header-card {
+      background: #ffffff !important;
+      border-radius: 20px !important;
+      padding: 12px 16px !important;
+      border: 1px solid #f1f5f9 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+      margin-bottom: 12px !important;
+    }
+
+    .emp-avatar-box-sm {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid #f1f5f9;
+      background: #f1f5f9;
+    }
+
+    .emp-avatar-box-sm img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cat-header-name {
+      font-size: 14.5px !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      margin: 0 !important;
+      line-height: 1.25 !important;
+    }
+
+    .cat-header-org {
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
+      color: #64748b !important;
+      display: block !important;
+      margin-top: 1px !important;
+    }
+
+    .category-card {
+      background: #ffffff !important;
+      border-radius: 20px !important;
+      padding: 16px 18px !important;
+      border: 1px solid #f1f5f9 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 14px !important;
+      cursor: pointer !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      text-align: left !important;
+      min-height: 88px !important;
+      box-sizing: border-box !important;
+    }
+
+    .category-card:active {
+      transform: scale(0.97) !important;
+      background: #f8fafc !important;
+    }
+
+    .cat-icon-box {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .cat-icon-box.icon-blue {
+      background: #eff6ff;
+      color: #0073e6;
+    }
+
+    .cat-icon-box.icon-green {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .cat-icon-box.icon-orange {
+      background: #fff7ed;
+      color: #d97706;
+    }
+
+    .cat-info-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .cat-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 2px;
+      letter-spacing: -0.2px;
+      line-height: 1.25;
+    }
+
+    .cat-desc {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748b;
+      display: block;
+      line-height: 1.3;
+    }
+
+    .cat-arrow {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .category-card:hover .cat-arrow {
+      background: #0073e6;
+      color: #ffffff;
+      border-color: #0073e6;
     }
 
     .emp-appraisal-card {
@@ -471,29 +639,61 @@
 
       <div id="employee-list"></div>
       <div id="appraisal-summary"></div>
-      <div class="row g-3" id="category-list">
-        <div class="col-12 col-md-4" id="technical-category">
-          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="1">
-            <div class="icon-container icon-blue">
-              <i class="bi bi-tools icon"></i>
+      <div id="category-list" style="display: none;">
+        <div class="category-header-card mb-3" id="cat-employee-card">
+          <div class="d-flex align-items-center gap-3">
+            <div class="emp-avatar-box-sm">
+              <img id="cat-emp-avatar" src="{{ asset('/images/image-no-user.png') }}" alt="Employee Avatar" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
             </div>
-            <h6 class="fw-bold mt-2">Technical Ability & Work Result</h6>
+            <div class="flex-grow-1 min-w-0">
+              <h5 class="cat-header-name text-truncate" id="cat-employee-name">Select Category</h5>
+              <span class="cat-header-org text-truncate" id="cat-employee-org"><i class="bi bi-building me-1"></i>Employee</span>
+            </div>
           </div>
         </div>
-        <div class="col-12 col-md-4" id="behavior-category">
-          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="2">
-            <div class="icon-container icon-green">
-              <i class="bi bi-list-task icon"></i>
+
+        <div class="row g-0">
+          <div class="col-12 mb-3" id="technical-category">
+            <div class="card category-card" data-id="1">
+              <div class="cat-icon-box icon-blue">
+                <i class="bi bi-tools"></i>
+              </div>
+              <div class="cat-info-content">
+                <div class="cat-title">Technical Ability & Work Result</div>
+                <span class="cat-desc">Assess technical skills, quality & output</span>
+              </div>
+              <div class="cat-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
             </div>
-            <h6 class="fw-bold mt-2">Behavior & Work Processes</h6>
           </div>
-        </div>
-        <div class="col-12 col-md-4" id="leadership-category">
-          <div class="card text-center p-3 shadow-sm category-card border-0 rounded-4" data-id="3">
-            <div class="icon-container icon-orange">
-              <i class="bi bi-person-badge icon"></i>
+          <div class="col-12 mb-3" id="behavior-category">
+            <div class="card category-card" data-id="2">
+              <div class="cat-icon-box icon-green">
+                <i class="bi bi-list-task"></i>
+              </div>
+              <div class="cat-info-content">
+                <div class="cat-title">Behavior & Work Processes</div>
+                <span class="cat-desc">Assess work attitude, discipline & processes</span>
+              </div>
+              <div class="cat-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
             </div>
-            <h6 class="fw-bold mt-2">Leadership</h6>
+          </div>
+          <div class="col-12 mb-3" id="leadership-category">
+            <div class="card category-card" data-id="3">
+              <div class="cat-icon-box icon-orange">
+                <i class="bi bi-person-badge"></i>
+              </div>
+              <div class="cat-info-content">
+                <div class="cat-title">Leadership</div>
+                <span class="cat-desc">Assess leadership & team management skills</span>
+              </div>
+              <div class="cat-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1288,7 +1488,7 @@
               3: '#leadership-category'
             };
 
-            Object.values(categoryMap).forEach(sel => $(sel).closest('.col-md-4, .col-md-6').hide());
+            $('#technical-category, #behavior-category, #leadership-category').hide();
 
             if (questions.length === 0 || !response.appraisal_template) {
               $('#category-list').before(`
@@ -1300,16 +1500,10 @@
                 </div>
               `);
             } else {
-              const visibleCount = categoryIds.length;
-              const colClass = visibleCount <= 2 ? 'col-md-6' : 'col-md-4';
-
               categoryIds.forEach(catId => {
                 const sel = categoryMap[catId];
                 if (sel) {
-                  $(sel).closest('.col-md-4, .col-md-6')
-                    .removeClass('col-md-4 col-md-6')
-                    .addClass(colClass)
-                    .show();
+                  $(sel).show();
                 }
               });
             }
@@ -1349,7 +1543,11 @@
         window.currentNavState = state;
         if (state === 'Back') {
           $('#page-header-title').text('Assessment Details');
-          $('#desktop-back-bar').attr('style', 'display: block !important; text-align: left !important; width: 100% !important;');
+          if (!isMobile()) {
+            $('#desktop-back-bar').attr('style', 'display: block !important; text-align: left !important; width: 100% !important;');
+          } else {
+            $('#desktop-back-bar').attr('style', 'display: none !important;');
+          }
         } else {
           $('#page-header-title').text('Employee Assessment');
           $('#desktop-back-bar').attr('style', 'display: none !important;');
@@ -1495,6 +1693,14 @@
           $('#load-more').hide();
           setNavState('Back');
 
+          if (selectedEmployee) {
+            $('#cat-employee-name').text(selectedEmployee.fullname || 'Select Category');
+            const imageUrl = selectedEmployee.photo_id ?
+              `{{ route('file', ['id' => '__ID__']) }}`.replace('__ID__', selectedEmployee.photo_id) :
+              `{{ asset('/images/image-no-user.png') }}`;
+            $('#cat-emp-avatar').attr('src', imageUrl);
+            $('#cat-employee-org').html(`<i class="bi bi-building me-1"></i>${selectedEmployee.organization?.name || 'Employee'}`);
+          }
           showCategoriesForTemplate(function() {
             $('#category-list').show();
           });

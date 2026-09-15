@@ -673,7 +673,7 @@
         $.ajax({
           url: '{{ route('bulletin.data') }}',
           method: 'GET',
-          data: { trash: 1 },
+          data: { trash: 1, pinned: 1 },
           success: function(response) {
             const data = response ? (response.data || response) : [];
             const container = $('#bulletinCarouselContainer');
@@ -683,19 +683,42 @@
               const items = data.slice(0, 6);
               let count = 0;
 
-              items.forEach(function(b) {
-                const imgUrl = b.cover_image_id ?
-                  '{{ route('file', ':id') }}'.replace(':id', b.cover_image_id) :
-                  '{{ asset('/images/image-no-user.png') }}';
+              const fallbackImages = [
+                'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=600&auto=format&fit=crop',
+                'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=600&auto=format&fit=crop'
+              ];
+
+              items.forEach(function(b, idx) {
+                const randomFallback = fallbackImages[(b.id || idx) % fallbackImages.length];
+                let imgUrl = randomFallback;
+                if (b.cover_image_id) {
+                  imgUrl = '{{ route('file', ':id') }}'.replace(':id', b.cover_image_id);
+                } else if (b.content) {
+                  const match = b.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+                  if (match && match[1]) {
+                    imgUrl = match[1];
+                  }
+                }
                 const viewUrl = '{{ route('bulletin.view', ':id') }}'.replace(':id', b.id);
-                const catName = b.category ? b.category.name : 'Bulletin';
+
+                let catName = b.category ? b.category.name : 'Announcement';
+                const catMap = {
+                  'Pengumuman': 'Announcement',
+                  'Informasi HR': 'HR Information',
+                  'Training & Development': 'Training & Development'
+                };
+                if (catMap[catName]) {
+                  catName = catMap[catName];
+                }
+
                 const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
                 const cardHtml = `
                   <div class="item">
                     <div class="bulletin-carousel-card" onclick="window.location.href='${viewUrl}'">
                       <div class="bulletin-card-img-box">
-                        <img src="${imgUrl}" alt="${b.title || 'Bulletin'}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
+                        <img src="${imgUrl}" alt="${b.title || 'Bulletin'}" onerror="this.onerror=null;this.src='${randomFallback}';">
                         <span class="bulletin-card-category">${catName}</span>
                       </div>
                       <div class="bulletin-card-body">

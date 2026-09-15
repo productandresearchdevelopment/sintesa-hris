@@ -59,10 +59,9 @@ class Bulletin extends Controller
                 'data' => $data
             ];
 
-            if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-                $view = isMobile() ? '_front.bulletin.detail-mobile' : '_bak.bulletin.detail';
+            if (isMobile()) {
                 $params['id'] = $id;
-                return view($view, $params);
+                return view('_front.bulletin.detail-mobile', $params);
             } else {
                 return view('_bak.bulletin.detail', $params);
             }
@@ -86,6 +85,10 @@ class Bulletin extends Controller
             $query->where('category_id', $request->category);
         }
 
+        if ($request->has('pinned') && !is_null($request->pinned) && $request->pinned == 1) {
+            $query->where('is_pinned', 1);
+        }
+
         if (!$request->trash) {
             $query->withTrashed();
         }
@@ -93,7 +96,7 @@ class Bulletin extends Controller
             $query->onlyTrashed();
         }
 
-        $query->orderBy('created_at', 'desc');
+        $query->orderBy('is_pinned', 'desc')->orderBy('created_at', 'desc');
 
         $result = Query::open($query, $searchFields);
 
