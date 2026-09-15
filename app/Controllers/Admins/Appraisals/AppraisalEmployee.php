@@ -24,7 +24,7 @@ class AppraisalEmployee extends Controller
             'user' => $user
         ];
 
-        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
+        $view = isMobile() ? '_front.appraisal.mobile' : '_bak.appraisal.employee.main';
         return view($view, $params);
     }
 
@@ -54,9 +54,8 @@ class AppraisalEmployee extends Controller
 
     public function data_employee(Request $request, $counter = true)
     {
-        $userOrg = $request->organization ?? optional($request->user()->employee)->org_id ?? $request->user()->organization_id;
-        $childOrganizations = [$userOrg];
-        $childOrganizations = array_merge($childOrganizations, $this->getAllChildOrganizations($userOrg));
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
 
         $query = Employee::with([
             'user',
@@ -78,7 +77,21 @@ class AppraisalEmployee extends Controller
             'appraisal_employees',
             'appraisal_employees.period',
             'appraisal_employees.period.appraisal_period',
-        ])->whereIn('org_id', $childOrganizations);
+        ]);
+
+        if ($request->filled('organization')) {
+            $userOrg = $request->organization;
+            $childOrganizations = array_merge([$userOrg], $this->getAllChildOrganizations($userOrg));
+            $query->whereIn('org_id', $childOrganizations);
+            $query->orderByRaw("FIELD(org_id, " . implode(',', $childOrganizations) . ")");
+        } elseif ($roleName !== 'superadmin' && $roleName !== 'developer') {
+            $userOrg = optional(optional($user)->employee)->org_id ?? optional($user)->organization_id;
+            if ($userOrg) {
+                $childOrganizations = array_merge([$userOrg], $this->getAllChildOrganizations($userOrg));
+                $query->whereIn('org_id', $childOrganizations);
+                $query->orderByRaw("FIELD(org_id, " . implode(',', $childOrganizations) . ")");
+            }
+        }
 
         $query->whereHas('last_contract', function ($q) {
             $q->whereNotIn('status_id', [1508, 1509, 1510])
@@ -88,8 +101,6 @@ class AppraisalEmployee extends Controller
                         ->orWhere('status_id', 1507);
                 });
         });
-
-        $query->orderByRaw("FIELD(org_id, " . implode(',', $childOrganizations) . ")");
 
         if ($request->trash == 1) {
             $query->withTrashed();

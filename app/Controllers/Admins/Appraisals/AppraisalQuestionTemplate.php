@@ -36,7 +36,7 @@ class AppraisalQuestionTemplate extends Controller
             'divisions' => Division::all(),
         ];
 
-        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
+        $view = isMobile() ? '_front.appraisal.mobile' : '_bak.appraisal.template.main';
         return view($view, $params);
     }
 
@@ -49,8 +49,7 @@ class AppraisalQuestionTemplate extends Controller
             'divisions' => Division::all(),
         ];
 
-        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
-        return view($view, $params);
+        return view('_front.appraisal.mobile', $params);
     }
 
     public function data(Request $request, $counter = true)

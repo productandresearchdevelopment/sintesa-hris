@@ -13,144 +13,133 @@ class EmploySeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $users = [
+            // Admin & Developer Accounts
             [
                 'username' => 'developer',
                 'employ_id' => 'e0000000-0000-0000-0000-000000000001',
                 'nik' => 'EMP-001',
-                'fullname' => 'System Developer',
+                'fullname' => 'Developer',
                 'nickname' => 'Developer',
                 'email' => 'developer@sintesa.com',
-                'org_id' => 4, // Head IT
-                'division_id' => 2, // IT Division
+                'company_id' => null,
+                'org_id' => null,
+                'division_id' => null,
             ],
             [
                 'username' => 'superadmin',
                 'employ_id' => 'e0000000-0000-0000-0000-000000000002',
                 'nik' => 'EMP-002',
-                'fullname' => 'Super Administrator',
+                'fullname' => 'Superadmin',
                 'nickname' => 'Superadmin',
                 'email' => 'superadmin@sintesa.com',
-                'org_id' => 1, // Director
-                'division_id' => 1, // HRGA Division
+                'company_id' => null,
+                'org_id' => null,
+                'division_id' => null,
+            ],
+
+            // PT Dieboldnixdorf Employees
+            [
+                'username' => 'hr_diebold',
+                'employ_id' => 'e0000000-0000-0000-0001-000000000001',
+                'nik' => 'DN-HR-001',
+                'fullname' => 'Budi Santoso',
+                'nickname' => 'Budi',
+                'email' => 'budi.santoso@dieboldnixdorf.com',
+                'company_id' => 1,
+                'org_id' => 1,
+                'division_id' => 1,
             ],
             [
-                'username' => 'hrga',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000003',
-                'nik' => 'EMP-003',
-                'fullname' => 'HRGA Administrator',
-                'nickname' => 'HRGA',
-                'email' => 'hrga@sintesa.com',
-                'org_id' => 3, // Head HRGA
-                'division_id' => 1, // HRGA Division
-            ],
-            [
-                'username' => 'manager',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000004',
-                'nik' => 'EMP-004',
-                'fullname' => 'Operations Manager',
-                'nickname' => 'Manager',
-                'email' => 'manager@sintesa.com',
-                'org_id' => 9, // Manager Operation
-                'division_id' => 4, // Operations Division
-            ],
-            [
-                'username' => 'staff',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000005',
-                'nik' => 'EMP-005',
-                'fullname' => 'Operational Staff',
-                'nickname' => 'Staff',
-                'email' => 'staff@sintesa.com',
-                'org_id' => 13, // Staff Operation
-                'division_id' => 4, // Operations Division
-            ],
-            [
-                'username' => 'head_fin',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000006',
-                'nik' => 'EMP-006',
-                'fullname' => 'Head Finance & Accounting',
-                'nickname' => 'Head Fin',
-                'email' => 'head_fin@sintesa.com',
+                'username' => 'andi_diebold',
+                'employ_id' => 'e0000000-0000-0000-0001-000000000002',
+                'nik' => 'DN-STF-001',
+                'fullname' => 'Andi Pratama',
+                'nickname' => 'Andi',
+                'email' => 'andi.pratama@dieboldnixdorf.com',
+                'company_id' => 1,
                 'org_id' => 2,
-                'division_id' => 3,
-            ],
-            [
-                'username' => 'head_ops',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000007',
-                'nik' => 'EMP-007',
-                'fullname' => 'Head Operations',
-                'nickname' => 'Head Ops',
-                'email' => 'head_ops@sintesa.com',
-                'org_id' => 5,
                 'division_id' => 4,
             ],
             [
-                'username' => 'mgr_fin',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000008',
-                'nik' => 'EMP-008',
-                'fullname' => 'Manager Finance & Accounting',
-                'nickname' => 'Mgr Fin',
-                'email' => 'mgr_fin@sintesa.com',
-                'org_id' => 6,
-                'division_id' => 3,
+                'username' => 'dewi_diebold',
+                'employ_id' => 'e0000000-0000-0000-0001-000000000003',
+                'nik' => 'DN-STF-002',
+                'fullname' => 'Dewi Lestari',
+                'nickname' => 'Dewi',
+                'email' => 'dewi.lestari@dieboldnixdorf.com',
+                'company_id' => 1,
+                'org_id' => 2,
+                'division_id' => 4,
             ],
             [
-                'username' => 'mgr_hrga',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000009',
-                'nik' => 'EMP-009',
-                'fullname' => 'Manager HRGA',
-                'nickname' => 'Mgr HRGA',
-                'email' => 'mgr_hrga@sintesa.com',
-                'org_id' => 7,
+                'username' => 'rizky_diebold',
+                'employ_id' => 'e0000000-0000-0000-0001-000000000004',
+                'nik' => 'DN-STF-003',
+                'fullname' => 'Rizky Febrian',
+                'nickname' => 'Rizky',
+                'email' => 'rizky.febrian@dieboldnixdorf.com',
+                'company_id' => 1,
+                'org_id' => 2,
+                'division_id' => 4,
+            ],
+
+            // PT Hitachi Employees
+            [
+                'username' => 'hr_hitachi',
+                'employ_id' => 'e0000000-0000-0000-0002-000000000001',
+                'nik' => 'HTC-HR-001',
+                'fullname' => 'Siti Rahmawati',
+                'nickname' => 'Siti',
+                'email' => 'siti.rahmawati@hitachi.com',
+                'company_id' => 2,
+                'org_id' => 3,
                 'division_id' => 1,
             ],
             [
-                'username' => 'mgr_it',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000010',
-                'nik' => 'EMP-010',
-                'fullname' => 'Manager Information Technology',
-                'nickname' => 'Mgr IT',
-                'email' => 'mgr_it@sintesa.com',
-                'org_id' => 8,
-                'division_id' => 2,
+                'username' => 'ahmad_hitachi',
+                'employ_id' => 'e0000000-0000-0000-0002-000000000002',
+                'nik' => 'HTC-STF-001',
+                'fullname' => 'Ahmad Hidayat',
+                'nickname' => 'Ahmad',
+                'email' => 'ahmad.hidayat@hitachi.com',
+                'company_id' => 2,
+                'org_id' => 4,
+                'division_id' => 4,
             ],
             [
-                'username' => 'stf_fin',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000011',
-                'nik' => 'EMP-011',
-                'fullname' => 'Staff Finance & Accounting',
-                'nickname' => 'Staff Fin',
-                'email' => 'stf_fin@sintesa.com',
-                'org_id' => 10,
-                'division_id' => 3,
+                'username' => 'nurul_hitachi',
+                'employ_id' => 'e0000000-0000-0000-0002-000000000003',
+                'nik' => 'HTC-STF-002',
+                'fullname' => 'Nurul Hidayah',
+                'nickname' => 'Nurul',
+                'email' => 'nurul.hidayah@hitachi.com',
+                'company_id' => 2,
+                'org_id' => 4,
+                'division_id' => 4,
             ],
             [
-                'username' => 'stf_hrga',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000012',
-                'nik' => 'EMP-012',
-                'fullname' => 'Staff HRGA',
-                'nickname' => 'Staff HRGA',
-                'email' => 'stf_hrga@sintesa.com',
-                'org_id' => 11,
-                'division_id' => 1,
-            ],
-            [
-                'username' => 'stf_it',
-                'employ_id' => 'e0000000-0000-0000-0000-000000000013',
-                'nik' => 'EMP-013',
-                'fullname' => 'Staff Information Technology',
-                'nickname' => 'Staff IT',
-                'email' => 'stf_it@sintesa.com',
-                'org_id' => 12,
-                'division_id' => 2,
+                'username' => 'fajar_hitachi',
+                'employ_id' => 'e0000000-0000-0000-0002-000000000004',
+                'nik' => 'HTC-STF-003',
+                'fullname' => 'Fajar Nugraha',
+                'nickname' => 'Fajar',
+                'email' => 'fajar.nugraha@hitachi.com',
+                'company_id' => 2,
+                'org_id' => 4,
+                'division_id' => 4,
             ],
         ];
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        $allowedEmployIds = array_column($users, 'employ_id');
+        DB::table('iq_employ')->whereNotIn('id', $allowedEmployIds)->delete();
 
         foreach ($users as $u) {
             $employId = $u['employ_id'];
             $contractId = (string) Str::uuid();
             $careerId = (string) Str::uuid();
 
-            // Step 1: Create iq_employ without circular FK references
             DB::table('iq_employ')->updateOrInsert(
                 ['id' => $employId],
                 [
@@ -164,12 +153,12 @@ class EmploySeeder extends Seeder
                     'birth_date' => '1995-01-01',
                     'join_date' => '2024-01-01',
                     'leave_saldo' => 12,
-                    'company_id' => 1,
-                    'office_id' => 1, // Head Office Jakarta
+                    'company_id' => $u['company_id'],
+                    'office_id' => 1,
                     'org_id' => $u['org_id'],
                     'division_id' => $u['division_id'],
                     'placement_id' => 1,
-                    'gender_id' => 1001, // LAKI LAKI
+                    'gender_id' => 1001,
                     'shift_start_time' => '08:00:00',
                     'shift_end_time' => '17:00:00',
                     'address' => 'Jl. Sudirman No. 100, Jakarta',
@@ -180,13 +169,12 @@ class EmploySeeder extends Seeder
                 ]
             );
 
-            // Step 2: Create iq_employ_contract (references iq_employ)
             DB::table('iq_employ_contract')->updateOrInsert(
-                ['id' => $contractId],
+                ['employ_id' => $employId],
                 [
                     'id' => $contractId,
                     'employ_id' => $employId,
-                    'status_id' => 1507, // PERMANENT
+                    'status_id' => 1507,
                     'start_date' => '2024-01-01 00:00:00',
                     'end_date' => '2026-12-31 23:59:59',
                     'description' => 'Kontrak Kerja PKWT ' . $u['fullname'],
@@ -195,9 +183,8 @@ class EmploySeeder extends Seeder
                 ]
             );
 
-            // Step 3: Create iq_employ_career (references iq_employ)
             DB::table('iq_employ_career')->updateOrInsert(
-                ['id' => $careerId],
+                ['employ_id' => $employId],
                 [
                     'id' => $careerId,
                     'employ_id' => $employId,
@@ -210,14 +197,12 @@ class EmploySeeder extends Seeder
                 ]
             );
 
-            // Step 4: Update iq_employ with last_contract_id & last_career_id
             DB::table('iq_employ')->where('id', $employId)->update([
                 'last_contract_id' => $contractId,
                 'last_career_id' => $careerId,
                 'updated_at' => $now,
             ]);
 
-            // Step 5: Seed sub-tables
             DB::table('iq_employ_citizen')->updateOrInsert(
                 ['employ_id' => $employId],
                 [
@@ -283,11 +268,12 @@ class EmploySeeder extends Seeder
                 ]
             );
 
-            // Step 6: Link employ_id to auth_user
             DB::table('auth_user')->where('username', $u['username'])->update([
                 'employ_id' => $employId,
                 'updated_at' => $now,
             ]);
         }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }

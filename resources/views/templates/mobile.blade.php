@@ -211,6 +211,11 @@
       background: #ffffff !important;
     }
 
+    .modal-footer .btn,
+    .modal-footer button {
+      border-radius: 50px !important;
+    }
+
     .modal-footer .btn-primary,
     .modal-footer .save-item {
       background: linear-gradient(135deg, #0073e6 0%, #005bb5 100%) !important;

@@ -50,7 +50,7 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn fw-semibold" data-bs-dismiss="modal" style="background: #ddd">Cancel</button>
+        <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary fw-semibold" id="saveTicketBtn">Save Ticket</button>
       </div>
     </div>

@@ -622,7 +622,7 @@
           </div>
 
           <div class="modal-footer" id="modalFooter">
-            <button type="button" class="btn fw-semibold" style="background: #ddd" data-bs-dismiss="modal">
+            <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">
               <span>Close</span>
             </button>
             <button type="submit" class="btn btn-primary ms-1 fw-semibold">
