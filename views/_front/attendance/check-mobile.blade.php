@@ -212,10 +212,7 @@
       margin-bottom: 20px;
     }
 
-    .disabled {
-      opacity: 0.6;
-      pointer-events: none;
-    }
+
   </style>
 @endsection
 

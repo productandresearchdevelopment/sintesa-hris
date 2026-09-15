@@ -89,7 +89,8 @@ class Attendance extends Controller
 
         $formattedLogs = array_slice($formattedLogs, 0, 10);
 
-        return view('_front.attendance.mobile', compact(
+        $view = isMobile() ? '_front.attendance.mobile' : '_front.attendance.index';
+        return view($view, compact(
             'employee',
             'todayAttendance',
             'monthStats',
@@ -125,7 +126,8 @@ class Attendance extends Controller
                 ->with('error', 'You have already clocked out today');
         }
 
-        return view('_front.attendance.check-mobile', compact('employee', 'type'));
+        $view = isMobile() ? '_front.attendance.check-mobile' : '_front.attendance.check';
+        return view($view, compact('employee', 'type'));
     }
 
     public function submit(Request $request)
@@ -400,7 +402,8 @@ class Attendance extends Controller
             ];
         }
 
-        return view('_front.attendance.report-mobile', compact(
+        $view = isMobile() ? '_front.attendance.report-mobile' : '_front.attendance.report';
+        return view($view, compact(
             'employee',
             'formattedLogs',
             'month',

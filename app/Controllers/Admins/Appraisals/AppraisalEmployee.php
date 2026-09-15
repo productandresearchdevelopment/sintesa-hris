@@ -24,13 +24,8 @@ class AppraisalEmployee extends Controller
             'user' => $user
         ];
 
-        // if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-        // $view = isMobile() ? '_front.aprraisal.employee.mobile' : '_front.aprraisal.employee.index';
-        $view = isMobile() ? '_front.aprraisal.employee.mobile' : '_bak.appraisal.employee.main';
+        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
         return view($view, $params);
-        // } else {
-        // return view('_bak.appraisal.employee.main', $params);
-        // }
     }
 
     public function data(Request $request, $counter = true)
@@ -82,6 +77,7 @@ class AppraisalEmployee extends Controller
             'last_contract.status',
             'appraisal_employees',
             'appraisal_employees.period',
+            'appraisal_employees.period.appraisal_period',
         ])->whereIn('org_id', $childOrganizations);
 
         $query->whereHas('last_contract', function ($q) {
@@ -118,6 +114,9 @@ class AppraisalEmployee extends Controller
     public function get(Request $request, $id = null)
     {
         $data = Employee::with([
+            'organization',
+            'organization.authorized1',
+            'organization.authorized2',
             'organization.parent.parent',
             'organization.position',
             'division',
@@ -137,47 +136,89 @@ class AppraisalEmployee extends Controller
         $data_appraisal_template = null;
         $data_appraisal_employee = null;
 
-        if ($request->filled(['period_year', 'period_smt'])) {
-            $period = AppraisalPeriod::with(['appraisal_period_organizations' => function ($q) use ($data) {
-                $q->where('organization_id', $data->org_id);
-            }])
-                ->where('period', $request->period_year)
-                ->where('smester', $request->period_smt)
+        $periodYear = $request->input('period_year');
+        $periodSmt = $request->input('period_smt');
+
+        if ($periodYear && $periodSmt) {
+            $period = AppraisalPeriod::with('appraisal_period_organizations')
+                ->where('period', $periodYear)
+                ->where('smester', $periodSmt)
                 ->first();
 
             $period_organization = $period?->appraisal_period_organizations
-                ->firstWhere('organization_id', $data->org_id);
+                ->firstWhere('organization_id', $data->org_id)
+                ?? $period?->appraisal_period_organizations->first();
 
-            if ($period && $period_organization) {
-                $data_appraisal_template = AppraisalQuestionTemplate::with([
+            if ($period) {
+                $templateQuery = AppraisalQuestionTemplate::with([
                     'appraisal_questions',
                     'appraisal_questions.category',
                     'division',
                 ])
-                    ->whereKey($period_organization->template_id)
-                    ->where('division_id', $data->division_id)
-                    ->where('period_year', $request->period_year)
-                    ->where('period_smt',  $request->period_smt)
-                    ->where('is_archived', 0)
-                    ->first();
+                    ->where('period_year', $periodYear)
+                    ->where('period_smt',  $periodSmt)
+                    ->where('is_archived', 0);
 
-                if ($data_appraisal_template) {
-                    $data_appraisal_employee = Mod::with([
-                        'period',
-                        'employee',
-                        'template',
-                        'evaluator1',
-                        'evaluator2',
-                        'appraisal_employee_questions',
-                        'appraisal_employee_questions.question',
-                        'appraisal_employee_summaries',
-                    ])
-                        ->where('period_id',  $period_organization->id)
-                        ->where('employ_id',  $data->id)
-                        ->where('template_id', $data_appraisal_template->id)
-                        ->first();
+                if ($period_organization?->template_id) {
+                    $templateQuery->whereKey($period_organization->template_id);
+                } elseif ($data->division_id) {
+                    $templateQuery->where(function($q) use ($data) {
+                        $q->where('division_id', $data->division_id)
+                          ->orWhereNull('division_id');
+                    });
                 }
+
+                $data_appraisal_template = $templateQuery->first();
+
+                $data_appraisal_employee = Mod::with([
+                    'period',
+                    'employee',
+                    'template',
+                    'evaluator1',
+                    'evaluator2',
+                    'appraisal_employee_questions',
+                    'appraisal_employee_questions.question',
+                    'appraisal_employee_summaries',
+                ])
+                    ->where('employ_id', $data->id)
+                    ->where(function($q) use ($period_organization, $period, $data_appraisal_template) {
+                        if ($period_organization) {
+                            $q->where('period_id', $period_organization->id);
+                        }
+                        if ($data_appraisal_template) {
+                            $q->orWhere('template_id', $data_appraisal_template->id);
+                        }
+                        $q->orWhereHas('period', function($qp) use ($period) {
+                            $qp->where('period_id', $period->id);
+                        });
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->first();
             }
+        }
+
+        if (!$data_appraisal_employee) {
+            $data_appraisal_employee = Mod::with([
+                'period',
+                'employee',
+                'template',
+                'evaluator1',
+                'evaluator2',
+                'appraisal_employee_questions',
+                'appraisal_employee_questions.question',
+                'appraisal_employee_summaries',
+            ])
+                ->where('employ_id', $data->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        if ($data_appraisal_employee?->template_id) {
+            $data_appraisal_template = AppraisalQuestionTemplate::with([
+                'appraisal_questions',
+                'appraisal_questions.category',
+                'division',
+            ])->find($data_appraisal_employee->template_id);
         }
 
         $data->appraisal_template = $data_appraisal_template;

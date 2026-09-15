@@ -36,13 +36,8 @@ class AppraisalQuestionTemplate extends Controller
             'divisions' => Division::all(),
         ];
 
-        // if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-        // $view = isMobile() ? '_front.appraisal.mobile' : '_front.aprraisal.template.index';
-        $view = isMobile() ? '_front.appraisal.mobile' : '_bak.appraisal.template.main';
+        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
         return view($view, $params);
-        // } else {
-        // return view('_bak.appraisal.template.main', $params);
-        // }
     }
 
     public function index_mobile(Request $request)
@@ -54,7 +49,8 @@ class AppraisalQuestionTemplate extends Controller
             'divisions' => Division::all(),
         ];
 
-        return view('_front.appraisal.mobile', $params);
+        $view = isMobile() ? '_front.appraisal.mobile' : '_front.appraisal.index';
+        return view($view, $params);
     }
 
     public function data(Request $request, $counter = true)
