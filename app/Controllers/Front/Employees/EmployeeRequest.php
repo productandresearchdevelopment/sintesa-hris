@@ -86,34 +86,34 @@ class EmployeeRequest extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'employ_id' => 'required|exists:iq_employ,id',
-                'org_id' => 'required|integer|exists:iq_org,id',
-                'division_id' => 'required|integer|exists:iq_division,id',
-                'company_id' => 'required|integer|exists:iq_company,id',
-                'placement_id' => 'required|integer|exists:iq_placement,id',
-                'nik' => 'required|string',
-                'nickname' => 'required|string',
-                'fullname' => 'required|string',
-                'birth_place' => 'required|string',
-                'birth_date' => 'required|date',
-                'phone' => 'required|string',
-                'email' => 'required|string',
-                'gender_id' => 'required|integer|exists:iq_global_data,id',
-                'marital_id' => 'required|integer|exists:iq_global_data,id',
-                'religion_id' => 'required|integer|exists:iq_global_data,id',
-                'join_date' => 'required|date',
-                'leave_saldo' => 'required|numeric',
-                'address' => 'required|string',
-                'address_city_id' => 'required|integer|exists:iq_city,id',
-                'address_province_id' => 'required|integer|exists:iq_city,id',
+                'org_id' => 'nullable|integer|exists:iq_org,id',
+                'division_id' => 'nullable|integer|exists:iq_division,id',
+                'company_id' => 'nullable|integer|exists:iq_company,id',
+                'placement_id' => 'nullable|integer|exists:iq_placement,id',
+                'nik' => 'nullable|string',
+                'nickname' => 'nullable|string',
+                'fullname' => 'nullable|string',
+                'birth_place' => 'nullable|string',
+                'birth_date' => 'nullable',
+                'phone' => 'nullable|string',
+                'email' => 'nullable|string',
+                'gender_id' => 'nullable|integer|exists:iq_global_data,id',
+                'marital_id' => 'nullable|integer|exists:iq_global_data,id',
+                'religion_id' => 'nullable|integer|exists:iq_global_data,id',
+                'join_date' => 'nullable',
+                'leave_saldo' => 'nullable|numeric',
+                'address' => 'nullable|string',
+                'address_city_id' => 'nullable|integer|exists:iq_city,id',
+                'address_province_id' => 'nullable|integer|exists:iq_city,id',
                 'address_permanent' => 'nullable|string',
                 'address_permanent_city_id' => 'nullable|integer|exists:iq_city,id',
                 'address_permanent_province_id' => 'nullable|integer|exists:iq_city,id',
-                'bank_id' => 'required|integer|exists:iq_global_data,id',
-                'bank_account' => 'required|string',
-                'emergency_relation_id' => 'required|integer|exists:iq_global_data,id',
-                'emergency_contact_name' => 'required|string',
-                'emergency_contact_phone' => 'required|string',
-                'emergency_contact_address' => 'required|string',
+                'bank_id' => 'nullable|integer|exists:iq_global_data,id',
+                'bank_account' => 'nullable|string',
+                'emergency_relation_id' => 'nullable|integer|exists:iq_global_data,id',
+                'emergency_contact_name' => 'nullable|string',
+                'emergency_contact_phone' => 'nullable|string',
+                'emergency_contact_address' => 'nullable|string',
                 'fileInputGeneral' => 'nullable',
             ]);
 
@@ -125,59 +125,86 @@ class EmployeeRequest extends Controller
                 ], 422);
             }
 
+            $currentEmploy = ModEmployee::find($request->employ_id);
+            if (!$currentEmploy) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee not found'
+                ], 404);
+            }
+
             DB::beginTransaction();
 
-            $photo = null;
+            $photo = $currentEmploy->photo_id ?? null;
             if ($request->hasFile('fileInputGeneral')) {
                 $photo = FileUpload::upload('fileInputGeneral', 'employee-request');
             }
 
-            $employee = ModEmployeeRequest::create([
+            $fields = [
+                'org_id',
+                'division_id',
+                'company_id',
+                'placement_id',
+                'nik',
+                'nickname',
+                'fullname',
+                'birth_place',
+                'birth_date',
+                'phone',
+                'email',
+                'gender_id',
+                'marital_id',
+                'religion_id',
+                'join_date',
+                'leave_saldo',
+                'address',
+                'address_city_id',
+                'address_province_id',
+                'address_permanent',
+                'address_permanent_city_id',
+                'address_permanent_province_id',
+                'bank_id',
+                'bank_account',
+                'emergency_relation_id',
+                'emergency_contact_name',
+                'emergency_contact_phone',
+                'emergency_contact_address',
+            ];
+
+            $data = [
                 'employ_id' => $request->employ_id,
-                'org_id' => $request->org_id,
-                'division_id' => $request->division_id,
-                'company_id' => $request->company_id,
-                'placement_id' => $request->placement_id,
-                'nik' => $request->nik,
-                'nickname' => $request->nickname,
-                'fullname' => $request->fullname,
-                'birth_place' => $request->birth_place,
-                'birth_date' => Carbon::parse($request->birth_date)->format('Y-m-d'),
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'gender_id' => $request->gender_id,
-                'marital_id' => $request->marital_id,
-                'religion_id' => $request->religion_id,
-                'join_date' => Carbon::parse($request->join_date)->format('Y-m-d'),
-                'leave_saldo' => $request->leave_saldo,
-                'address' => $request->address,
-                'address_city_id' => $request->address_city_id,
-                'address_province_id' => $request->address_province_id,
-                'address_permanent' => $request->address_permanent,
-                'address_permanent_city_id' => $request->address_permanent_city_id,
-                'address_permanent_province_id' => $request->address_permanent_province_id,
-                'bank_id' => $request->bank_id,
-                'bank_account' => $request->bank_account,
-                'emergency_relation_id' => $request->emergency_relation_id,
-                'emergency_contact_name' => $request->emergency_contact_name,
-                'emergency_contact_phone' => $request->emergency_contact_phone,
-                'emergency_contact_address' => $request->emergency_contact_address,
-                'photo_id' => $photo ?? null,
-            ]);
+                'photo_id'  => $photo,
+            ];
 
-            $bank_id = $request->bank_id;
-            $bank_alias = GlobalData::find($bank_id)->alias;
-
-            if (!$bank_alias) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bank alias not found'
-                ]);
+            foreach ($fields as $field) {
+                if ($request->filled($field)) {
+                    $val = $request->input($field);
+                    if (in_array($field, ['birth_date', 'join_date']) && !empty($val)) {
+                        try {
+                            $val = Carbon::parse($val)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                        }
+                    }
+                    $data[$field] = $val;
+                } else {
+                    $val = $currentEmploy->$field;
+                    if (in_array($field, ['birth_date', 'join_date']) && !empty($val)) {
+                        try {
+                            $val = Carbon::parse($val)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                        }
+                    }
+                    $data[$field] = $val;
+                }
             }
 
-            $employee->bank_alias = $bank_alias;
+            if (!empty($data['bank_id'])) {
+                $bank_alias = GlobalData::find($data['bank_id'])?->alias ?? null;
+                $data['bank_alias'] = $bank_alias;
+            }
 
-            $employee->save();
+            $employee = ModEmployeeRequest::create($data);
+
             DB::commit();
 
             return response()->json([
@@ -200,35 +227,36 @@ class EmployeeRequest extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'employ_id' => 'required|exists:iq_employ,id',
-                'org_id' => 'required|integer|exists:iq_org,id',
-                'division_id' => 'required|integer|exists:iq_division,id',
-                'company_id' => 'required|integer|exists:iq_company,id',
-                'placement_id' => 'required|integer|exists:iq_placement,id',
-                'nik' => 'required|string',
-                'nickname' => 'required|string',
-                'fullname' => 'required|string',
-                'birth_place' => 'required|string',
-                'birth_date' => 'required|date',
-                'phone' => 'required|string',
-                'email' => 'required|string',
-                'gender_id' => 'required|integer|exists:iq_global_data,id',
-                'marital_id' => 'required|integer|exists:iq_global_data,id',
-                'religion_id' => 'required|integer|exists:iq_global_data,id',
-                'join_date' => 'required|date',
-                'leave_saldo' => 'required|numeric',
-                'address' => 'required|string',
-                'address_city_id' => 'required|integer|exists:iq_city,id',
-                'address_province_id' => 'required|integer|exists:iq_city,id',
+                'id' => 'required|exists:iq_employ_request,id',
+                'employ_id' => 'nullable|exists:iq_employ,id',
+                'org_id' => 'nullable|integer|exists:iq_org,id',
+                'division_id' => 'nullable|integer|exists:iq_division,id',
+                'company_id' => 'nullable|integer|exists:iq_company,id',
+                'placement_id' => 'nullable|integer|exists:iq_placement,id',
+                'nik' => 'nullable|string',
+                'nickname' => 'nullable|string',
+                'fullname' => 'nullable|string',
+                'birth_place' => 'nullable|string',
+                'birth_date' => 'nullable',
+                'phone' => 'nullable|string',
+                'email' => 'nullable|string',
+                'gender_id' => 'nullable|integer|exists:iq_global_data,id',
+                'marital_id' => 'nullable|integer|exists:iq_global_data,id',
+                'religion_id' => 'nullable|integer|exists:iq_global_data,id',
+                'join_date' => 'nullable',
+                'leave_saldo' => 'nullable|numeric',
+                'address' => 'nullable|string',
+                'address_city_id' => 'nullable|integer|exists:iq_city,id',
+                'address_province_id' => 'nullable|integer|exists:iq_city,id',
                 'address_permanent' => 'nullable|string',
                 'address_permanent_city_id' => 'nullable|integer|exists:iq_city,id',
                 'address_permanent_province_id' => 'nullable|integer|exists:iq_city,id',
-                'bank_id' => 'required|integer|exists:iq_global_data,id',
-                'bank_account' => 'required|string',
-                'emergency_relation_id' => 'required|integer|exists:iq_global_data,id',
-                'emergency_contact_name' => 'required|string',
-                'emergency_contact_phone' => 'required|string',
-                'emergency_contact_address' => 'required|string',
+                'bank_id' => 'nullable|integer|exists:iq_global_data,id',
+                'bank_account' => 'nullable|string',
+                'emergency_relation_id' => 'nullable|integer|exists:iq_global_data,id',
+                'emergency_contact_name' => 'nullable|string',
+                'emergency_contact_phone' => 'nullable|string',
+                'emergency_contact_address' => 'nullable|string',
                 'fileInputGeneral' => 'nullable',
             ]);
 
@@ -247,7 +275,7 @@ class EmployeeRequest extends Controller
             if (!$employee) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Employee not found'
+                    'message' => 'Employee request not found'
                 ], 404);
             }
 
@@ -284,35 +312,28 @@ class EmployeeRequest extends Controller
             ];
 
             foreach ($fields as $field) {
-                if (in_array($field, ['birth_date', 'join_date']) && $request->filled($field)) {
-                    $formattedDate = Carbon::parse($request->input($field))->format('Y-m-d');
-                    if ($employee->$field != $formattedDate) {
-                        $employee->$field = $formattedDate;
+                if ($request->filled($field)) {
+                    $val = $request->input($field);
+                    if (in_array($field, ['birth_date', 'join_date']) && !empty($val)) {
+                        try {
+                            $val = Carbon::parse($val)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                        }
                     }
-                } elseif ($employee->$field != $request->input($field)) {
-                    $employee->$field = $request->input($field);
+                    $employee->$field = $val;
                 }
             }
 
-            $currentBankId = $employee->bank_id;
-            $newBankId = $request->input('bank_id');
-
-            if ($currentBankId != $newBankId) {
-                $bankAlias = GlobalData::find($newBankId)->alias ?? null;
+            if ($request->filled('bank_id')) {
+                $bankAlias = GlobalData::find($request->input('bank_id'))?->alias ?? null;
                 if ($bankAlias) {
                     $employee->bank_alias = $bankAlias;
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Bank alias not found for the given bank ID'
-                    ], 404);
                 }
             }
 
-            $photo = $employee ? $employee->photo_id : null;
             if ($request->hasFile('fileInputGeneral')) {
-                if ($photo) {
-                    FileUpload::removeFileById($photo);
+                if ($employee->photo_id) {
+                    FileUpload::removeFileById($employee->photo_id);
                 }
                 $photo = FileUpload::upload('fileInputGeneral', 'employee-request');
                 $employee->photo_id = $photo ?? null;
@@ -325,7 +346,7 @@ class EmployeeRequest extends Controller
                 'success' => true,
                 'data' => $employee,
                 'message' => 'Request successfully updated'
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
 
