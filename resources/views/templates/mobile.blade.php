@@ -512,11 +512,47 @@
       });
     }
 
+    function shouldShowPwaBanner() {
+      // If user already installed the app, don't show
+      if (localStorage.getItem('pwa_installed') === 'true') {
+        return false;
+      }
+      // Check 1 day (24 hours) dismissal cooldown
+      const dismissedUntil = localStorage.getItem('pwa_install_dismissed_until');
+      if (dismissedUntil && Date.now() < parseInt(dismissedUntil, 10)) {
+        return false;
+      }
+      return true;
+    }
+
+    function closePwaBanner() {
+      // Cooldown for 24 hours (1 day)
+      const oneDayInMs = 24 * 60 * 60 * 1000;
+      localStorage.setItem('pwa_install_dismissed_until', Date.now() + oneDayInMs);
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) {
+        banner.classList.add('d-none');
+      }
+    }
+
     // Capture Chrome/Android install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      document.getElementById('pwaInstallBanner').classList.remove('d-none');
+      if (shouldShowPwaBanner()) {
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) {
+          banner.classList.remove('d-none');
+        }
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      localStorage.setItem('pwa_installed', 'true');
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) {
+        banner.classList.add('d-none');
+      }
     });
 
     document.getElementById('btnPwaInstall')?.addEventListener('click', async () => {
@@ -524,14 +560,13 @@
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log('Install outcome:', outcome);
+        if (outcome === 'accepted') {
+          localStorage.setItem('pwa_installed', 'true');
+        }
         deferredPrompt = null;
         closePwaBanner();
       }
     });
-
-    function closePwaBanner() {
-      document.getElementById('pwaInstallBanner').classList.add('d-none');
-    }
 
     // Safari iOS helper check
     const isIos = () => {
@@ -540,13 +575,15 @@
     };
     const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
-    if (isIos() && !isInStandaloneMode()) {
-      // Prompt iOS users after 3 seconds if not installed
+    if (isIos() && !isInStandaloneMode() && shouldShowPwaBanner()) {
+      // Prompt iOS users after 3 seconds if not installed and not dismissed
       setTimeout(() => {
         const iosBanner = document.getElementById('pwaInstallBanner');
-        if (iosBanner && iosBanner.classList.contains('d-none')) {
-          iosBanner.querySelector('.text-muted').innerText = 'Tekan Share lalu "Tambahkan ke Utama"';
-          iosBanner.querySelector('#btnPwaInstall').style.display = 'none';
+        if (iosBanner && iosBanner.classList.contains('d-none') && shouldShowPwaBanner()) {
+          const textMuted = iosBanner.querySelector('.text-muted');
+          if (textMuted) textMuted.innerText = 'Tekan Share lalu "Tambahkan ke Utama"';
+          const btnInstall = iosBanner.querySelector('#btnPwaInstall');
+          if (btnInstall) btnInstall.style.display = 'none';
           iosBanner.classList.remove('d-none');
         }
       }, 3000);
