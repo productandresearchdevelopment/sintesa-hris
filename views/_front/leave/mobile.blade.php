@@ -2,7 +2,8 @@
 
 @section('head')
   <style>
-    html, body {
+    html,
+    body {
       background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
@@ -92,11 +93,13 @@
       .leave-header-banner {
         display: none !important;
       }
+
       .leave-page-wrapper {
         padding: 20px 24px;
         max-width: 1200px;
         margin: 0 auto;
       }
+
       .content-body {
         margin-top: 0 !important;
         padding: 0 !important;
@@ -228,7 +231,8 @@
       text-overflow: ellipsis !important;
     }
 
-    .btn-filter:focus, .btn-filter:active {
+    .btn-filter:focus,
+    .btn-filter:active {
       border-color: #0073e6 !important;
       background-color: #ffffff !important;
       box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
@@ -251,10 +255,12 @@
     #filter-container .dropdown-menu::-webkit-scrollbar {
       width: 5px;
     }
+
     #filter-container .dropdown-menu::-webkit-scrollbar-track {
       background: #f8fafc;
       border-radius: 10px;
     }
+
     #filter-container .dropdown-menu::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
@@ -484,20 +490,24 @@
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <span class="summary-label">Remaining Leave</span>
-            <h4 class="summary-value mb-0">{{ $currentEmployee->leave_saldo ?? 0 }} <small style="font-size: 13px; font-weight: 600; color: #64748b;">Days</small></h4>
+            <h4 class="summary-value mb-0">{{ $currentEmployee->leave_saldo ?? 0 }} <small
+                style="font-size: 13px; font-weight: 600; color: #64748b;">Days</small></h4>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn-summary-action btn-primary-action" data-action="add" data-bs-target="#modalLeaveForm">
+            <button type="button" class="btn-summary-action btn-primary-action" data-action="add"
+              data-bs-target="#modalLeaveForm">
               <i class="bi bi-plus-lg me-1"></i> Add Leave
             </button>
             @if ($user->hasRoute('leave.export.excel'))
               <div class="dropdown">
-                <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+                <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false"
+                  title="More Options">
                   <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2">
                   <li>
-                    <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3" href="#" data-action="export-excel" data-bs-target="#modalLeaveForm">
+                    <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3"
+                      href="#" data-action="export-excel" data-bs-target="#modalLeaveForm">
                       <i class="bi bi-file-earmark-spreadsheet fs-6"></i> Export Excel
                     </a>
                   </li>
@@ -513,28 +523,34 @@
         <div class="row g-2 align-items-center">
           <div class="col-12 col-md-5">
             <div class="search-box-wrapper">
-              <input type="text" class="form-control search-input" name="search" id="searchInput" placeholder="Search leave records...">
+              <input type="text" class="form-control search-input" name="search" id="searchInput"
+                placeholder="Search leave records...">
               <i class="bi bi-search search-icon" id="searchBtn"></i>
             </div>
           </div>
           <div class="col-12 col-md-7">
             <div class="d-flex gap-2" id="filter-dropdown">
               <div class="dropdown flex-grow-1">
-                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="leaveTypeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="leaveTypeDropdown"
+                  data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-funnel me-1"></i> Type
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="leaveTypeDropdown" id="leaveTypeFilter">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4"
+                  aria-labelledby="leaveTypeDropdown" id="leaveTypeFilter">
                   <li><a class="dropdown-item fw-semibold" href="#" data-leave-type="all">All Types</a></li>
                   @foreach ($types as $type)
-                    <li><a class="dropdown-item fw-semibold" href="#" data-leave-type="{{ $type->id }}">{{ $type->name }}</a></li>
+                    <li><a class="dropdown-item fw-semibold" href="#"
+                        data-leave-type="{{ $type->id }}">{{ $type->name }}</a></li>
                   @endforeach
                 </ul>
               </div>
               <div class="dropdown flex-grow-1">
-                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="statusDropdown"
+                  data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-tag me-1"></i> Status
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="statusDropdown" id="statusFilter">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="statusDropdown"
+                  id="statusFilter">
                   <li><a class="dropdown-item fw-semibold" href="#" data-status="all">All Status</a></li>
                   <li><a class="dropdown-item fw-semibold" href="#" data-status="pending">Pending</a></li>
                   <li><a class="dropdown-item fw-semibold" href="#" data-status="approved">Approved</a></li>
@@ -542,10 +558,12 @@
                 </ul>
               </div>
               <div class="dropdown flex-grow-1">
-                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="viewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-filter dropdown-toggle w-100" type="button" id="viewDropdown"
+                  data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-archive me-1"></i> Ongoing
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="viewDropdown" id="viewFilter">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4" aria-labelledby="viewDropdown"
+                  id="viewFilter">
                   <li><a class="dropdown-item fw-semibold" href="#" data-view="ongoing">Ongoing</a></li>
                   <li><a class="dropdown-item fw-semibold" href="#" data-view="archived">Archived</a></li>
                 </ul>
@@ -718,36 +736,28 @@
         let statusTitle = 'Awaiting approval';
         let iconStatus = 'bi bi-clock-history';
 
+        const isSingle = item.single_evaluator || !item.employee?.organization?.authorized2;
+        const isApproved = isSingle ? (item.approved1_status === 1) : (item.approved2_status === 1);
+
         if (item.cancel_at) {
           status = 'Cancelled';
           statusClass = 'cancelled';
           statusTitle = `Cancelled at: ${item.cancel_at}`;
           iconStatus = 'bi bi-x-circle';
-        } else if (item.approved1_status === 0) {
+        } else if (item.approved1_status === 0 || item.approved2_status === 0) {
           status = 'Rejected';
           statusClass = 'rejected';
-          statusTitle = `Rejected by: ${item.approver1 ? item.approver1.name : 'Unknown'}`;
+          const rejectedBy = item.approved1_status === 0 ? (item.approver1 ? item.approver1.name : 'Unknown') : (item
+            .approver2 ? item.approver2.name : 'Unknown');
+          statusTitle = `Rejected by: ${rejectedBy}`;
           iconStatus = 'bi bi-x-circle';
-        } else if (item.approved2_status === 0) {
-          status = 'Rejected';
-          statusClass = 'rejected';
-          statusTitle = `Rejected by: ${item.approver2 ? item.approver2.name : 'Unknown'}`;
-          iconStatus = 'bi bi-x-circle';
-        } else if (item.allowed_status === 0) {
-          status = 'Rejected';
-          statusClass = 'rejected';
-          statusTitle = `Rejected by: ${item.allowed ? item.allowed.name : 'Unknown'}`;
-          iconStatus = 'bi bi-x-circle';
-        } else if (item.allowed_status === 1) {
+        } else if (isApproved) {
           status = 'Approved';
           statusClass = 'approved';
-          statusTitle = `Approved by: ${item.allowed ? item.allowed.name : 'Unknown'}`;
+          const approvedBy = isSingle ? (item.approver1 ? item.approver1.name : 'Unknown') : (item.approver2 ? item
+            .approver2.name : 'Unknown');
+          statusTitle = `Approved by: ${approvedBy}`;
           iconStatus = 'bi bi-check-circle-fill';
-        } else if (item.approved2_status === 1) {
-          status = 'Process';
-          statusClass = 'process';
-          statusTitle = `Processed by: ${item.approver2 ? item.approver2.name : 'Unknown'}`;
-          iconStatus = 'bi bi-check-circle';
         } else if (item.approved1_status === 1) {
           status = 'Checked';
           statusClass = 'checked';
@@ -781,27 +791,14 @@
         let rejectOrCancelButton = '';
 
         const isCancelled = !!item.cancel_at;
+        const isSingle = item.single_evaluator || !item.employee?.organization?.authorized2;
         const isApproved1Done = item.approved1_status === 1;
         const isApproved2Done = item.approved2_status === 1;
-        const isAllowedDone = item.allowed_status === 1;
-        const isRejected = item.approved1_status === 0 || item.approved2_status === 0 || item.allowed_status === 0;
+        const isApproved = isSingle ? isApproved1Done : isApproved2Done;
+        const isRejected = item.approved1_status === 0 || item.approved2_status === 0;
 
-        const areEvaluatorsDone = (function() {
-          if (item.single_evaluator) {
-            return isApproved1Done && isApproved2Done;
-          }
-          let done = true;
-          if (item.employee?.organization?.authorized1) {
-            if (!isApproved1Done) done = false;
-          }
-          if (item.employee?.organization?.authorized2) {
-            if (!isApproved2Done) done = false;
-          }
-          return done;
-        })();
-
-        if (!isCancelled && !isRejected && !isAllowedDone) {
-          if (item.single_evaluator && item.can_evaluate && (!isApproved1Done || !isApproved2Done)) {
+        if (!isCancelled && !isRejected && !isApproved) {
+          if (isSingle && item.can_evaluate && !isApproved1Done) {
             actionButton = createButton('success', 'evaluate', item, 'Approve Leave', 'bi bi-check-circle');
             rejectOrCancelButton += createButton('danger', 'reject', item, 'Reject Leave', 'bi bi-x-circle');
           } else if (item.can_approve_1 && !isApproved1Done) {
@@ -810,15 +807,12 @@
           } else if (item.can_approve_2 && (isApproved1Done || item.is_super) && !isApproved2Done) {
             actionButton = createButton('success', 'approve2', item, 'Approve Leave - Step 2', 'bi bi-check-circle');
             rejectOrCancelButton += createButton('danger', 'reject', item, 'Reject Leave', 'bi bi-x-circle');
-          } else if (item.can_allow && (areEvaluatorsDone || item.is_super)) {
-            actionButton = createButton('success', 'allow', item, 'Allow Leave', 'bi bi-check-circle');
-            rejectOrCancelButton += createButton('danger', 'reject', item, 'Reject Leave', 'bi bi-x-circle');
-          } else if (item.is_user_leave && !isApproved1Done && !isApproved2Done && !isAllowedDone) {
+          } else if (item.is_user_leave && !isApproved1Done && !isApproved2Done) {
             actionButton = createButton('primary', 'edit', item, 'Edit Leave', 'bi bi-pencil-square');
           }
         }
 
-        if ((item.is_user_leave || item.is_super) && !isCancelled && !isAllowedDone) {
+        if ((item.is_user_leave || item.is_super) && !isCancelled && !isApproved) {
           if (!rejectOrCancelButton.includes('data-action="cancel"')) {
             rejectOrCancelButton += createButton('warning', 'cancel', item, 'Cancel Leave', 'bi bi-slash-circle');
           }
@@ -1052,31 +1046,48 @@
       }
 
       function generateLeaveHistoryRows(leaveData) {
-        const historyFields = [{
-            status: getApprovalStatus(leaveData.approved1_status, 'Approved 1', 'Rejected 1'),
+        const org = leaveData.employee?.organization || {};
+        const auth1 = org.authorized1 || {};
+        const auth2 = org.authorized2 || {};
+        const auth1Id = typeof auth1 === 'object' ? auth1.id : auth1;
+        const auth2Id = typeof auth2 === 'object' ? auth2.id : auth2;
+        const auth1Name = (typeof auth1 === 'object' ? auth1.name : auth1) || 'Authorized 1';
+        const auth2Name = (typeof auth2 === 'object' ? auth2.name : auth2) || 'Authorized 2';
+
+        const isSingle = leaveData.single_evaluator || (auth1Id && auth2Id && auth1Id === auth2Id) || (auth1Id && !auth2Id);
+
+        const historyFields = [];
+
+        if (isSingle) {
+          historyFields.push({
+            status: getApprovalStatus(leaveData.approved1_status, 'Approval (' + auth1Name + ')', 'Rejected (' + auth1Name + ')'),
             at: leaveData.approved1_at,
-            by: leaveData.approved1_at && leaveData.approver1 ? leaveData.approver1.name : leaveData.approved1_by,
+            by: leaveData.approved1_at && leaveData.approver1 ? (leaveData.approver1.fullname || leaveData.approver1.name) : leaveData.approved1_by,
             note: leaveData.approved1_note
-          },
-          {
-            status: getApprovalStatus(leaveData.approved2_status, 'Approved 2', 'Rejected 2'),
-            at: leaveData.approved2_at,
-            by: leaveData.approved2_at && leaveData.approver2 ? leaveData.approver2.name : leaveData.approved2_by,
-            note: leaveData.approved2_note
-          },
-          {
-            status: getApprovalStatus(leaveData.allowed_status, 'Allowed', 'Rejected'),
-            at: leaveData.allowed_at,
-            by: leaveData.allowed_at && leaveData.allowed ? leaveData.allowed.name : leaveData.allowed_by,
-            note: leaveData.allowed_note
-          },
-          {
-            status: 'Cancelled',
-            at: leaveData.cancel_at,
-            by: leaveData.cancel_at && leaveData.created_by ? leaveData.created_by.name : leaveData.cancel_by,
-            note: leaveData.cancel_note
+          });
+        } else {
+          historyFields.push({
+            status: getApprovalStatus(leaveData.approved1_status, 'Step 1: ' + auth1Name, 'Rejected (Step 1: ' + auth1Name + ')'),
+            at: leaveData.approved1_at,
+            by: leaveData.approved1_at && leaveData.approver1 ? (leaveData.approver1.fullname || leaveData.approver1.name) : leaveData.approved1_by,
+            note: leaveData.approved1_note
+          });
+          if (auth2Id) {
+            historyFields.push({
+              status: getApprovalStatus(leaveData.approved2_status, 'Step 2: ' + auth2Name, 'Rejected (Step 2: ' + auth2Name + ')'),
+              at: leaveData.approved2_at,
+              by: leaveData.approved2_at && leaveData.approver2 ? (leaveData.approver2.fullname || leaveData.approver2.name) : leaveData.approved2_by,
+              note: leaveData.approved2_note
+            });
           }
-        ];
+        }
+
+        historyFields.push({
+          status: 'Cancelled',
+          at: leaveData.cancel_at,
+          by: leaveData.cancel_at && leaveData.created_by ? (leaveData.created_by.fullname || leaveData.created_by.name) : leaveData.cancel_by,
+          note: leaveData.cancel_note
+        });
 
         return historyFields
           .filter(field => field.at || field.by || field.note)
@@ -1354,12 +1365,15 @@
             if (typeof leaveType.property === 'string') {
               try {
                 const parsed = JSON.parse(leaveType.property);
-                isReduceBalance = parsed?.flag_reduce_balance === true || parsed?.flag_reduce_balance === '1' || parsed?.flag_reduce_balance === 'true';
+                isReduceBalance = parsed?.flag_reduce_balance === true || parsed?.flag_reduce_balance === '1' ||
+                  parsed?.flag_reduce_balance === 'true';
               } catch (e) {}
             } else if (typeof leaveType.property === 'object' && leaveType.property !== null) {
-              isReduceBalance = leaveType.property.flag_reduce_balance === true || leaveType.property.flag_reduce_balance === '1' || leaveType.property.flag_reduce_balance === 'true';
+              isReduceBalance = leaveType.property.flag_reduce_balance === true || leaveType.property
+                .flag_reduce_balance === '1' || leaveType.property.flag_reduce_balance === 'true';
             }
-            if (leaveType.flag_reduce_balance === true || leaveType.flag_reduce_balance === '1' || leaveType.flag_reduce_balance === 'true') {
+            if (leaveType.flag_reduce_balance === true || leaveType.flag_reduce_balance === '1' || leaveType
+              .flag_reduce_balance === 'true') {
               isReduceBalance = true;
             }
           }
@@ -1392,6 +1406,17 @@
         }
       });
 
+      $('#file_id').on('change', function() {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          if (file.size > 5 * 1024 * 1024) {
+            showAlert('danger', 'The attachment file size (' + (file.size / (1024 * 1024)).toFixed(2) +
+              ' MB) exceeds the maximum limit of 5MB. Please choose a smaller file.');
+            $(this).val('');
+          }
+        }
+      });
+
       form.on('submit', function(event) {
         event.preventDefault();
 
@@ -1415,20 +1440,33 @@
         const fileId = formData.get('file_id');
         const filePreview = formData.get('file_preview');
 
+        const fileInputEl = form.find('input[type="file"][name="file_id"]')[0];
+        const selectedFile = (fileInputEl && fileInputEl.files) ? fileInputEl.files[0] : null;
+
+        if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+          showAlert('danger',
+            'The attachment file size exceeds the maximum limit of 5MB. Please choose a smaller file.');
+          return;
+        }
+
+        const leaveIdNum = parseInt(typeId);
+        const leaveType = allLeaveTypes.filter(item => parseInt(item.id) === leaveIdNum)[0];
+
         if (actionType === 'add' || actionType === 'edit') {
-          const leaveIdNum = parseInt(typeId);
-          const leaveType = allLeaveTypes.filter(item => parseInt(item.id) === leaveIdNum)[0];
           let isReduceBalance = false;
           if (leaveType) {
             if (typeof leaveType.property === 'string') {
               try {
                 const parsed = JSON.parse(leaveType.property);
-                isReduceBalance = parsed?.flag_reduce_balance === true || parsed?.flag_reduce_balance === '1' || parsed?.flag_reduce_balance === 'true';
+                isReduceBalance = parsed?.flag_reduce_balance === true || parsed?.flag_reduce_balance === '1' ||
+                  parsed?.flag_reduce_balance === 'true';
               } catch (e) {}
             } else if (typeof leaveType.property === 'object' && leaveType.property !== null) {
-              isReduceBalance = leaveType.property.flag_reduce_balance === true || leaveType.property.flag_reduce_balance === '1' || leaveType.property.flag_reduce_balance === 'true';
+              isReduceBalance = leaveType.property.flag_reduce_balance === true || leaveType.property
+                .flag_reduce_balance === '1' || leaveType.property.flag_reduce_balance === 'true';
             }
-            if (leaveType.flag_reduce_balance === true || leaveType.flag_reduce_balance === '1' || leaveType.flag_reduce_balance === 'true') {
+            if (leaveType.flag_reduce_balance === true || leaveType.flag_reduce_balance === '1' || leaveType
+              .flag_reduce_balance === 'true') {
               isReduceBalance = true;
             }
           }
@@ -1442,16 +1480,17 @@
           }
         }
 
-        if (typeId === '2101') {
+        const isSick = leaveType && leaveType.name && leaveType.name.toUpperCase().indexOf('SAKIT') !== -1;
+        if (isSick) {
           if (actionType === 'add') {
-            if (!fileId || fileId.size === 0) {
-              showAlert('warning', 'Please upload a file for this type before proceeding.');
+            if (!selectedFile || selectedFile.size === 0) {
+              showAlert('warning', 'Attachment (Doctor letter / Medical document) is required for Sick leave.');
               return;
             }
           } else if (actionType === 'edit') {
             if (filePreview !== 'true') {
-              if (!fileId || fileId.size === 0) {
-                showAlert('warning', 'Please upload a file for this type before proceeding.');
+              if (!selectedFile || selectedFile.size === 0) {
+                showAlert('warning', 'Attachment (Doctor letter / Medical document) is required for Sick leave.');
                 return;
               }
             }

@@ -35,7 +35,7 @@ class Leave extends Controller
         $isSuper = in_array($roleName, ['developer', 'superadmin']);
         $canApproveRoute = $user->hasRoute('leave.approve') || $isSuper;
 
-        $search = $request->input('search');
+        $search = $request->input('search') ?? $request->input('query');
         $leaveTypeFilter = $request->input('leave_type');
         $statusFilter = $request->input('status');
         $viewFilter = $request->input('view');
@@ -61,26 +61,30 @@ class Leave extends Controller
                 case 'pending':
                     $query->whereNull('cancel_at')
                         ->whereNull('approved1_status')
-                        ->whereNull('approved2_status')
-                        ->whereNull('allowed_status');
+                        ->whereNull('approved2_status');
                     break;
                 case 'approved':
-                    $query->where('allowed_status', 1);
-                    break;
-                case 'process':
-                    $query->where('approved2_status', 1)
-                        ->where('allowed_status', 0);
+                    $query->whereNull('cancel_at')
+                        ->where(function ($q) {
+                            $q->where('approved2_status', 1)
+                                ->orWhere(function ($subQ) {
+                                    $subQ->where('approved1_status', 1)
+                                        ->whereNull('approved2_status');
+                                });
+                        });
                     break;
                 case 'checked':
-                    $query->where('approved1_status', 1)
-                        ->where('approved2_status', 0)
-                        ->where('allowed_status', 0);
+                    $query->whereNull('cancel_at')
+                        ->where('approved1_status', 1)
+                        ->where(function ($q) {
+                            $q->whereNull('approved2_status')
+                                ->orWhere('approved2_status', '!=', 1);
+                        });
                     break;
                 case 'rejected':
                     $query->where(function ($q) {
                         $q->where('approved1_status', 0)
-                            ->orWhere('approved2_status', 0)
-                            ->orWhere('allowed_status', 0);
+                            ->orWhere('approved2_status', 0);
                     });
                     break;
                 case 'cancelled':
@@ -106,7 +110,7 @@ class Leave extends Controller
 
             $auth1Id = $auth1->id ?? (is_scalar($org->authorized1) ? $org->authorized1 : null);
             $auth2Id = $auth2->id ?? (is_scalar($org->authorized2) ? $org->authorized2 : null);
-            $singleEvaluator = $auth1Id && $auth2Id && $auth1Id === $auth2Id;
+            $singleEvaluator = ($auth1Id && $auth2Id && $auth1Id === $auth2Id) || ($auth1Id && !$auth2Id);
 
             if ($singleEvaluator) {
                 $canEvaluate = (($auth1Id && $userOrgId && $auth1Id === $userOrgId) || $isSuper) && $canApproveRoute;
@@ -126,7 +130,6 @@ class Leave extends Controller
 
             $leave->setAttribute('is_super', $isSuper);
             $leave->setAttribute('is_user_leave', ($leave->created_by == $user->id));
-            $leave->setAttribute('can_allow', $isHR || $isSuper);
             $leave->setAttribute('can_cancel', $leave->created_by == $user->id);
 
             $leave->setAttribute('can_view', false);
@@ -155,7 +158,6 @@ class Leave extends Controller
                 || $leave->can_evaluate
                 || $leave->can_approve_1
                 || $leave->can_approve_2
-                || $leave->can_allow
                 || $leave->can_cancel
                 || $leave->can_view;
         })->values();
@@ -166,14 +168,34 @@ class Leave extends Controller
     public function push(Request $request, $id = null)
     {
         try {
-            $validator = Validator::make($request->all(), [
+            if (isset($_FILES['file_id']) && !empty($_FILES['file_id']['error'])) {
+                $uploadErr = $_FILES['file_id']['error'];
+                if (in_array($uploadErr, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The attachment file size exceeds the maximum limit of 5MB.',
+                    ], 400);
+                }
+            }
+
+            $rules = [
                 'type_id' => 'required|integer|exists:iq_global_data,id',
                 'start_date' => 'required',
                 'end_date' => 'required',
                 'description' => 'nullable|string',
                 'duration' => 'nullable|numeric',
-                'file_id' => 'nullable|file',
-            ]);
+            ];
+
+            if ($request->hasFile('file_id')) {
+                $rules['file_id'] = 'nullable|file|max:5120'; // Max 5MB
+            }
+
+            $messages = [
+                'file_id.max' => 'The attachment file size may not be greater than 5MB.',
+                'file_id.file' => 'The attachment must be a valid file.',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
 
             if ($validator->fails()) {
                 return response()->json([
@@ -181,6 +203,15 @@ class Leave extends Controller
                     'message' => 'Validation error: ' . implode(', ', $validator->errors()->all()),
                     'errors' => $validator->errors()
                 ], 400);
+            }
+
+            if ($request->hasFile('file_id') && $request->file('file_id')->isValid()) {
+                if ($request->file('file_id')->getSize() > 5 * 1024 * 1024) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The attachment file size exceeds the maximum limit of 5MB.',
+                    ], 400);
+                }
             }
 
             DB::beginTransaction();
@@ -196,16 +227,32 @@ class Leave extends Controller
             $currentLeaveSaldo = (float) $employee->leave_saldo;
             $typeId = $request->input('type_id');
             $leaveType = GlobalData::find($typeId);
-            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && $leaveType->property->flag_reduce_balance === true;
+            $flagReduce = false;
+            if ($leaveType && isset($leaveType->property->flag_reduce_balance)) {
+                $flagReduce = $leaveType->property->flag_reduce_balance === true || $leaveType->property->flag_reduce_balance === 1 || $leaveType->property->flag_reduce_balance === '1' || $leaveType->property->flag_reduce_balance === 'true';
+            }
 
             $duration = (float) $request->input('duration', 0);
+            if ($flagReduce && $duration > $currentLeaveSaldo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Requested duration ({$duration} days) exceeds your available remaining leave balance ({$currentLeaveSaldo} days).",
+                ], 400);
+            }
 
-            if ($flagReduce) {
-                $projectedSaldo = $currentLeaveSaldo - $duration;
-                if ($projectedSaldo < -5) {
+            $isSick = $leaveType && stripos($leaveType->name, 'sakit') !== false;
+            if ($isSick && !$id) {
+                $hasValidFile = $request->hasFile('file_id') && $request->file('file_id')->isValid();
+                if (!$hasValidFile) {
+                    if (isset($_FILES['file_id']) && !empty($_FILES['file_id']['name'])) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'The uploaded file is invalid or exceeds the maximum limit of 5MB.',
+                        ], 400);
+                    }
                     return response()->json([
                         'success' => false,
-                        'message' => "Insufficient leave balance. Current balance is {$currentLeaveSaldo} days, requested duration is {$duration} days, resulting in {$projectedSaldo} days balance which exceeds the allowed limit of -5 days.",
+                        'message' => 'Attachment (Doctor letter / Medical document) is required for Sick leave.',
                     ], 400);
                 }
             }
@@ -346,82 +393,67 @@ class Leave extends Controller
                 return response()->json(['success' => false, 'message' => 'Cannot approve a leave request that has already been cancelled.'], 400);
             }
 
+            if ($leave->approved1_status === 0 || $leave->approved2_status === 0) {
+                return response()->json(['success' => false, 'message' => 'Cannot approve a leave request that has already been rejected.'], 400);
+            }
+
             $user = $request->user();
             $roleName = strtolower(optional($user->role)->name);
-            $isHR = $roleName === 'hrga';
             $isSuper = in_array($roleName, ['developer', 'superadmin']);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
 
             $leaveType = $leave->type;
-            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && $leaveType->property->flag_reduce_balance === true;
+            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && filter_var($leaveType->property->flag_reduce_balance, FILTER_VALIDATE_BOOLEAN);
 
             $orgId = optional($user->employee)->org_id ?? optional($user->organization)->id;
-            $auth1Id = optional($leave->employee->organization)->authorized1;
-            $auth2Id = optional($leave->employee->organization)->authorized2;
-            $isSingleEvaluator = $auth1Id && $auth2Id && $auth1Id === $auth2Id;
+            $org = optional($employee->organization);
+            $auth1 = optional($org->authorized1);
+            $auth2 = optional($org->authorized2);
 
-            if ($leave->approved1_status === 1 && $leave->approved2_status === 1) {
-                if ($isHR || $isSuper) {
-                    if ($leave->allowed_status === 1) {
-                        return response()->json(['success' => false, 'message' => 'This leave request has already been allowed by HR.'], 400);
-                    }
+            $auth1Id = $auth1->id ?? (is_scalar($org->authorized1) ? $org->authorized1 : null);
+            $auth2Id = $auth2->id ?? (is_scalar($org->authorized2) ? $org->authorized2 : null);
+            $isSingleEvaluator = ($auth1Id && $auth2Id && $auth1Id === $auth2Id) || ($auth1Id && !$auth2Id);
 
-                    if ($flagReduce) {
-                        $newLeaveSaldo = $employee->leave_saldo - $leave->duration;
-                        if ($newLeaveSaldo < -5) {
-                            return response()->json([
-                                'success' => false,
-                                'message' => "Insufficient leave balance. Remaining balance ({$newLeaveSaldo} days) exceeds minimum limit of -5 days."
-                            ], 400);
-                        }
-                        $employee->update(['leave_saldo' => $newLeaveSaldo]);
-                        $leave->update(['leave_saldo' => $newLeaveSaldo]);
-                    }
-                    $this->updateLeaveStatus($leave, 'allowed', 1, $user, $notes);
-                } else {
-                    return response()->json(['success' => false, 'message' => 'This leave request has already been evaluated by supervisor/manager and is awaiting final HR allowance.'], 400);
-                }
-            } elseif ($isSingleEvaluator) {
-                if ($auth1Id !== $orgId && !$isSuper) {
-                    return response()->json(['success' => false, 'message' => 'You are not authorized as the evaluator for this employee.'], 403);
-                }
-                $this->updateLeaveStatus($leave, 'approved1', 1, $user, $notes);
-                $this->updateLeaveStatus($leave, 'approved2', 1, $user, $notes);
-            } elseif (($auth1Id === $orgId || $isSuper) && $leave->approved1_status === null) {
-                $this->updateLeaveStatus($leave, 'approved1', 1, $user, $notes);
-            } elseif (($auth2Id === $orgId || $isSuper) && $leave->approved2_status === null) {
-                if ($leave->approved1_status === null && !$isSuper) {
-                    return response()->json(['success' => false, 'message' => 'Step 1 approval by direct supervisor is still pending.'], 400);
-                }
-                $this->updateLeaveStatus($leave, 'approved2', 1, $user, $notes);
-            } elseif ($isHR || $isSuper) {
-                if ($leave->allowed_status === 1) {
-                    return response()->json(['success' => false, 'message' => 'This leave request has already been allowed by HR.'], 400);
-                }
+            if ($isSingleEvaluator && $leave->approved1_status === 1) {
+                return response()->json(['success' => false, 'message' => 'This leave request has already been approved.'], 400);
+            }
+            if (!$isSingleEvaluator && $leave->approved2_status === 1) {
+                return response()->json(['success' => false, 'message' => 'This leave request has already been approved.'], 400);
+            }
 
-                if (!$isSuper) {
-                    if ($auth1Id && $leave->approved1_status !== 1) {
-                        return response()->json(['success' => false, 'message' => 'Cannot allow leave: Step 1 approval by supervisor is still pending.'], 400);
-                    }
-                    if ($auth2Id && $leave->approved2_status !== 1) {
-                        return response()->json(['success' => false, 'message' => 'Cannot allow leave: Step 2 approval by manager is still pending.'], 400);
-                    }
-                }
-
+            $deductBalance = function () use ($employee, $leave, $flagReduce) {
                 if ($flagReduce) {
                     $newLeaveSaldo = $employee->leave_saldo - $leave->duration;
                     if ($newLeaveSaldo < -5) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Insufficient leave balance. Remaining balance ({$newLeaveSaldo} days) exceeds minimum limit of -5 days."
-                        ], 400);
+                        throw new \Exception("Insufficient leave balance. Remaining balance ({$newLeaveSaldo} days) exceeds minimum limit of -5 days.");
                     }
                     $employee->update(['leave_saldo' => $newLeaveSaldo]);
                     $leave->update(['leave_saldo' => $newLeaveSaldo]);
                 }
-                $this->updateLeaveStatus($leave, 'allowed', 1, $user, $notes);
+            };
+
+            if ($isSingleEvaluator) {
+                if ($auth1Id !== $orgId && !$isSuper) {
+                    return response()->json(['success' => false, 'message' => 'You are not authorized as the evaluator for this employee.'], 403);
+                }
+                if ($leave->approved1_status === 1) {
+                    return response()->json(['success' => false, 'message' => 'This leave request has already been approved.'], 400);
+                }
+                $this->updateLeaveStatus($leave, 'approved1', 1, $user, $notes);
+                if ($auth2Id) {
+                    $this->updateLeaveStatus($leave, 'approved2', 1, $user, $notes);
+                }
+                $deductBalance();
+            } elseif (($auth1Id === $orgId || $isSuper) && $leave->approved1_status === null) {
+                $this->updateLeaveStatus($leave, 'approved1', 1, $user, $notes);
+            } elseif (($auth2Id === $orgId || $isSuper) && $leave->approved2_status === null) {
+                if ($leave->approved1_status === null && !$isSuper) {
+                    return response()->json(['success' => false, 'message' => 'Step 1 approval is still pending.'], 400);
+                }
+                $this->updateLeaveStatus($leave, 'approved2', 1, $user, $notes);
+                $deductBalance();
             } else {
                 if ($auth1Id === $orgId && $leave->approved1_status !== null) {
                     return response()->json(['success' => false, 'message' => 'You have already approved Step 1 for this leave request.'], 400);
@@ -436,7 +468,7 @@ class Leave extends Controller
             return response()->json(['success' => true, 'message' => 'Leave approved successfully', 'data' => $leave]);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['success' => false, 'message' => 'Error approving leave: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Failed to approve leave: ' . $e->getMessage()], 500);
         }
     }
 
@@ -466,52 +498,59 @@ class Leave extends Controller
                 return response()->json(['success' => false, 'message' => 'Cannot reject a leave request that has already been cancelled.'], 400);
             }
 
+            if ($leave->approved1_status === 0 || $leave->approved2_status === 0) {
+                return response()->json(['success' => false, 'message' => 'Cannot reject a leave request that has already been rejected.'], 400);
+            }
+
             $user = $request->user();
             $roleName = strtolower(optional($user->role)->name);
-            $isHR = $roleName === 'hrga';
             $isSuper = in_array($roleName, ['developer', 'superadmin']);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
 
             $leaveType = $leave->type;
-            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && $leaveType->property->flag_reduce_balance === true;
+            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && filter_var($leaveType->property->flag_reduce_balance, FILTER_VALIDATE_BOOLEAN);
 
             $orgId = optional($user->employee)->org_id ?? optional($user->organization)->id;
-            $auth1Id = optional($leave->employee->organization)->authorized1;
-            $auth2Id = optional($leave->employee->organization)->authorized2;
-            $isSingleEvaluator = $auth1Id && $auth2Id && $auth1Id === $auth2Id;
+            $org = optional($employee->organization);
+            $auth1 = optional($org->authorized1);
+            $auth2 = optional($org->authorized2);
 
-            if ($leave->approved1_status === 1 && $leave->approved2_status === 1) {
-                if ($isHR || $isSuper) {
-                    if ($leave->allowed_status === 1 && $flagReduce) {
-                        $employee->update(['leave_saldo' => $employee->leave_saldo + $leave->duration]);
-                        $leave->update(['leave_saldo' => $employee->leave_saldo + $leave->duration]);
-                    }
-                    $this->updateLeaveStatus($leave, 'allowed', 0, $user, $notes);
-                } else {
-                    return response()->json(['success' => false, 'message' => 'This leave request has already been evaluated by supervisor/manager. Rejection requires HR/Superadmin.'], 403);
+            $auth1Id = $auth1->id ?? (is_scalar($org->authorized1) ? $org->authorized1 : null);
+            $auth2Id = $auth2->id ?? (is_scalar($org->authorized2) ? $org->authorized2 : null);
+            $isSingleEvaluator = ($auth1Id && $auth2Id && $auth1Id === $auth2Id) || ($auth1Id && !$auth2Id);
+
+            $wasFinalApproved = $isSingleEvaluator ? ($leave->approved1_status === 1) : ($leave->approved2_status === 1);
+            if ($wasFinalApproved && !$isSuper) {
+                return response()->json(['success' => false, 'message' => 'Cannot reject a leave request that has already been approved.'], 400);
+            }
+
+            $restoreBalance = function () use ($employee, $leave, $flagReduce, $wasFinalApproved) {
+                if ($wasFinalApproved && $flagReduce) {
+                    $newSaldo = $employee->leave_saldo + $leave->duration;
+                    $employee->update(['leave_saldo' => $newSaldo]);
+                    $leave->update(['leave_saldo' => $newSaldo]);
                 }
-            } elseif ($isSingleEvaluator) {
+            };
+
+            if ($isSingleEvaluator) {
                 if ($auth1Id !== $orgId && !$isSuper) {
                     return response()->json(['success' => false, 'message' => 'You are not authorized to reject this leave request.'], 403);
                 }
                 $this->updateLeaveStatus($leave, 'approved1', 0, $user, $notes);
-                $this->updateLeaveStatus($leave, 'approved2', 0, $user, $notes);
+                if ($auth2Id) {
+                    $this->updateLeaveStatus($leave, 'approved2', 0, $user, $notes);
+                }
+                $restoreBalance();
             } elseif (($auth1Id === $orgId || $isSuper) && $leave->approved1_status === null) {
                 $this->updateLeaveStatus($leave, 'approved1', 0, $user, $notes);
             } elseif (($auth2Id === $orgId || $isSuper) && $leave->approved2_status === null) {
                 $this->updateLeaveStatus($leave, 'approved2', 0, $user, $notes);
-            } elseif ($isHR || $isSuper) {
-                if ($leave->allowed_status === null) {
-                    $this->updateLeaveStatus($leave, 'allowed', 0, $user, $notes);
-                } else {
-                    if ($leave->allowed_status === 1 && $flagReduce) {
-                        $employee->update(['leave_saldo' => $employee->leave_saldo + $leave->duration]);
-                        $leave->update(['leave_saldo' => $employee->leave_saldo + $leave->duration]);
-                    }
-                    $this->updateLeaveStatus($leave, 'allowed', 0, $user, $notes);
-                }
+            } elseif ($isSuper) {
+                $this->updateLeaveStatus($leave, 'approved1', 0, $user, $notes);
+                $this->updateLeaveStatus($leave, 'approved2', 0, $user, $notes);
+                $restoreBalance();
             } else {
                 return response()->json(['success' => false, 'message' => 'You are not authorized to reject this leave request or it has already been processed.'], 403);
             }
@@ -567,10 +606,29 @@ class Leave extends Controller
                 ], 400);
             }
 
-            if ($leave->allowed_status === 1) {
+            if ($leave->approved1_status === 0 || $leave->approved2_status === 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cannot cancel a leave request that has already been approved by HR.'
+                    'message' => 'Cannot cancel a leave request that has already been rejected.'
+                ], 400);
+            }
+
+            $employee = $leave->employee;
+            $leaveType = $leave->type;
+            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && filter_var($leaveType->property->flag_reduce_balance, FILTER_VALIDATE_BOOLEAN);
+
+            $org = optional($employee->organization);
+            $auth1 = optional($org->authorized1);
+            $auth2 = optional($org->authorized2);
+            $auth1Id = $auth1->id ?? (is_scalar($org->authorized1) ? $org->authorized1 : null);
+            $auth2Id = $auth2->id ?? (is_scalar($org->authorized2) ? $org->authorized2 : null);
+            $isSingleEvaluator = ($auth1Id && $auth2Id && $auth1Id === $auth2Id) || ($auth1Id && !$auth2Id);
+
+            $wasFinalApproved = $isSingleEvaluator ? ($leave->approved1_status === 1) : ($leave->approved2_status === 1);
+            if ($wasFinalApproved && !$isSuper) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot cancel a leave request that has already been approved.'
                 ], 400);
             }
 
@@ -587,7 +645,7 @@ class Leave extends Controller
                 'data' => $leave
             ]);
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
 
             return response()->json([
                 'success' => false,
@@ -638,23 +696,21 @@ class Leave extends Controller
                     return $ids;
                 };
 
-                $accessibleOrgIds = $getChildOrgIds($userOrgId);
-                $query->whereHas('employee.organization', function ($q) use ($accessibleOrgIds) {
-                    $q->whereIn('id', $accessibleOrgIds);
+                $allowedOrgIds = $getChildOrgIds($userOrgId);
+                $query->whereHas('employee', function ($q) use ($allowedOrgIds) {
+                    $q->whereIn('org_id', $allowedOrgIds);
                 });
-            } else {
-                $query->whereRaw('1=0');
             }
         }
 
         $leaves = $query->get();
 
         $columns = [
-            ['text' => 'STATUS', 'dataIndex' => 'status', 'width' => 120, 'align' => 'center'],
-            ['text' => 'LEAVE TYPE', 'dataIndex' => 'leave_type', 'width' => 150],
-            ['text' => 'NIK', 'dataIndex' => 'nik', 'width' => 120, 'align' => 'center'],
-            ['text' => 'REQUEST BY', 'dataIndex' => 'employee_name', 'width' => 180],
-            ['text' => 'POSITION', 'dataIndex' => 'position', 'width' => 150],
+            ['text' => 'STATUS', 'dataIndex' => 'status', 'width' => 150, 'align' => 'center'],
+            ['text' => 'LEAVE TYPE', 'dataIndex' => 'leave_type', 'width' => 150, 'align' => 'center'],
+            ['text' => 'NIK', 'dataIndex' => 'nik', 'width' => 150, 'align' => 'center'],
+            ['text' => 'EMPLOYEE NAME', 'dataIndex' => 'employee_name', 'width' => 200],
+            ['text' => 'POSITION', 'dataIndex' => 'position', 'width' => 180],
             ['text' => 'WORKPLACE', 'dataIndex' => 'workplace', 'width' => 150],
             ['text' => 'SUPERVISOR', 'dataIndex' => 'supervisor', 'width' => 180],
             ['text' => 'BALANCE LEAVE', 'dataIndex' => 'balance_leave', 'width' => 120, 'align' => 'center'],
@@ -663,32 +719,34 @@ class Leave extends Controller
             ['text' => 'CHECKED BY', 'dataIndex' => 'checked_by', 'width' => 150],
             ['text' => 'APPROVED BY', 'dataIndex' => 'approved_by', 'width' => 150],
             ['text' => 'REJECT BY', 'dataIndex' => 'rejected_by', 'width' => 150],
-            ['text' => 'CLARIFIED BY', 'dataIndex' => 'clarified_by', 'width' => 150],
             ['text' => 'DESCRIPTION', 'dataIndex' => 'description', 'width' => 250],
         ];
 
         $formattedData = $leaves->map(function ($item) {
+            $employee = $item['employee'] ?? [];
+            $organization = $employee['organization'] ?? [];
+            $auth1 = $organization['authorized1'] ?? null;
+            $auth2 = $organization['authorized2'] ?? null;
+            $auth1Id = is_array($auth1) ? ($auth1['id'] ?? null) : $auth1;
+            $auth2Id = is_array($auth2) ? ($auth2['id'] ?? null) : $auth2;
+            $isSingleEvaluator = ($auth1Id && $auth2Id && $auth1Id === $auth2Id) || ($auth1Id && !$auth2Id);
+
             if (!empty($item['cancel_at'])) {
                 $status = 'CANCELLED';
-            } elseif ($item['allowed_status'] == 1) {
-                $status = 'APPROVED';
-            } elseif ($item['allowed_status'] === 0 || $item['approved1_status'] === 0 || $item['approved2_status'] === 0) {
+            } elseif ($item['approved1_status'] === 0 || $item['approved2_status'] === 0) {
                 $status = 'REJECTED';
-            } elseif ($item['approved2_status'] == 1) {
-                $status = 'PROCESS';
+            } elseif (($isSingleEvaluator && $item['approved1_status'] == 1) || $item['approved2_status'] == 1) {
+                $status = 'APPROVED';
             } elseif ($item['approved1_status'] == 1) {
                 $status = 'CHECKED';
             } else {
                 $status = 'PENDING';
             }
 
-            $employee = $item['employee'] ?? [];
-            $organization = $employee['organization'] ?? [];
             $office = $employee['office'] ?? [];
             $approver1 = $item['approver1']['name'] ?? '-';
             $approver2 = $item['approver2']['name'] ?? '-';
-            $allowed = $item['allowed']['name'] ?? '-';
-            $supervisor = $organization['authorized1']['name'] ?? '-';
+            $supervisor = (is_array($auth1) ? $auth1['name'] : null) ?? '-';
             $position = $organization['name'] ?? '-';
             $workplace = $office['name'] ?? '-';
 
@@ -697,8 +755,6 @@ class Leave extends Controller
                 $rejectedBy = $approver1;
             } elseif ($item['approved2_status'] === 0) {
                 $rejectedBy = $approver2;
-            } elseif ($item['allowed_status'] === 0) {
-                $rejectedBy = $allowed;
             }
 
             return (object)[
@@ -715,7 +771,6 @@ class Leave extends Controller
                 'checked_by'     => $approver1,
                 'approved_by'    => $approver2,
                 'rejected_by'    => $rejectedBy,
-                'clarified_by'   => $allowed,
                 'description'    => $item['description'] ?? '-',
                 'cancel_at'      => $item['cancel_at'] ?? null,
                 'cancel_note'    => $item['cancel_note'] ?? null,

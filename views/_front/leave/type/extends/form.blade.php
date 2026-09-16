@@ -62,8 +62,8 @@
             name: 'flag_reduce_balance',
             fieldLabel: 'Reduce Balance',
             boxLabel: 'This leave type reduces leave balance',
-            uncheckedValue: false,
-            inputValue: true,
+            uncheckedValue: '0',
+            inputValue: '1',
             allowBlank: true
           }
         ],
@@ -91,6 +91,7 @@
     me.create = function() {
       me.show();
       me.reset();
+      me.setField('flag_reduce_balance', false);
       me.data = null;
       me.form.url = '{{ route('leave.type.push') }}';
     }
@@ -126,7 +127,9 @@
       me.setField('alias', rec.alias);
       me.setField('description', rec.description);
       me.setField('color', rec.color);
-      me.setField('flag_reduce_balance', rec.flag_reduce_balance === true);
+      var isReduce = rec.flag_reduce_balance === true || rec.flag_reduce_balance === 1 || rec
+        .flag_reduce_balance === '1' || rec.flag_reduce_balance === 'true';
+      me.setField('flag_reduce_balance', isReduce);
     }
 
     me.save = function() {

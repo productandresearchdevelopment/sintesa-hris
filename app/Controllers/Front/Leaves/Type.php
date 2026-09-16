@@ -26,7 +26,7 @@ class Type extends Controller
 
         $result = Query::open($query, $search);
         $result['data'] = collect($result['data'])->map(function ($item) {
-            $item->flag_reduce_balance = $item->property->flag_reduce_balance ?? false;
+            $item->flag_reduce_balance = filter_var($item->property->flag_reduce_balance ?? false, FILTER_VALIDATE_BOOLEAN);
             return $item;
         });
 
@@ -41,7 +41,7 @@ class Type extends Controller
         $data = Mod::where('id', $id)->first();
 
         if ($data) {
-            $data->flag_reduce_balance = $data->property->flag_reduce_balance ?? false;
+            $data->flag_reduce_balance = filter_var($data->property->flag_reduce_balance ?? false, FILTER_VALIDATE_BOOLEAN);
         }
 
         return $data;
@@ -51,8 +51,10 @@ class Type extends Controller
     {
         DB::beginTransaction();
         try {
+            $flagReduceBalance = filter_var($request->input('flag_reduce_balance'), FILTER_VALIDATE_BOOLEAN);
+
             $property = (object) [
-                'flag_reduce_balance' => (bool) $request->input('flag_reduce_balance', false),
+                'flag_reduce_balance' => $flagReduceBalance,
             ];
 
             $input = [

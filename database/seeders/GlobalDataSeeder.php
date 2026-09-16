@@ -647,7 +647,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'SAKIT',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":true}',
     'description' => NULL,
   ),
   64 => 
@@ -657,7 +657,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'BERSAMA',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   65 => 
@@ -667,7 +667,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'CUTI TAHUNAN',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":true}',
     'description' => NULL,
   ),
   66 => 
@@ -677,7 +677,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'BAPTIS',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   67 => 
@@ -687,7 +687,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'MENIKAHKAN ANAK',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   68 => 
@@ -697,7 +697,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'KHITAN ANAK',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   69 => 
@@ -707,7 +707,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'SUAMI/ISTRI, ORANG TUA/MERTUA, ANAK, MENANTU MENINGGAL',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   70 => 
@@ -717,7 +717,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'ANGGOTA KELUARGA (SEDARAH SEKANDUNG) TINGGAL 1 RUMAH MENINGGAL',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   71 => 
@@ -727,7 +727,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'ISTRI MELAHIRKAN/KEGUGURANKEGUGURAN',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   72 => 
@@ -737,7 +737,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'KEGUGURAN',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   73 => 
@@ -747,7 +747,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'MELAHIRKAN',
     'alias' => NULL,
     'color' => NULL,
-    'property' => NULL,
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   74 => 
@@ -968,7 +968,7 @@ class GlobalDataSeeder extends Seeder
     'name' => 'CUTI UMROH',
     'alias' => NULL,
     'color' => NULL,
-    'property' => '{"flag_reduce_balance":true}',
+    'property' => '{"flag_reduce_balance":false}',
     'description' => NULL,
   ),
   96 => 
