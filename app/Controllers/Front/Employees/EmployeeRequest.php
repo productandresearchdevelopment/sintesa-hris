@@ -20,7 +20,11 @@ class EmployeeRequest extends Controller
 {
     public function data(Request $request, $employId, $counter = true)
     {
-        $query = ModEmployeeRequest::with(['organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by', 'employ']);
+        $relations = [
+            'organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by',
+            'employ', 'employ.organization', 'employ.division', 'employ.company', 'employ.gender', 'employ.marital', 'employ.religion', 'employ.bank', 'employ.emergency_relation', 'employ.photo', 'employ.placement', 'employ.address_city', 'employ.address_province', 'employ.address_permanent_city', 'employ.address_permanent_province'
+        ];
+        $query = ModEmployeeRequest::with($relations);
 
         $query->orderBy('created_at', 'DESC');
 
@@ -71,14 +75,22 @@ class EmployeeRequest extends Controller
         return $result;
     }
 
+    private function requestRelations(): array
+    {
+        return [
+            'organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by',
+            'employ', 'employ.organization', 'employ.division', 'employ.company', 'employ.gender', 'employ.marital', 'employ.religion', 'employ.bank', 'employ.emergency_relation', 'employ.photo', 'employ.placement', 'employ.address_city', 'employ.address_province', 'employ.address_permanent_city', 'employ.address_permanent_province'
+        ];
+    }
+
     public function get(Request $request, $id = null)
     {
-        return ModEmployeeRequest::with(['organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by', 'employ'])->where('id', $id)->first();
+        return ModEmployeeRequest::with($this->requestRelations())->where('id', $id)->first();
     }
 
     public function getByEmployeeId(Request $request, $id = null)
     {
-        return ModEmployeeRequest::with(['organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by', 'employ'])->where('employ_id', $id)->where('approved_status', null)->first();
+        return ModEmployeeRequest::with($this->requestRelations())->where('employ_id', $id)->where('approved_status', null)->first();
     }
 
     public function create(Request $request)

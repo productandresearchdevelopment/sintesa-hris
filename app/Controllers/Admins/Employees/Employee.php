@@ -3,6 +3,7 @@
 namespace App\Controllers\Admins\Employees;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -468,23 +469,35 @@ class Employee extends Controller
         }
     }
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $user               = $request->user();
-        $organizations      = Organization::whereNull('deleted_at')->get();
-        $divisions          = Division::whereNull('deleted_at')->get();
-        $companies          = Company::whereNull('deleted_at')->get();
-        $placements         = Placement::whereNull('deleted_at')->get();
-        $genders            = GlobalData::where('group', 'gender')->get();
-        $maritals           = GlobalData::where('group', 'marital')->get();
-        $religions          = GlobalData::where('group', 'religion')->get();
-        $banks              = GlobalData::where('group', 'bank')->get();
-        $emergency_relations = GlobalData::where('group', 'emergency_relation')->get();
-        $cities             = City::all();
-        $contracts          = GlobalData::where('group', 'contract')->get();
-        $careers            = GlobalData::where('group', 'career')->get();
+        $params = $this->prepareEmployeeIndexParams($request);
+        return view('_bak.employee.main', $params);
+    }
 
-        $params = compact(
+    public function index_mobile(Request $request): View
+    {
+        $params = $this->prepareEmployeeIndexParams($request);
+        return view('_front.employee.mobile', $params);
+    }
+
+    private function prepareEmployeeIndexParams(Request $request): array
+    {
+        $user = $request->user();
+        $organizations = Organization::whereNull('deleted_at')->get();
+        $divisions = Division::whereNull('deleted_at')->get();
+        $companies = Company::whereNull('deleted_at')->get();
+        $placements = Placement::whereNull('deleted_at')->get();
+        $genders = GlobalData::where('group', 'gender')->get();
+        $maritals = GlobalData::where('group', 'marital')->get();
+        $religions = GlobalData::where('group', 'religion')->get();
+        $banks = GlobalData::where('group', 'bank')->get();
+        $emergency_relations = GlobalData::where('group', 'emergency_relation')->get();
+        $cities = City::all();
+        $contracts = GlobalData::where('group', 'contract')->get();
+        $careers = GlobalData::where('group', 'career')->get();
+
+        return compact(
             'user',
             'organizations',
             'divisions',
@@ -499,9 +512,6 @@ class Employee extends Controller
             'contracts',
             'careers'
         );
-
-        $view = isMobile() ? '_front.employee.mobile' : '_bak.employee.main';
-        return view($view, $params);
     }
 
     public function data(Request $request, $counter = true)

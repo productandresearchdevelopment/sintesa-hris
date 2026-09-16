@@ -618,6 +618,7 @@
       if (rec) {
         me.show();
         me.reset();
+        me.clearHighlights();
         me.form.getEl().mask('Loading');
         Ext.Ajax.request({
           method: 'get',
@@ -635,6 +636,26 @@
       }
     };
 
+    me.clearHighlights = function() {
+      if (!me.form) return;
+      me.form.getForm().getFields().each(function(field) {
+        if (field.inputEl) {
+          field.inputEl.setStyle('background-color', '');
+          field.inputEl.setStyle('border', '');
+          field.inputEl.setStyle('color', '');
+          field.inputEl.setStyle('font-weight', '');
+        }
+      });
+
+      const profilePictureContainer = me.form.down('container[itemId=profileContainer]');
+      if (profilePictureContainer && profilePictureContainer.getEl()) {
+        profilePictureContainer.getEl().setStyle('border', '');
+        profilePictureContainer.getEl().setStyle('background-color', '');
+        profilePictureContainer.getEl().setStyle('padding', '');
+        profilePictureContainer.getEl().setStyle('border-radius', '');
+      }
+    };
+
     me.editRender = function(data) {
       me.form.getForm().setValues(data);
 
@@ -645,16 +666,193 @@
 
       me.getField('org_id').setValue(org_id);
 
-      const profilePictureUrl = '{{ route('file', ':id') }}'.replace(':id', data.photo_id);
+      const profilePictureUrl = '{{ route('file', ':id') }}'.replace(':id', data ? data.photo_id : '');
 
       const profilePictureContainer = me.form.down('container[itemId=profileContainer]');
       const profileImage = profilePictureContainer.down('image');
 
-      if (data.photo_id) {
+      if (data && data.photo_id) {
         profileImage.setSrc(profilePictureUrl);
         profilePictureContainer.show();
       } else {
         profilePictureContainer.hide();
+      }
+
+      me.applyFieldHighlights(data);
+    };
+
+    me.applyFieldHighlights = function(data) {
+      if (!data) return;
+      const emp = data.employ || null;
+      const normalizeStr = function(v) {
+        return (v === null || v === undefined) ? '' : String(v).trim();
+      };
+      const normalizeDate = function(v) {
+        return v ? String(v).substring(0, 10) : '';
+      };
+
+      const fieldsToCheck = [{
+          name: 'nik',
+          type: 'string'
+        },
+        {
+          name: 'fullname',
+          type: 'string'
+        },
+        {
+          name: 'nickname',
+          type: 'string'
+        },
+        {
+          name: 'join_date',
+          type: 'date'
+        },
+        {
+          name: 'company_id',
+          type: 'id'
+        },
+        {
+          name: 'org_id',
+          type: 'id'
+        },
+        {
+          name: 'placement_id',
+          type: 'id'
+        },
+        {
+          name: 'division_id',
+          type: 'id'
+        },
+        {
+          name: 'phone',
+          type: 'string'
+        },
+        {
+          name: 'email',
+          type: 'string'
+        },
+        {
+          name: 'leave_saldo',
+          type: 'string'
+        },
+        {
+          name: 'birth_place',
+          type: 'string'
+        },
+        {
+          name: 'birth_date',
+          type: 'date'
+        },
+        {
+          name: 'gender_id',
+          type: 'id'
+        },
+        {
+          name: 'marital_id',
+          type: 'id'
+        },
+        {
+          name: 'religion_id',
+          type: 'id'
+        },
+        {
+          name: 'address',
+          type: 'string'
+        },
+        {
+          name: 'address_city_id',
+          type: 'id'
+        },
+        {
+          name: 'address_province_id',
+          type: 'id'
+        },
+        {
+          name: 'address_permanent',
+          type: 'string'
+        },
+        {
+          name: 'address_permanent_city_id',
+          type: 'id'
+        },
+        {
+          name: 'address_permanent_province_id',
+          type: 'id'
+        },
+        {
+          name: 'bank_id',
+          type: 'id'
+        },
+        {
+          name: 'bank_account',
+          type: 'string'
+        },
+        {
+          name: 'emergency_relation_id',
+          type: 'id'
+        },
+        {
+          name: 'emergency_contact_name',
+          type: 'string'
+        },
+        {
+          name: 'emergency_contact_phone',
+          type: 'string'
+        },
+        {
+          name: 'emergency_contact_address',
+          type: 'string'
+        }
+      ];
+
+      fieldsToCheck.forEach(function(item) {
+        const field = me.getField(item.name);
+        if (!field) return;
+
+        let isChanged = false;
+
+        if (emp) {
+          const reqVal = data[item.name];
+          const empVal = emp[item.name];
+
+          if (item.type === 'date') {
+            isChanged = normalizeDate(reqVal) !== normalizeDate(empVal);
+          } else {
+            isChanged = normalizeStr(reqVal) !== normalizeStr(empVal);
+          }
+        }
+
+        if (isChanged) {
+          if (field.inputEl) {
+            field.inputEl.setStyle('background-color', '#eff6ff');
+            field.inputEl.setStyle('border', '1.5px solid #3b82f6');
+            field.inputEl.setStyle('color', '#1e40af');
+            field.inputEl.setStyle('font-weight', '600');
+          }
+        } else {
+          if (field.inputEl) {
+            field.inputEl.setStyle('background-color', '');
+            field.inputEl.setStyle('border', '');
+            field.inputEl.setStyle('color', '');
+            field.inputEl.setStyle('font-weight', '');
+          }
+        }
+      });
+
+      const profilePictureContainer = me.form.down('container[itemId=profileContainer]');
+      if (profilePictureContainer && profilePictureContainer.getEl()) {
+        const photoChanged = emp && normalizeStr(data.photo_id) !== normalizeStr(emp.photo_id);
+        if (photoChanged) {
+          profilePictureContainer.getEl().setStyle('border', '2px dashed #3b82f6');
+          profilePictureContainer.getEl().setStyle('background-color', '#eff6ff');
+          profilePictureContainer.getEl().setStyle('padding', '6px');
+          profilePictureContainer.getEl().setStyle('border-radius', '8px');
+        } else {
+          profilePictureContainer.getEl().setStyle('border', '');
+          profilePictureContainer.getEl().setStyle('background-color', '');
+          profilePictureContainer.getEl().setStyle('padding', '');
+          profilePictureContainer.getEl().setStyle('border-radius', '');
+        }
       }
     };
 

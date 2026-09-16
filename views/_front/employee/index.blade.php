@@ -503,34 +503,59 @@
 
             noteText = selectedData.approved_note || "-";
 
+            const emp = selectedData.employ || {};
+            const normStr = (v) => (v === null || v === undefined ? '' : String(v).trim());
+            const normDate = (v) => (v ? String(v).substring(0, 10) : '');
+
+            const createRow = (label, reqVal, empVal, isDate = false, isRel = false, relOldText = '') => {
+              let changed = false;
+              let oldTxt = '';
+              if (isDate) {
+                changed = normDate(reqVal) !== normDate(empVal);
+                oldTxt = normDate(empVal);
+              } else if (isRel) {
+                changed = normStr(reqVal) !== normStr(empVal);
+                oldTxt = relOldText || normStr(empVal);
+              } else {
+                changed = normStr(reqVal) !== normStr(empVal);
+                oldTxt = normStr(empVal);
+              }
+
+              if (changed) {
+                const diffBadge = `<span class="badge bg-warning text-dark ms-2">DIUBAH</span> <span class="text-muted small ms-1">(Sebelumnya: <b>${oldTxt || 'kosong'}</b>)</span>`;
+                return `<tr class="table-warning"><th>${label}</th><td><strong class="text-dark">${reqVal ?? '-'}</strong> ${diffBadge}</td></tr>`;
+              }
+              return `<tr><th>${label}</th><td>${reqVal ?? '-'}</td></tr>`;
+            };
+
             contentHTML = `
               <div class="table-responsive">
                 <table class="table table-bordered mb-0">
-                  <tr><th>NIK</th><td>${selectedData.nik}</td></tr>
-                  <tr><th>Fullname</th><td>${selectedData.fullname}</td></tr>
-                  <tr><th>Nickname</th><td>${selectedData.nickname}</td></tr>
-                  <tr><th>Birth Place</th><td>${selectedData.birth_place}</td></tr>
-                  <tr><th>Birth Date</th><td>${selectedData.birth_date}</td></tr>
-                  <tr><th>Phone</th><td>${selectedData.phone}</td></tr>
-                  <tr><th>Email</th><td>${selectedData.email}</td></tr>
-                  <tr><th>Gender</th><td>${selectedData.gender.name}</td></tr>
-                  <tr><th>Marital Status</th><td>${selectedData.marital.name}</td></tr>
-                  <tr><th>Religion</th><td>${selectedData.religion.name}</td></tr>
-                  <tr><th>Join Date</th><td>${selectedData.join_date}</td></tr>
-                  <tr><th>Leave Balance</th><td>${selectedData.leave_saldo}</td></tr>
-                  <tr><th>Address</th><td>${selectedData.address}</td></tr>
-                  <tr><th>City</th><td>${selectedData.address_city.city}</td></tr>
-                  <tr><th>Province</th><td>${selectedData.address_province.province}</td></tr>
-                  <tr><th>Permanent Address</th><td>${selectedData.address_permanent}</td></tr>
-                  <tr><th>Permanent City</th><td>${selectedData.address_permanent_city.city || "-"}</td></tr>
-                  <tr><th>Permanent Province</th><td>${selectedData.address_permanent_province.province || "-"}</td></tr>
-                  <tr><th>Bank</th><td>${selectedData.bank.name}</td></tr>
-                  <tr><th>Bank Account</th><td>${selectedData.bank_account}</td></tr>
-                  <tr><th>Emergency Relation</th><td>${selectedData.emergency_relation.name}</td></tr>
-                  <tr><th>Emergency Contact Name</th><td>${selectedData.emergency_contact_name}</td></tr>
-                  <tr><th>Emergency Contact Phone</th><td>${selectedData.emergency_contact_phone}</td></tr>
-                  <tr><th>Emergency Contact Address</th><td>${selectedData.emergency_contact_address}</td></tr>
-                  <tr><th>Status</th><td>${statusText}</td></tr>
+                  ${createRow('NIK', selectedData.nik, emp.nik)}
+                  ${createRow('Fullname', selectedData.fullname, emp.fullname)}
+                  ${createRow('Nickname', selectedData.nickname, emp.nickname)}
+                  ${createRow('Birth Place', selectedData.birth_place, emp.birth_place)}
+                  ${createRow('Birth Date', selectedData.birth_date, emp.birth_date, true)}
+                  ${createRow('Phone', selectedData.phone, emp.phone)}
+                  ${createRow('Email', selectedData.email, emp.email)}
+                  ${createRow('Gender', selectedData.gender?.name, emp.gender_id, false, true, emp.gender?.name)}
+                  ${createRow('Marital Status', selectedData.marital?.name, emp.marital_id, false, true, emp.marital?.name)}
+                  ${createRow('Religion', selectedData.religion?.name, emp.religion_id, false, true, emp.religion?.name)}
+                  ${createRow('Join Date', selectedData.join_date, emp.join_date, true)}
+                  ${createRow('Leave Balance', selectedData.leave_saldo, emp.leave_saldo)}
+                  ${createRow('Address', selectedData.address, emp.address)}
+                  ${createRow('City', selectedData.address_city?.city, emp.address_city_id, false, true, emp.address_city?.city)}
+                  ${createRow('Province', selectedData.address_province?.province, emp.address_province_id, false, true, emp.address_province?.province)}
+                  ${createRow('Permanent Address', selectedData.address_permanent, emp.address_permanent)}
+                  ${createRow('Permanent City', selectedData.address_permanent_city?.city || "-", emp.address_permanent_city_id, false, true, emp.address_permanent_city?.city)}
+                  ${createRow('Permanent Province', selectedData.address_permanent_province?.province || "-", emp.address_permanent_province_id, false, true, emp.address_permanent_province?.province)}
+                  ${createRow('Bank', selectedData.bank?.name, emp.bank_id, false, true, emp.bank?.name)}
+                  ${createRow('Bank Account', selectedData.bank_account, emp.bank_account)}
+                  ${createRow('Emergency Relation', selectedData.emergency_relation?.name, emp.emergency_relation_id, false, true, emp.emergency_relation?.name)}
+                  ${createRow('Emergency Contact Name', selectedData.emergency_contact_name, emp.emergency_contact_name)}
+                  ${createRow('Emergency Contact Phone', selectedData.emergency_contact_phone, emp.emergency_contact_phone)}
+                  ${createRow('Emergency Contact Address', selectedData.emergency_contact_address, emp.emergency_contact_address)}
+                  <tr><th>Status</th><td><span class="badge ${selectedData.approved_status === 1 || selectedData.approved_status === '1' ? 'bg-success' : selectedData.approved_status === 0 || selectedData.approved_status === '0' ? 'bg-danger' : 'bg-warning text-dark'}">${statusText}</span></td></tr>
                   <tr><th>Note</th><td>${noteText}</td></tr>
                   <tr><th>Created At</th><td>${formatDate(selectedData.created_at)}</td></tr>
                 </table>
