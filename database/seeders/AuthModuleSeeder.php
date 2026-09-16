@@ -2485,7 +2485,7 @@ class AuthModuleSeeder extends Seeder
                 'icon' => 'bi bi-person-bounding-box',
                 'route' => 'appraisal.employee.index',
                 'url' => NULL,
-                'sort' => 4,
+                'sort' => 8,
                 'is_active' => 1,
                 'is_locked' => 1,
                 'auth' => NULL,
@@ -2811,7 +2811,7 @@ class AuthModuleSeeder extends Seeder
                 'parent' => 2136,
                 'path' => '/2136/2138',
                 'param' => NULL,
-                'text' => 'Report Attendance',
+                'text' => 'Report',
                 'icon' => 'bi bi-clipboard-data',
                 'route' => 'attendance.report',
                 'url' => NULL,
@@ -5037,7 +5037,7 @@ class AuthModuleSeeder extends Seeder
                 'icon' => 'bi bi-clipboard-check',
                 'route' => 'appraisal.question.template.index.mobile',
                 'url' => NULL,
-                'sort' => 8,
+                'sort' => 4,
                 'is_active' => 1,
                 'is_locked' => 1,
                 'auth' => NULL,
@@ -5642,8 +5642,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            256 => 
-            array (
+            256 =>
+            array(
                 'id' => 2270,
                 'type_id' => 310,
                 'parent' => 2018,
@@ -5664,8 +5664,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            257 => 
-            array (
+            257 =>
+            array(
                 'id' => 2271,
                 'type_id' => 310,
                 'parent' => 2018,
@@ -5686,8 +5686,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            258 => 
-            array (
+            258 =>
+            array(
                 'id' => 2272,
                 'type_id' => 310,
                 'parent' => 2018,
@@ -5708,8 +5708,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            259 => 
-            array (
+            259 =>
+            array(
                 'id' => 2273,
                 'type_id' => 310,
                 'parent' => 2018,
@@ -5730,8 +5730,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            260 => 
-            array (
+            260 =>
+            array(
                 'id' => 2274,
                 'type_id' => 310,
                 'parent' => 2017,
@@ -5752,8 +5752,8 @@ class AuthModuleSeeder extends Seeder
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
             ),
-            261 => 
-            array (
+            261 =>
+            array(
                 'id' => 2275,
                 'type_id' => 310,
                 'parent' => 2017,
@@ -5773,6 +5773,116 @@ class AuthModuleSeeder extends Seeder
                 'updated_by' => '394c94ca-d220-4799-83a8-d6ccafc0b1af',
                 'created_at' => '2020-05-10 11:12:00',
                 'updated_at' => '2020-05-10 11:12:00',
+            ),
+            262 =>
+            array(
+                'id' => 2276,
+                'type_id' => 110,
+                'parent' => 2017,
+                'path' => '/2016/2017/2276',
+                'param' => NULL,
+                'text' => 'Bulletin Mobile',
+                'icon' => NULL,
+                'route' => 'bulletin.index.mobile',
+                'url' => NULL,
+                'sort' => 16,
+                'is_active' => 1,
+                'is_locked' => 1,
+                'auth' => NULL,
+                'device' => 1,
+                'description' => NULL,
+                'created_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'updated_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'created_at' => '2026-09-16 12:00:00',
+                'updated_at' => '2026-09-16 12:00:00',
+            ),
+            263 =>
+            array(
+                'id' => 2277,
+                'type_id' => 110,
+                'parent' => 2046,
+                'path' => '/2045/2046/2277',
+                'param' => NULL,
+                'text' => 'Leave Mobile',
+                'icon' => NULL,
+                'route' => 'leave.index.mobile',
+                'url' => NULL,
+                'sort' => 17,
+                'is_active' => 1,
+                'is_locked' => 1,
+                'auth' => NULL,
+                'device' => 1,
+                'description' => NULL,
+                'created_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'updated_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'created_at' => '2026-09-16 12:00:00',
+                'updated_at' => '2026-09-16 12:00:00',
+            ),
+            264 =>
+            array(
+                'id' => 2278,
+                'type_id' => 110,
+                'parent' => 2137,
+                'path' => '/2136/2137/2278',
+                'param' => NULL,
+                'text' => 'Attendance Mobile',
+                'icon' => NULL,
+                'route' => 'attendance.index.mobile',
+                'url' => NULL,
+                'sort' => 18,
+                'is_active' => 1,
+                'is_locked' => 1,
+                'auth' => NULL,
+                'device' => 1,
+                'description' => NULL,
+                'created_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'updated_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'created_at' => '2026-09-16 12:00:00',
+                'updated_at' => '2026-09-16 12:00:00',
+            ),
+            265 =>
+            array(
+                'id' => 2279,
+                'type_id' => 110,
+                'parent' => 2037,
+                'path' => '/2043/2044/2279',
+                'param' => NULL,
+                'text' => 'Employee Mobile',
+                'icon' => NULL,
+                'route' => 'employee.index.mobile',
+                'url' => NULL,
+                'sort' => 19,
+                'is_active' => 1,
+                'is_locked' => 1,
+                'auth' => NULL,
+                'device' => 1,
+                'description' => NULL,
+                'created_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'updated_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'created_at' => '2026-09-16 12:00:00',
+                'updated_at' => '2026-09-16 12:00:00',
+            ),
+            266 =>
+            array(
+                'id' => 2280,
+                'type_id' => 110,
+                'parent' => 2136,
+                'path' => '/2136/2138/2280',
+                'param' => NULL,
+                'text' => 'Attendance Report Mobile',
+                'icon' => NULL,
+                'route' => 'attendance.report.mobile',
+                'url' => NULL,
+                'sort' => 20,
+                'is_active' => 1,
+                'is_locked' => 1,
+                'auth' => NULL,
+                'device' => 1,
+                'description' => NULL,
+                'created_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'updated_by' => 'a8a531d5-7968-450f-90ee-a4dfc4dbca38',
+                'created_at' => '2026-09-16 12:00:00',
+                'updated_at' => '2026-09-16 12:00:00',
             ),
         );
 

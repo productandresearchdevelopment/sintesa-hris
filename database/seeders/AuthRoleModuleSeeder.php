@@ -55,6 +55,7 @@ class AuthRoleModuleSeeder extends Seeder
 
         // DEVELOPER & SUPERADMIN
         $devExcluded = $getCategoryModuleIds(['filemanager', 'helpdesk']);
+        $devExcluded[] = 2137; // attendance.index
         $devAllowed = array_diff($allModuleIds, $devExcluded);
         foreach ([1, 10] as $roleId) {
             if (in_array($roleId, $validRoleIds)) {
@@ -67,6 +68,7 @@ class AuthRoleModuleSeeder extends Seeder
         // ADMINISTRATOR
         if (in_array(11, $validRoleIds)) {
             $adminExcluded = $getCategoryModuleIds(['filemanager', 'helpdesk', 'roles', 'modules']);
+            $adminExcluded[] = 2137; // attendance.index
             $adminAllowed = array_diff($allModuleIds, $adminExcluded);
             foreach ($adminAllowed as $moduleId) {
                 $roleModules[] = ['role_id' => 11, 'module_id' => $moduleId];
@@ -87,6 +89,7 @@ class AuthRoleModuleSeeder extends Seeder
                 'organization'
             ]);
             $hrgaExcluded[] = 10;
+            $hrgaExcluded[] = 2137; // attendance.index
             $hrgaExcluded = array_unique($hrgaExcluded);
 
             $lookupModuleIds = [
@@ -198,7 +201,12 @@ class AuthRoleModuleSeeder extends Seeder
                 2242,
                 2243,
                 2252,
-                2253
+                2253,
+                2276,
+                2277,
+                2278,
+                2279,
+                2280
             ];
             foreach ($staffModuleIds as $moduleId) {
                 if (in_array($moduleId, $validModuleIds)) {
