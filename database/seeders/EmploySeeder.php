@@ -168,7 +168,7 @@ class EmploySeeder extends Seeder
                     'office_id' => 1,
                     'org_id' => $u['org_id'],
                     'division_id' => $u['division_id'],
-                    'placement_id' => 1,
+                    'placement_id' => 4,
                     'gender_id' => in_array($u['username'], ['dewi_diebold', 'siti_hitachi', 'hr_hitachi', 'nurul_hitachi']) ? 1002 : 1001,
                     'marital_id' => 1101,
                     'religion_id' => 1201,
@@ -213,7 +213,7 @@ class EmploySeeder extends Seeder
                 [
                     'id' => $careerId,
                     'employ_id' => $employId,
-                    'placement_id' => 1,
+                    'placement_id' => 4,
                     'org_id' => $u['org_id'],
                     'date' => '2024-01-01',
                     'description' => 'Pengangkatan Karyawan ' . $u['fullname'],
