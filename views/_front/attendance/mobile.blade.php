@@ -2,7 +2,8 @@
 
 @section('head')
   <style>
-    html, body {
+    html,
+    body {
       background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
@@ -113,9 +114,20 @@
     }
 
     @keyframes pulseDot {
-      0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-      100% { opacity: 1; transform: scale(1); }
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .content-body {
@@ -129,6 +141,7 @@
       .att-header-banner {
         display: none !important;
       }
+
       .content-body {
         margin-top: 0 !important;
         padding: 0 !important;
@@ -333,118 +346,8 @@
 @endsection
 
 @section('content')
-  {{-- DESKTOP WEBSITE VIEW --}}
-  <div class="d-none d-md-block container-fluid p-3">
-    <!-- Desktop Blue Banner Header -->
-    <div class="card border-0 mb-4 text-white shadow-sm" style="background: #1d72b8; border-radius: 14px; padding: 24px;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="fw-bold fs-5">{{ \Carbon\Carbon::now()->format('F d, Y') }}</div>
-        <div class="badge bg-white text-dark font-monospace fs-6 px-3 py-2 rounded-pill shadow-sm" id="desktopLiveTime">--:--:--</div>
-      </div>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card border-0 p-4 text-center cursor-pointer {{ $todayAttendance && $todayAttendance->clock_in_time ? 'opacity-75' : '' }}" 
-               style="border-radius: 12px; background: #ffffff; color: #1e293b;"
-               onclick="handleClockAction('in')">
-            <div class="small fw-semibold text-muted mb-2">Clock in</div>
-            <div class="fw-bold fs-3 text-dark" style="font-variant-numeric: tabular-nums;">
-              {{ $todayAttendance && $todayAttendance->clock_in_time ? \Carbon\Carbon::parse($todayAttendance->clock_in_time)->format('H:i') : '--:--' }}
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card border-0 p-4 text-center cursor-pointer {{ !$todayAttendance || !$todayAttendance->clock_in_time || ($todayAttendance && $todayAttendance->clock_out_time) ? 'opacity-75' : '' }}" 
-               style="border-radius: 12px; background: rgba(255, 255, 255, 0.7); color: #1e293b;"
-               onclick="handleClockAction('out')">
-            <div class="small fw-semibold text-muted mb-2">Clock out</div>
-            <div class="fw-bold fs-3 text-dark" style="font-variant-numeric: tabular-nums;">
-              {{ $todayAttendance && $todayAttendance->clock_out_time ? \Carbon\Carbon::parse($todayAttendance->clock_out_time)->format('H:i') : '--:--' }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats Row (4 Cards) -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-6 col-lg-3">
-        <div class="card border-0 p-3 shadow-sm rounded-3 d-flex flex-row align-items-center justify-content-between" style="background: #f8fafc;">
-          <div>
-            <h2 class="fw-bold mb-0 text-dark">{{ $monthStats['on_time'] }}</h2>
-            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total On Time</div>
-          </div>
-          <div class="p-3 rounded-3" style="background: #ecfdf5; color: #10b981;">
-            <i class="bi bi-person-check fs-4"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="card border-0 p-3 shadow-sm rounded-3 d-flex flex-row align-items-center justify-content-between" style="background: #f8fafc;">
-          <div>
-            <h2 class="fw-bold mb-0 text-dark">{{ $monthStats['late'] }}</h2>
-            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total Late</div>
-          </div>
-          <div class="p-3 rounded-3" style="background: #fffbe0; color: #d97706;">
-            <i class="bi bi-clock fs-4"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="card border-0 p-3 shadow-sm rounded-3 d-flex flex-row align-items-center justify-content-between" style="background: #f8fafc;">
-          <div>
-            <h2 class="fw-bold mb-0 text-dark">{{ $monthStats['absent'] }}</h2>
-            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total Not Present</div>
-          </div>
-          <div class="p-3 rounded-3" style="background: #fef2f2; color: #ef4444;">
-            <i class="bi bi-person-x fs-4"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 col-lg-3">
-        <div class="card border-0 p-3 shadow-sm rounded-3 d-flex flex-row align-items-center justify-content-between" style="background: #f8fafc;">
-          <div>
-            <h2 class="fw-bold mb-0 text-dark">{{ $monthStats['working'] }}</h2>
-            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total Working Hours</div>
-          </div>
-          <div class="p-3 rounded-3" style="background: #eff6ff; color: #0073e6;">
-            <i class="bi bi-briefcase fs-4"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Attendance Log Card -->
-    <div class="card border-0 p-4 shadow-sm rounded-3 mb-4">
-      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
-        <h5 class="fw-bold text-dark mb-0">Attendance Log</h5>
-        <a href="{{ route('attendance.report') }}" class="text-primary text-decoration-none fw-bold small">View Log</a>
-      </div>
-
-      @forelse($formattedLogs as $log)
-        <div class="d-flex align-items-center justify-content-between py-3 border-bottom">
-          <div class="d-flex align-items-center gap-3">
-            <i class="bi {{ $log['icon'] }} fs-5 text-secondary"></i>
-            <div>
-              <div class="fw-bold text-dark small">{{ $log['type'] }}</div>
-              <div class="text-muted small" style="font-size: 12px;">{{ $log['date'] }}</div>
-            </div>
-          </div>
-          <div class="fw-bold text-dark small">{{ $log['time'] }}</div>
-        </div>
-      @empty
-        <div class="text-center py-4 text-muted">
-          <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
-          <span>No attendance records found</span>
-        </div>
-      @endforelse
-    </div>
-  </div>
-
   {{-- MOBILE VIEW --}}
-  <div class="att-page-wrapper d-block d-md-none">
+  <div class="att-page-wrapper">
     <div class="att-header-banner">
       <div class="top-action-bar">
         <a href="{{ route('main') }}" class="btn-back-link">
@@ -538,7 +441,7 @@
       <div class="log-card">
         <div class="log-card-header">
           <h3 class="log-card-title">Recent Attendance Logs</h3>
-          <a href="{{ route('attendance.report') }}" class="log-view-all-link">
+          <a href="{{ route('attendance.report.mobile') }}" class="log-view-all-link">
             View Report <i class="bi bi-arrow-right"></i>
           </a>
         </div>
@@ -572,10 +475,13 @@
     $(document).ready(function() {
       function updateLiveClock() {
         const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const timeStr12 = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+        const timeStr = now.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
         $('#clockLiveTime').text(timeStr);
-        $('#desktopLiveTime').text(timeStr12);
       }
 
       updateLiveClock();

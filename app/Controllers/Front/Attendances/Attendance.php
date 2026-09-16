@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Libraries\ExportExcel;
 use App\Libraries\FileUpload;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance as IqAttendance;
@@ -16,11 +18,32 @@ use Illuminate\Support\Facades\DB;
 
 class Attendance extends Controller
 {
-    public function index()
+    public function index(Request $request): View|RedirectResponse
     {
-        $employee = IqEmployee::where('id', Auth::user()->employ_id)->first();
-        if (!$employee) {
+        $data = $this->prepareAttendanceData();
+        if (!$data) {
             return redirect()->route('dashboard')->with('error', 'Employee record not found');
+        }
+
+        return view('_front.attendance.index', $data);
+    }
+
+    public function index_mobile(Request $request): View|RedirectResponse
+    {
+        $data = $this->prepareAttendanceData();
+        if (!$data) {
+            return redirect()->route('dashboard')->with('error', 'Employee record not found');
+        }
+
+        return view('_front.attendance.mobile', $data);
+    }
+
+    private function prepareAttendanceData(): ?array
+    {
+        $user = Auth::user();
+        $employee = IqEmployee::where('id', $user?->employ_id)->first();
+        if (!$employee) {
+            return null;
         }
 
         $today = Carbon::now();
@@ -89,13 +112,12 @@ class Attendance extends Controller
 
         $formattedLogs = array_slice($formattedLogs, 0, 10);
 
-        $view = isMobile() ? '_front.attendance.mobile' : '_front.attendance.index';
-        return view($view, compact(
+        return compact(
             'employee',
             'todayAttendance',
             'monthStats',
             'formattedLogs'
-        ));
+        );
     }
 
     public function check($type)
@@ -254,27 +276,19 @@ class Attendance extends Controller
         }
 
         if (!$isHR) {
-            $userOrgId = $employee ? $employee->org_id : null;
-            if ($userOrgId) {
-                $allowedOrgIds = array_merge([$userOrgId], $this->getAllChildOrganizations($userOrgId));
-                $query->whereHas('employee', function ($q) use ($allowedOrgIds) {
-                    $q->whereIn('org_id', $allowedOrgIds);
+            $query->where('employee_id', $employee ? $employee->id : Auth::user()->employ_id);
+        } else {
+            if ($request->filled('org_id')) {
+                $selectedOrgId = $request->org_id;
+                $targetOrgIds = array_merge([$selectedOrgId], $this->getAllChildOrganizations($selectedOrgId));
+                $query->whereHas('employee', function ($q) use ($targetOrgIds) {
+                    $q->whereIn('org_id', $targetOrgIds);
                 });
-            } else {
-                $query->whereRaw('1=0');
             }
-        }
 
-        if ($request->filled('org_id')) {
-            $selectedOrgId = $request->org_id;
-            $targetOrgIds = array_merge([$selectedOrgId], $this->getAllChildOrganizations($selectedOrgId));
-            $query->whereHas('employee', function ($q) use ($targetOrgIds) {
-                $q->whereIn('org_id', $targetOrgIds);
-            });
-        }
-
-        if ($request->filled('employee_id')) {
-            $query->where('employee_id', $request->employee_id);
+            if ($request->filled('employee_id')) {
+                $query->where('employee_id', $request->employee_id);
+            }
         }
 
         if ($request->filled('employee_name')) {
@@ -354,11 +368,31 @@ class Attendance extends Controller
         return $uniqueTree;
     }
 
-    public function report(Request $request)
+    public function report(Request $request): View|RedirectResponse
+    {
+        $data = $this->prepareReportData($request);
+        if (!$data) {
+            return redirect()->route('dashboard')->with('error', 'Employee record not found');
+        }
+
+        return view('_front.attendance.report', $data);
+    }
+
+    public function report_mobile(Request $request): View|RedirectResponse
+    {
+        $data = $this->prepareReportData($request);
+        if (!$data) {
+            return redirect()->route('dashboard')->with('error', 'Employee record not found');
+        }
+
+        return view('_front.attendance.report-mobile', $data);
+    }
+
+    private function prepareReportData(Request $request): ?array
     {
         $employee = IqEmployee::where('id', Auth::user()->employ_id)->first();
         if (!$employee) {
-            return redirect()->route('dashboard')->with('error', 'Employee record not found');
+            return null;
         }
 
         $month = $request->month ?? Carbon::now()->month;
@@ -369,21 +403,16 @@ class Attendance extends Controller
         $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator']);
         $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
 
-        $allowedOrgIds = null;
-        if (!$isHR && $employee) {
-            $allowedOrgIds = array_merge([$employee->org_id], $this->getAllChildOrganizations($employee->org_id));
-        }
+        $orgTree = $isHR ? $this->getOrganizationTreeOptions(null, !$isSuperUser ? $userCompany : null) : [];
 
-        $orgTree = $this->getOrganizationTreeOptions($allowedOrgIds, !$isSuperUser ? $userCompany : null);
-
-        $empQuery = IqEmployee::orderBy('fullname');
-        if (!$isSuperUser && $userCompany) {
-            $empQuery->where('company_id', $userCompany);
+        $employeesList = collect([]);
+        if ($isHR) {
+            $empQuery = IqEmployee::orderBy('fullname');
+            if (!$isSuperUser && $userCompany) {
+                $empQuery->where('company_id', $userCompany);
+            }
+            $employeesList = $empQuery->get(['id', 'fullname']);
         }
-        if (!$isHR && $allowedOrgIds !== null) {
-            $empQuery->whereIn('org_id', $allowedOrgIds);
-        }
-        $employeesList = $empQuery->get(['id', 'fullname']);
 
         $reportData = $this->buildReportQuery($request, $employee, $isHR);
         $startDate = $reportData['startDate'];
@@ -420,8 +449,7 @@ class Attendance extends Controller
             ];
         }
 
-        $view = isMobile() ? '_front.attendance.report-mobile' : '_front.attendance.report';
-        return view($view, compact(
+        return compact(
             'employee',
             'formattedLogs',
             'month',
@@ -434,7 +462,7 @@ class Attendance extends Controller
             'orgTree',
             'employeesList',
             'isHR'
-        ));
+        );
     }
 
     public function exportExcel(Request $request)

@@ -203,7 +203,7 @@
       <div class="col-4 col-sm-6">
         <div class="d-flex align-items-center justify-content-end gap-3">
 
-          <div class="apps-container">
+          {{-- <div class="apps-container">
             <button class="apps-button" id="appsButton" title="My Applications">
               <svg viewBox="0 0 24 24">
                 <path
@@ -240,8 +240,7 @@
             </div>
           </div>
 
-
-          <div class="separator"></div>
+          <div class="separator"></div> --}}
 
           <nav aria-label="breadcrumb" class="breadcrumb-header">
             <div class="d-flex align-items-center">
@@ -289,8 +288,9 @@
   let isLoaded = false;
 
   function togglePanel() {
+    if (!appsPanel) return;
     const isActive = appsPanel.classList.toggle('active');
-    backdrop.classList.toggle('active');
+    if (backdrop) backdrop.classList.toggle('active');
 
     if (isActive && !isLoaded) {
       loadApps();
@@ -304,8 +304,8 @@
   }
 
   function closePanel() {
-    appsPanel.classList.remove('active');
-    backdrop.classList.remove('active');
+    if (appsPanel) appsPanel.classList.remove('active');
+    if (backdrop) backdrop.classList.remove('active');
     document.body.style.overflow = '';
   }
 
@@ -315,50 +315,56 @@
       return;
     }
 
-    appsLoader.classList.remove('hidden');
-    appsIframe.style.display = 'none';
-    appsError.classList.remove('show');
+    if (appsLoader) appsLoader.classList.remove('hidden');
+    if (appsIframe) appsIframe.style.display = 'none';
+    if (appsError) appsError.classList.remove('show');
 
     const url = `${apiUrl}?uid=${encodeURIComponent(userId)}`;
-    appsIframe.src = url;
+    if (appsIframe) appsIframe.src = url;
   }
 
   function showError(message) {
-    appsLoader.classList.add('hidden');
-    appsIframe.style.display = 'none';
-    appsError.classList.add('show');
-    appsError.querySelector('p').textContent = message;
+    if (appsLoader) appsLoader.classList.add('hidden');
+    if (appsIframe) appsIframe.style.display = 'none';
+    if (appsError) {
+      appsError.classList.add('show');
+      appsError.querySelector('p').textContent = message;
+    }
   }
 
-  appsButton.addEventListener('click', (e) => {
-    e.stopPropagation();
-    togglePanel();
-  });
+  if (appsButton) {
+    appsButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePanel();
+    });
+  }
 
-  closeApps.addEventListener('click', closePanel);
-  backdrop.addEventListener('click', closePanel);
+  if (closeApps) closeApps.addEventListener('click', closePanel);
+  if (backdrop) backdrop.addEventListener('click', closePanel);
 
   document.addEventListener('click', (e) => {
-    if (!appsButton.contains(e.target) && !appsPanel.contains(e.target)) {
+    if (appsButton && appsPanel && !appsButton.contains(e.target) && !appsPanel.contains(e.target)) {
       closePanel();
     }
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && appsPanel.classList.contains('active')) {
+    if (e.key === 'Escape' && appsPanel && appsPanel.classList.contains('active')) {
       closePanel();
     }
   });
 
-  appsIframe.addEventListener('load', () => {
-    if (appsIframe.src && appsIframe.src !== 'about:blank') {
-      appsLoader.classList.add('hidden');
-      appsIframe.style.display = 'block';
-      isLoaded = true;
-    }
-  });
+  if (appsIframe) {
+    appsIframe.addEventListener('load', () => {
+      if (appsIframe.src && appsIframe.src !== 'about:blank') {
+        if (appsLoader) appsLoader.classList.add('hidden');
+        appsIframe.style.display = 'block';
+        isLoaded = true;
+      }
+    });
 
-  appsIframe.addEventListener('error', () => {
-    showError('Failed to load applications. Please try again.');
-  });
+    appsIframe.addEventListener('error', () => {
+      showError('Failed to load applications. Please try again.');
+    });
+  }
 </script>

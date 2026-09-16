@@ -19,15 +19,24 @@
   <meta name="apple-mobile-web-app-title" content="Sintesa HRIS">
   <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192x192.png') }}">
   <!-- iOS Splash Screens -->
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1290-2796.png') }}" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1179-2556.png') }}" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1170-2532.png') }}" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1284-2778.png') }}" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1125-2436.png') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-828-1792.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1242-2688.png') }}" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1242-2208.png') }}" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
-  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-750-1334.png') }}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1290-2796.png') }}"
+    media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1179-2556.png') }}"
+    media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1170-2532.png') }}"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1284-2778.png') }}"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1125-2436.png') }}"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-828-1792.png') }}"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1242-2688.png') }}"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-1242-2208.png') }}"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+  <link rel="apple-touch-startup-image" href="{{ asset('images/splash/apple-splash-750-1334.png') }}"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
 
   {{-- RESOURCES ICON PACK --}}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -62,7 +71,8 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 
   <style>
-    html, body {
+    html,
+    body {
       background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
@@ -100,8 +110,15 @@
     }
 
     @keyframes slideUp {
-      from { transform: translate(-50%, 100%); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
+      from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
     }
 
     /* Global Mobile Dropdown & Select2 Consistency */
@@ -122,11 +139,13 @@
     .select2-results__options::-webkit-scrollbar {
       width: 5px;
     }
+
     .dropdown-menu::-webkit-scrollbar-track,
     .select2-results__options::-webkit-scrollbar-track {
       background: #f8fafc;
       border-radius: 10px;
     }
+
     .dropdown-menu::-webkit-scrollbar-thumb,
     .select2-results__options::-webkit-scrollbar-thumb {
       background: #cbd5e1;
@@ -178,6 +197,7 @@
       filter: brightness(0) invert(1) !important;
       opacity: 0.8;
     }
+
     .modal-header .btn-close:hover {
       opacity: 1;
     }
@@ -480,14 +500,16 @@
   <div id="pwaInstallBanner" class="pwa-install-banner d-none">
     <div class="d-flex align-items-center justify-content-between">
       <div class="d-flex align-items-center me-2">
-        <img src="{{ asset('images/logo-mini.png') }}" alt="App Icon" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover;" class="me-2 shadow-sm">
+        <img src="{{ asset('images/logo-mini.png') }}" alt="App Icon"
+          style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover;" class="me-2 shadow-sm">
         <div>
           <div class="fw-bold" style="font-size: 13px; color: #1e293b;">Install Sintesa HRIS</div>
           <small class="text-muted" style="font-size: 11px;">Akses cepat & dapat dibuka offline</small>
         </div>
       </div>
       <div class="d-flex align-items-center">
-        <button id="btnPwaInstall" class="btn btn-sm btn-primary rounded-pill px-3 py-1 me-2 fw-semibold" style="font-size: 12px; background-color: #0073e6; border: none;">
+        <button id="btnPwaInstall" class="btn btn-sm btn-primary rounded-pill px-3 py-1 me-2 fw-semibold"
+          style="font-size: 12px; background-color: #0073e6; border: none;">
           Install
         </button>
         <button type="button" class="btn-close" style="font-size: 10px;" onclick="closePwaBanner()"></button>
@@ -513,20 +535,19 @@
     }
 
     function shouldShowPwaBanner() {
-      // If user already installed the app, don't show
       if (localStorage.getItem('pwa_installed') === 'true') {
         return false;
       }
-      // Check 1 day (24 hours) dismissal cooldown
+
       const dismissedUntil = localStorage.getItem('pwa_install_dismissed_until');
       if (dismissedUntil && Date.now() < parseInt(dismissedUntil, 10)) {
         return false;
       }
+
       return true;
     }
 
     function closePwaBanner() {
-      // Cooldown for 24 hours (1 day)
       const oneDayInMs = 24 * 60 * 60 * 1000;
       localStorage.setItem('pwa_install_dismissed_until', Date.now() + oneDayInMs);
       const banner = document.getElementById('pwaInstallBanner');
@@ -535,7 +556,6 @@
       }
     }
 
-    // Capture Chrome/Android install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -558,7 +578,9 @@
     document.getElementById('btnPwaInstall')?.addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        const {
+          outcome
+        } = await deferredPrompt.userChoice;
         console.log('Install outcome:', outcome);
         if (outcome === 'accepted') {
           localStorage.setItem('pwa_installed', 'true');
@@ -568,7 +590,6 @@
       }
     });
 
-    // Safari iOS helper check
     const isIos = () => {
       const userAgent = window.navigator.userAgent.toLowerCase();
       return /iphone|ipad|ipod/.test(userAgent);
@@ -576,7 +597,6 @@
     const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
     if (isIos() && !isInStandaloneMode() && shouldShowPwaBanner()) {
-      // Prompt iOS users after 3 seconds if not installed and not dismissed
       setTimeout(() => {
         const iosBanner = document.getElementById('pwaInstallBanner');
         if (iosBanner && iosBanner.classList.contains('d-none') && shouldShowPwaBanner()) {

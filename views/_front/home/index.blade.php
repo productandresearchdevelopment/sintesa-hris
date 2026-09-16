@@ -150,8 +150,17 @@
     }
 
     @keyframes pulseIcon {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.15); opacity: 0.8; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 0.8;
+      }
     }
 
     .att-status-title {
@@ -352,125 +361,122 @@
   @php
     $hour = (int) date('H');
     if ($hour >= 5 && $hour < 12) {
-      $greeting = 'Good Morning';
+        $greeting = 'Good Morning';
     } elseif ($hour >= 12 && $hour < 15) {
-      $greeting = 'Good Afternoon';
+        $greeting = 'Good Afternoon';
     } elseif ($hour >= 15 && $hour < 18) {
-      $greeting = 'Good Afternoon';
+        $greeting = 'Good Afternoon';
     } else {
-      $greeting = 'Good Evening';
-    }
-
-    $rawModules = [];
-    if (isset($treeMenu) && count($treeMenu) > 0) {
-      foreach ($treeMenu as $menu) {
-        if (isset($menu->children) && count($menu->children) > 0) {
-          foreach ($menu->children as $child) {
-            $c = clone $child;
-            $c->parent_text = $menu->text;
-            $rawModules[] = $c;
-          }
-        } else {
-          $c = clone $menu;
-          $c->parent_text = null;
-          $rawModules[] = $c;
-        }
-      }
-    }
-
-    $titleCounts = [];
-    foreach ($rawModules as $m) {
-      $t = trim($m->text ?? '');
-      $titleCounts[$t] = ($titleCounts[$t] ?? 0) + 1;
+        $greeting = 'Good Evening';
     }
 
     $todayAttendanceStatus = null;
     if ($user->employ_id) {
-      $todayAttendanceStatus = \App\Models\Attendance::where('employee_id', $user->employ_id)
-        ->where('date', \Carbon\Carbon::today()->format('Y-m-d'))
-        ->first();
+        $todayAttendanceStatus = \App\Models\Attendance::where('employee_id', $user->employ_id)
+            ->where('date', \Carbon\Carbon::today()->format('Y-m-d'))
+            ->first();
     }
 
     $hasBulletinModule = Route::has('bulletin.data');
-    $bulletinRoute = Route::has('bulletin.index') ? route('bulletin.index') : '#';
+    $bulletinRoute = route('bulletin.index.mobile');
 
     $mobileMenuConfig = [
-      'leave.index' => [
-        'text' => 'Leave',
-        'display_title' => 'Leave',
-        'route' => 'leave.index'
-      ],
-      'appraisal.question.template.index.mobile' => [
-        'text' => 'Assessment',
-        'display_title' => 'Assessment',
-        'route' => 'appraisal.question.template.index.mobile'
-      ],
-      'attendance.index' => [
-        'text' => 'Attendance',
-        'display_title' => 'Attendance',
-        'route' => 'attendance.index'
-      ],
-      'employee.index' => [
-        'text' => 'Employee',
-        'display_title' => 'Employee',
-        'route' => 'employee.index'
-      ],
+        'leave.index.mobile' => [
+            'text' => 'Leave',
+            'display_title' => 'Leave',
+            'route' => 'leave.index.mobile',
+        ],
+        'appraisal.question.template.index.mobile' => [
+            'text' => 'Assessment',
+            'display_title' => 'Assessment',
+            'route' => 'appraisal.question.template.index.mobile',
+        ],
+        'attendance.index.mobile' => [
+            'text' => 'Attendance',
+            'display_title' => 'Attendance',
+            'route' => 'attendance.index.mobile',
+        ],
+        'employee.index.mobile' => [
+            'text' => 'Employee',
+            'display_title' => 'Employee',
+            'route' => 'employee.index.mobile',
+        ],
     ];
 
     $modules = [];
     foreach ($mobileMenuConfig as $routeKey => $cfg) {
-      if (Route::has($routeKey)) {
-        $modules[] = (object) $cfg;
-      }
+        if (Route::has($routeKey) && $user->hasRoute($routeKey)) {
+            $modules[] = (object) $cfg;
+        }
     }
 
-    $getModuleMeta = function($mod) {
-      $name = strtolower($mod->text ?? '');
-      $route = strtolower($mod->route ?? '');
+    $getModuleMeta = function ($mod) {
+        $name = strtolower($mod->text ?? '');
+        $route = strtolower($mod->route ?? '');
 
-      if ($route === 'auth.user') {
-        return ['icon' => 'bi bi-person-gear', 'bg' => '#eef2ff', 'color' => '#4f46e5', 'key' => 'users'];
-      } elseif ($route === 'auth.role') {
-        return ['icon' => 'bi bi-shield-lock-fill', 'bg' => '#f0fdf4', 'color' => '#16a34a', 'key' => 'roles'];
-      } elseif ($route === 'auth.module') {
-        return ['icon' => 'bi bi-layers-fill', 'bg' => '#fef3c7', 'color' => '#d97706', 'key' => 'modules'];
-      } elseif ($route === 'company.index') {
-        return ['icon' => 'bi bi-building-fill', 'bg' => '#f0fdfa', 'color' => '#0d9488', 'key' => 'company'];
-      } elseif ($route === 'office.index') {
-        return ['icon' => 'bi bi-geo-alt-fill', 'bg' => '#eff6ff', 'color' => '#2563eb', 'key' => 'office'];
-      } elseif ($route === 'division.index') {
-        return ['icon' => 'bi bi-diagram-2-fill', 'bg' => '#fae8ff', 'color' => '#c026d3', 'key' => 'division'];
-      } elseif ($route === 'organization.index') {
-        return ['icon' => 'bi bi-diagram-3-fill', 'bg' => '#eef2ff', 'color' => '#6366f1', 'key' => 'organization'];
-      } elseif ($route === 'employee.index') {
-        return ['icon' => 'bi bi-person-badge-fill', 'bg' => '#ecfdf5', 'color' => '#059669', 'key' => 'employee'];
-      } elseif ($route === 'leave.index') {
-        return ['icon' => 'bi bi-calendar2-check-fill', 'bg' => '#fef2f2', 'color' => '#dc2626', 'key' => 'leave'];
-      } elseif ($route === 'leave.type.index') {
-        return ['icon' => 'bi bi-card-checklist', 'bg' => '#fff7ed', 'color' => '#d97706', 'key' => 'leavetype'];
-      } elseif ($route === 'appraisal.period.index') {
-        return ['icon' => 'bi bi-calendar3', 'bg' => '#faf5ff', 'color' => '#9333ea', 'key' => 'period'];
-      } elseif ($route === 'appraisal.question.template.index') {
-        return ['icon' => 'bi bi-file-earmark-spreadsheet-fill', 'bg' => '#f0f9ff', 'color' => '#0284c7', 'key' => 'template'];
-      } elseif ($route === 'appraisal.period.organization.index') {
-        return ['icon' => 'bi bi-bar-chart-line-fill', 'bg' => '#fdf4ff', 'color' => '#c026d3', 'key' => 'appraisalorg'];
-      } elseif ($route === 'appraisal.employee.index') {
-        return ['icon' => 'bi bi-person-lines-fill', 'bg' => '#f0fdf4', 'color' => '#16a34a', 'key' => 'appraisalemployee'];
-      } elseif ($route === 'appraisal.question.template.index.mobile') {
-        return ['icon' => 'bi bi-journal-check', 'bg' => '#fff1f2', 'color' => '#e11d48', 'key' => 'assessment'];
-      } elseif ($route === 'attendance.index') {
-        return ['icon' => 'bi bi-clock-history', 'bg' => '#fdf4ff', 'color' => '#d946ef', 'key' => 'attendance'];
-      } elseif ($route === 'attendance.report') {
-        return ['icon' => 'bi bi-file-earmark-bar-chart-fill', 'bg' => '#ecfeff', 'color' => '#0891b2', 'key' => 'attendancereport'];
-      } elseif (str_contains($name, 'file') || str_contains($route, 'file')) {
-        return ['icon' => 'bi bi-folder2-open', 'bg' => '#eff6ff', 'color' => '#2563eb', 'key' => 'filemanager'];
-      } elseif (str_contains($name, 'helpdesk') || str_contains($route, 'helpdesk')) {
-        return ['icon' => 'bi bi-headset', 'bg' => '#fff7ed', 'color' => '#f97316', 'key' => 'helpdesk'];
-      } elseif (str_contains($name, 'bulletin') || str_contains($route, 'bulletin')) {
-        return ['icon' => 'bi bi-newspaper', 'bg' => '#f0f9ff', 'color' => '#0ea5e9', 'key' => 'bulletin'];
-      }
+        if ($route === 'auth.user') {
+            return ['icon' => 'bi bi-person-gear', 'bg' => '#eef2ff', 'color' => '#4f46e5', 'key' => 'users'];
+        } elseif ($route === 'auth.role') {
+            return ['icon' => 'bi bi-shield-lock-fill', 'bg' => '#f0fdf4', 'color' => '#16a34a', 'key' => 'roles'];
+        } elseif ($route === 'auth.module') {
+            return ['icon' => 'bi bi-layers-fill', 'bg' => '#fef3c7', 'color' => '#d97706', 'key' => 'modules'];
+        } elseif ($route === 'company.index') {
+            return ['icon' => 'bi bi-building-fill', 'bg' => '#f0fdfa', 'color' => '#0d9488', 'key' => 'company'];
+        } elseif ($route === 'office.index') {
+            return ['icon' => 'bi bi-geo-alt-fill', 'bg' => '#eff6ff', 'color' => '#2563eb', 'key' => 'office'];
+        } elseif ($route === 'division.index') {
+            return ['icon' => 'bi bi-diagram-2-fill', 'bg' => '#fae8ff', 'color' => '#c026d3', 'key' => 'division'];
+        } elseif ($route === 'organization.index') {
+            return ['icon' => 'bi bi-diagram-3-fill', 'bg' => '#eef2ff', 'color' => '#6366f1', 'key' => 'organization'];
+        } elseif ($route === 'employee.index' || $route === 'employee.index.mobile') {
+            return ['icon' => 'bi bi-person-badge-fill', 'bg' => '#ecfdf5', 'color' => '#059669', 'key' => 'employee'];
+        } elseif ($route === 'leave.index' || $route === 'leave.index.mobile') {
+            return ['icon' => 'bi bi-calendar2-check-fill', 'bg' => '#fef2f2', 'color' => '#dc2626', 'key' => 'leave'];
+        } elseif ($route === 'leave.type.index') {
+            return ['icon' => 'bi bi-card-checklist', 'bg' => '#fff7ed', 'color' => '#d97706', 'key' => 'leavetype'];
+        } elseif ($route === 'appraisal.period.index') {
+            return ['icon' => 'bi bi-calendar3', 'bg' => '#faf5ff', 'color' => '#9333ea', 'key' => 'period'];
+        } elseif ($route === 'appraisal.question.template.index') {
+            return [
+                'icon' => 'bi bi-file-earmark-spreadsheet-fill',
+                'bg' => '#f0f9ff',
+                'color' => '#0284c7',
+                'key' => 'template',
+            ];
+        } elseif ($route === 'appraisal.period.organization.index') {
+            return [
+                'icon' => 'bi bi-bar-chart-line-fill',
+                'bg' => '#fdf4ff',
+                'color' => '#c026d3',
+                'key' => 'appraisalorg',
+            ];
+        } elseif ($route === 'appraisal.employee.index') {
+            return [
+                'icon' => 'bi bi-person-lines-fill',
+                'bg' => '#f0fdf4',
+                'color' => '#16a34a',
+                'key' => 'appraisalemployee',
+            ];
+        } elseif ($route === 'appraisal.question.template.index.mobile') {
+            return ['icon' => 'bi bi-journal-check', 'bg' => '#fff1f2', 'color' => '#e11d48', 'key' => 'assessment'];
+        } elseif ($route === 'attendance.index' || $route === 'attendance.index.mobile') {
+            return ['icon' => 'bi bi-clock-history', 'bg' => '#fdf4ff', 'color' => '#d946ef', 'key' => 'attendance'];
+        } elseif ($route === 'attendance.report' || $route === 'attendance.report.mobile') {
+            return [
+                'icon' => 'bi bi-file-earmark-bar-chart-fill',
+                'bg' => '#ecfeff',
+                'color' => '#0891b2',
+                'key' => 'attendancereport',
+            ];
+        } elseif (str_contains($name, 'file') || str_contains($route, 'file')) {
+            return ['icon' => 'bi bi-folder2-open', 'bg' => '#eff6ff', 'color' => '#2563eb', 'key' => 'filemanager'];
+        } elseif (str_contains($name, 'helpdesk') || str_contains($route, 'helpdesk')) {
+            return ['icon' => 'bi bi-headset', 'bg' => '#fff7ed', 'color' => '#f97316', 'key' => 'helpdesk'];
+        } elseif (str_contains($name, 'bulletin') || str_contains($route, 'bulletin')) {
+            return ['icon' => 'bi bi-newspaper', 'bg' => '#f0f9ff', 'color' => '#0ea5e9', 'key' => 'bulletin'];
+        }
 
-      return ['icon' => 'bi bi-grid-fill', 'bg' => '#f0f9ff', 'color' => '#0073e6', 'key' => $route ?: 'default'];
+        return ['icon' => 'bi bi-grid-fill', 'bg' => '#f0f9ff', 'color' => '#0073e6', 'key' => $route ?: 'default'];
     };
   @endphp
 
@@ -521,8 +527,8 @@
       <h5 class="fw-bold mb-1">{{ $greeting }}, {{ strtok($user->name, ' ') }}! 👋</h5>
       <p class="mb-0 small opacity-90">Quick access to all your HR modules and services</p>
 
-      @if (Route::has('attendance.index'))
-        <div class="quick-attendance-widget" onclick="window.location='{{ route('attendance.index') }}'">
+      @if ($user->hasRoute('attendance.index.mobile'))
+        <div class="quick-attendance-widget" onclick="window.location='{{ route('attendance.index.mobile') }}'">
           @if (!$todayAttendanceStatus || !$todayAttendanceStatus->clock_in_time)
             <div class="att-status-badge">
               <div class="att-status-info">
@@ -539,7 +545,8 @@
               <div class="att-status-info">
                 <i class="bi bi-clock-history text-warning"></i>
                 <div>
-                  <div class="att-status-title">Clocked In: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }}</div>
+                  <div class="att-status-title">Clocked In:
+                    {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }}</div>
                   <div class="att-status-desc">Don't forget to clock out</div>
                 </div>
               </div>
@@ -551,7 +558,9 @@
                 <i class="bi bi-check-circle-fill text-success"></i>
                 <div>
                   <div class="att-status-title">Attendance Completed Today</div>
-                  <div class="att-status-desc">In: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }} | Out: {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_out_time)->format('H:i') }}</div>
+                  <div class="att-status-desc">In:
+                    {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_in_time)->format('H:i') }} | Out:
+                    {{ \Carbon\Carbon::parse($todayAttendanceStatus->clock_out_time)->format('H:i') }}</div>
                 </div>
               </div>
               <span class="btn-att-direct btn-done">Details <i class="bi bi-chevron-right ms-1"></i></span>
@@ -568,10 +577,10 @@
       </div>
 
       <div class="menu-grid">
-        @foreach($modules as $mod)
+        @foreach ($modules as $mod)
           @php
             $meta = $getModuleMeta($mod);
-            $modRoute = $mod->route && Route::has($mod->route) ? route($mod->route) : ($mod->url ?? '#');
+            $modRoute = $mod->route && Route::has($mod->route) ? route($mod->route) : $mod->url ?? '#';
           @endphp
           <div class="menu-item-card" data-module="{{ $meta['key'] }}" data-route="{{ $modRoute }}">
             <div class="menu-icon-box" style="background-color: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
@@ -619,7 +628,9 @@
           $.ajax({
             url: '{{ route('notification.read.all.module', '') }}/' + module,
             method: 'GET',
-            data: { _token: '{{ csrf_token() }}' },
+            data: {
+              _token: '{{ csrf_token() }}'
+            },
             success: function() {
               $('.menu-item-card').each(function() {
                 const m = $(this).data('module');
@@ -642,7 +653,9 @@
       $.ajax({
         url: '{{ route('notification.count') }}',
         method: 'GET',
-        data: { trash: 1 },
+        data: {
+          trash: 1
+        },
         success: function(response) {
           const data = response ? response.data : null;
           if (!data) return;
@@ -673,7 +686,10 @@
         $.ajax({
           url: '{{ route('bulletin.data') }}',
           method: 'GET',
-          data: { trash: 1, pinned: 1 },
+          data: {
+            trash: 1,
+            pinned: 1
+          },
           success: function(response) {
             const data = response ? (response.data || response) : [];
             const container = $('#bulletinCarouselContainer');
@@ -712,7 +728,11 @@
                   catName = catMap[catName];
                 }
 
-                const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                }) : '';
 
                 const cardHtml = `
                   <div class="item">
@@ -744,9 +764,15 @@
                   dots: true,
                   nav: false,
                   responsive: {
-                    0: { items: 1.25 },
-                    480: { items: 1.8 },
-                    768: { items: 2.5 }
+                    0: {
+                      items: 1.25
+                    },
+                    480: {
+                      items: 1.8
+                    },
+                    768: {
+                      items: 2.5
+                    }
                   }
                 });
               }

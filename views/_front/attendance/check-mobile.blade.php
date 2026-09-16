@@ -211,273 +211,234 @@
       color: #475569;
       margin-bottom: 20px;
     }
-
-
   </style>
 @endsection
 
 @section('content')
   <div class="px-0" style="min-height: 100vh; padding-bottom: 40px; background: #ffffff;">
-    <div class="att-header-banner mb-3" style="background: linear-gradient(135deg, #0073e6 0%, #00a651 100%); padding: 16px 20px 44px 20px; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);">
+    <div class="att-header-banner mb-3"
+      style="background: linear-gradient(135deg, #0073e6 0%, #00a651 100%); padding: 16px 20px 44px 20px; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; box-shadow: 0 10px 30px rgba(0, 115, 230, 0.2);">
       <div class="top-action-bar d-flex align-items-center justify-content-between">
-        <a href="{{ route('attendance.index') }}" class="btn-back-link" style="width: 38px; height: 38px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: none; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; text-decoration: none;">
+        <a href="{{ route('attendance.index.mobile') }}" class="btn-back-link"
+          style="width: 38px; height: 38px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: none; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; text-decoration: none;">
           <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="header-page-title" style="font-size: 17px; font-weight: 700; color: #ffffff; margin: 0;">{{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</h1>
+        <h1 class="header-page-title" style="font-size: 17px; font-weight: 700; color: #ffffff; margin: 0;">
+          {{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</h1>
         <div style="width: 38px;"></div>
       </div>
     </div>
 
     <div class="px-3" style="margin-top: -24px; position: relative; z-index: 10;">
 
-    <div class="camera-container">
-      <video id="camera-feed" autoplay playsinline></video>
-      <img id="captured-image" src="" alt="Captured photo">
-      <div class="camera-button" id="take-photo">
-        <i class="bi bi-camera"></i>
+      <div class="camera-container">
+        <video id="camera-feed" autoplay playsinline></video>
+        <img id="captured-image" src="" alt="Captured photo">
+        <div class="camera-button" id="take-photo">
+          <i class="bi bi-camera"></i>
+        </div>
+        <div class="switch-camera-button" id="switch-camera">
+          <i class="bi bi-arrow-repeat"></i>
+        </div>
       </div>
-      <div class="switch-camera-button" id="switch-camera">
-        <i class="bi bi-arrow-repeat"></i>
-      </div>
-    </div>
 
-    <div class="location-info">
-      <div class="info-row">
-        <span class="info-label">Date</span>
-        <span class="info-value" id="current-date">Loading...</span>
+      <div class="location-info">
+        <div class="info-row">
+          <span class="info-label">Date</span>
+          <span class="info-value" id="current-date">Loading...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Time</span>
+          <span class="info-value" id="current-time">Loading...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Office</span>
+          <span class="info-value">
+            <span id="location-office">Checking...</span>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Work From</span>
+          <span class="info-value">
+            <select class="work-from-dropdown" id="work-from-select">
+              <option value="office">Office</option>
+              <option value="anywhere">Anywhere</option>
+            </select>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Location</span>
+          <span class="info-value">
+            <span id="loading-location">Getting location...</span>
+            <span id="location-coordinates" style="display: none;"></span>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Distance from office</span>
+          <span class="info-value" id="distance-value">Calculating...</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value">
+            <span id="location-status" class="status-badge">Checking...</span>
+          </span>
+        </div>
       </div>
-      <div class="info-row">
-        <span class="info-label">Time</span>
-        <span class="info-value" id="current-time">Loading...</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Office</span>
-        <span class="info-value">
-          <span id="location-office">Checking...</span>
-        </span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Work From</span>
-        <span class="info-value">
-          <select class="work-from-dropdown" id="work-from-select">
-            <option value="office">Office</option>
-            <option value="anywhere">Anywhere</option>
-          </select>
-        </span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Location</span>
-        <span class="info-value">
-          <span id="loading-location">Getting location...</span>
-          <span id="location-coordinates" style="display: none;"></span>
-        </span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Distance from office</span>
-        <span class="info-value" id="distance-value">Calculating...</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Status</span>
-        <span class="info-value">
-          <span id="location-status" class="status-badge">Checking...</span>
-        </span>
-      </div>
-    </div>
 
-    <div class="button-group">
-      <button class="btn-cancel" onclick="history.back()">Cancel</button>
-      <button class="btn-confirm disabled" id="confirm-button">Confirm
-        {{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</button>
-    </div>
-  </div>
-
-  <div class="confirmation-overlay" id="confirmation-modal">
-    <div class="confirmation-box">
-      <div class="confirmation-title">Confirm {{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</div>
-      <div class="confirmation-message">
-        Are you sure you want to {{ $type == 'in' ? 'clock in' : 'clock out' }} at this location?
-        <br><br>
-        <strong>Time:</strong> <span id="confirm-time"></span><br>
-        <strong>Work From:</strong> <span id="confirm-work-from"></span><br>
-        <strong>Distance from office:</strong> <span id="confirm-distance"></span>
-      </div>
       <div class="button-group">
-        <button class="btn-cancel" onclick="closeConfirmation()">Cancel</button>
-        <button class="btn-confirm" id="final-confirm">Yes, Confirm</button>
+        <button class="btn-cancel" onclick="history.back()">Cancel</button>
+        <button class="btn-confirm disabled" id="confirm-button">Confirm
+          {{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</button>
       </div>
     </div>
-  </div>
-@endsection
 
-@section('scripts')
-  <script>
-    let latitude = null;
-    let longitude = null;
-    let photoBase64 = null;
-    let distanceFromOffice = null;
-    let isInRange = false;
-    let workFromMode = 'office';
-    const officeName = "{{ $employee->office->name ?? '' }}";
-    const maxDistanceInMeters = {{ $employee->office->max_distance_allowed ?? 100 }};
-    const officeLatitude = {{ $employee->office->latitude ?? 0 }};
-    const officeLongitude = {{ $employee->office->longitude ?? 0 }};
-    const employeeId = "{{ $employee->id ?? 0 }}";
-    const clockType = "{{ $type }}";
-    let stream = null;
-    let isFrozen = false;
-    let currentFacingMode = 'environment';
-    let availableCameras = [];
-    let currentCameraIndex = 0;
-    let isInitializingCamera = false;
+    <div class="confirmation-overlay" id="confirmation-modal">
+      <div class="confirmation-box">
+        <div class="confirmation-title">Confirm {{ $type == 'in' ? 'Clock In' : 'Clock Out' }}</div>
+        <div class="confirmation-message">
+          Are you sure you want to {{ $type == 'in' ? 'clock in' : 'clock out' }} at this location?
+          <br><br>
+          <strong>Time:</strong> <span id="confirm-time"></span><br>
+          <strong>Work From:</strong> <span id="confirm-work-from"></span><br>
+          <strong>Distance from office:</strong> <span id="confirm-distance"></span>
+        </div>
+        <div class="button-group">
+          <button class="btn-cancel" onclick="closeConfirmation()">Cancel</button>
+          <button class="btn-confirm" id="final-confirm">Yes, Confirm</button>
+        </div>
+      </div>
+    </div>
+  @endsection
 
-    $(document).ready(function() {
-      updateDateTime();
-      setInterval(updateDateTime, 1000);
+  @section('scripts')
+    <script>
+      let latitude = null;
+      let longitude = null;
+      let photoBase64 = null;
+      let distanceFromOffice = null;
+      let isInRange = false;
+      let workFromMode = 'office';
+      const officeName = "{{ $employee->office->name ?? '' }}";
+      const maxDistanceInMeters = {{ $employee->office->max_distance_allowed ?? 100 }};
+      const officeLatitude = {{ $employee->office->latitude ?? 0 }};
+      const officeLongitude = {{ $employee->office->longitude ?? 0 }};
+      const employeeId = "{{ $employee->id ?? 0 }}";
+      const clockType = "{{ $type }}";
+      let stream = null;
+      let isFrozen = false;
+      let currentFacingMode = 'environment';
+      let availableCameras = [];
+      let currentCameraIndex = 0;
+      let isInitializingCamera = false;
 
-      initCamera();
-      getLocation();
+      $(document).ready(function() {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
 
-      $('#take-photo').click(capturePhoto);
-      $('#switch-camera').click(switchCamera);
+        initCamera();
+        getLocation();
 
-      $('#work-from-select').change(function() {
-        workFromMode = $(this).val();
-        updateLocationStatus();
-      });
+        $('#take-photo').click(capturePhoto);
+        $('#switch-camera').click(switchCamera);
 
-      $('#confirm-button').click(function() {
-        if ($(this).hasClass('disabled')) return;
-
-        $('#confirm-time').text($('#current-time').text());
-        $('#confirm-work-from').text($('#work-from-select option:selected').text());
-        $('#confirm-distance').text($('#distance-value').text());
-        $('#confirmation-modal').css('display', 'flex');
-      });
-
-      $('#final-confirm').click(submitAttendance);
-    });
-
-    function updateDateTime() {
-      if (isFrozen) return;
-
-      const now = new Date();
-      const dateOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      };
-      const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      };
-
-      $('#current-date').text(now.toLocaleDateString('en-US', dateOptions));
-      $('#current-time').text(now.toLocaleTimeString('en-US', timeOptions));
-    }
-
-    async function checkCameraDevices() {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(device => device.kind === 'videoinput' && device.deviceId && device.label);
-
-        console.log('Available video devices:', videoDevices);
-
-        if (videoDevices.length > 1) {
-          availableCameras = videoDevices;
-          $('#switch-camera').removeClass('hidden');
-          console.log('Multiple cameras found, showing switch button');
-        } else {
-          $('#switch-camera').addClass('hidden');
-          console.log('Single camera or no cameras found');
-        }
-      } catch (error) {
-        console.error('Error checking camera devices:', error);
-        $('#switch-camera').addClass('hidden');
-      }
-    }
-
-    async function initCamera() {
-      if (isInitializingCamera) {
-        console.log('Camera initialization already in progress');
-        return;
-      }
-
-      isInitializingCamera = true;
-
-      try {
-        if (stream) {
-          stream.getTracks().forEach(track => {
-            track.stop();
-            console.log('Stopped existing track:', track.kind, track.label);
-          });
-          stream = null;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        let constraints;
-
-        if (availableCameras.length > 0) {
-          constraints = {
-            video: {
-              deviceId: {
-                exact: availableCameras[currentCameraIndex].deviceId
-              },
-              width: {
-                ideal: 1280
-              },
-              height: {
-                ideal: 720
-              }
-            },
-            audio: false
-          };
-          console.log('Using specific camera:', availableCameras[currentCameraIndex].label);
-        } else {
-          constraints = {
-            video: {
-              facingMode: currentFacingMode,
-              width: {
-                ideal: 1280
-              },
-              height: {
-                ideal: 720
-              }
-            },
-            audio: false
-          };
-          console.log('Using facingMode:', currentFacingMode);
-        }
-
-        console.log('Camera constraints:', constraints);
-
-        const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-        stream = videoStream;
-
-        const video = document.getElementById('camera-feed');
-        video.srcObject = videoStream;
-
-        await new Promise((resolve) => {
-          video.onloadedmetadata = () => {
-            resolve();
-          };
+        $('#work-from-select').change(function() {
+          workFromMode = $(this).val();
+          updateLocationStatus();
         });
 
-        console.log('Camera initialized successfully');
-        if (availableCameras.length === 0) {
-          await checkCameraDevices();
+        $('#confirm-button').click(function() {
+          if ($(this).hasClass('disabled')) return;
+
+          $('#confirm-time').text($('#current-time').text());
+          $('#confirm-work-from').text($('#work-from-select option:selected').text());
+          $('#confirm-distance').text($('#distance-value').text());
+          $('#confirmation-modal').css('display', 'flex');
+        });
+
+        $('#final-confirm').click(submitAttendance);
+      });
+
+      function updateDateTime() {
+        if (isFrozen) return;
+
+        const now = new Date();
+        const dateOptions = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        };
+        const timeOptions = {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        };
+
+        $('#current-date').text(now.toLocaleDateString('en-US', dateOptions));
+        $('#current-time').text(now.toLocaleTimeString('en-US', timeOptions));
+      }
+
+      async function checkCameraDevices() {
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoDevices = devices.filter(device => device.kind === 'videoinput' && device.deviceId && device.label);
+
+          console.log('Available video devices:', videoDevices);
+
+          if (videoDevices.length > 1) {
+            availableCameras = videoDevices;
+            $('#switch-camera').removeClass('hidden');
+            console.log('Multiple cameras found, showing switch button');
+          } else {
+            $('#switch-camera').addClass('hidden');
+            console.log('Single camera or no cameras found');
+          }
+        } catch (error) {
+          console.error('Error checking camera devices:', error);
+          $('#switch-camera').addClass('hidden');
+        }
+      }
+
+      async function initCamera() {
+        if (isInitializingCamera) {
+          console.log('Camera initialization already in progress');
+          return;
         }
 
-      } catch (error) {
-        console.error("Camera error:", error);
+        isInitializingCamera = true;
 
-        if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
-          console.log('Trying fallback with facingMode');
-          try {
-            const fallbackConstraints = {
+        try {
+          if (stream) {
+            stream.getTracks().forEach(track => {
+              track.stop();
+              console.log('Stopped existing track:', track.kind, track.label);
+            });
+            stream = null;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          let constraints;
+
+          if (availableCameras.length > 0) {
+            constraints = {
+              video: {
+                deviceId: {
+                  exact: availableCameras[currentCameraIndex].deviceId
+                },
+                width: {
+                  ideal: 1280
+                },
+                height: {
+                  ideal: 720
+                }
+              },
+              audio: false
+            };
+            console.log('Using specific camera:', availableCameras[currentCameraIndex].label);
+          } else {
+            constraints = {
               video: {
                 facingMode: currentFacingMode,
                 width: {
@@ -489,218 +450,258 @@
               },
               audio: false
             };
+            console.log('Using facingMode:', currentFacingMode);
+          }
 
-            const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-            stream = fallbackStream;
+          console.log('Camera constraints:', constraints);
 
-            const video = document.getElementById('camera-feed');
-            video.srcObject = fallbackStream;
+          const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+          stream = videoStream;
 
-            console.log('Fallback camera initialized');
+          const video = document.getElementById('camera-feed');
+          video.srcObject = videoStream;
 
+          await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+              resolve();
+            };
+          });
+
+          console.log('Camera initialized successfully');
+          if (availableCameras.length === 0) {
             await checkCameraDevices();
+          }
 
-          } catch (fallbackError) {
-            console.error("Fallback camera error:", fallbackError);
+        } catch (error) {
+          console.error("Camera error:", error);
+
+          if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
+            console.log('Trying fallback with facingMode');
+            try {
+              const fallbackConstraints = {
+                video: {
+                  facingMode: currentFacingMode,
+                  width: {
+                    ideal: 1280
+                  },
+                  height: {
+                    ideal: 720
+                  }
+                },
+                audio: false
+              };
+
+              const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+              stream = fallbackStream;
+
+              const video = document.getElementById('camera-feed');
+              video.srcObject = fallbackStream;
+
+              console.log('Fallback camera initialized');
+
+              await checkCameraDevices();
+
+            } catch (fallbackError) {
+              console.error("Fallback camera error:", fallbackError);
+              showAlert('warning', "Could not access camera. Please check permissions.");
+            }
+          } else {
             showAlert('warning', "Could not access camera. Please check permissions.");
           }
-        } else {
-          showAlert('warning', "Could not access camera. Please check permissions.");
+        } finally {
+          isInitializingCamera = false;
         }
-      } finally {
-        isInitializingCamera = false;
-      }
-    }
-
-    async function switchCamera() {
-      if (availableCameras.length <= 1 || isInitializingCamera) {
-        console.log('Cannot switch camera:', {
-          availableCameras: availableCameras.length,
-          isInitializing: isInitializingCamera
-        });
-        return;
       }
 
-      console.log('Switching camera...');
+      async function switchCamera() {
+        if (availableCameras.length <= 1 || isInitializingCamera) {
+          console.log('Cannot switch camera:', {
+            availableCameras: availableCameras.length,
+            isInitializing: isInitializingCamera
+          });
+          return;
+        }
 
-      currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-      currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+        console.log('Switching camera...');
 
-      console.log('Switching to camera index:', currentCameraIndex, availableCameras[currentCameraIndex].label);
+        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+        currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
 
-      await initCamera();
-    }
+        console.log('Switching to camera index:', currentCameraIndex, availableCameras[currentCameraIndex].label);
 
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
-            if (isFrozen) return;
-            latitude = position.coords.latitude;
-            longitude = position.coords.longitude;
+        await initCamera();
+      }
 
-            console.log("Location obtained:", latitude, longitude);
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function(position) {
+              if (isFrozen) return;
+              latitude = position.coords.latitude;
+              longitude = position.coords.longitude;
 
-            $('#loading-location').hide();
-            $('#location-coordinates').text(latitude.toFixed(6) + ', ' + longitude.toFixed(6)).show();
+              console.log("Location obtained:", latitude, longitude);
 
-            distanceFromOffice = calculateDistance(latitude, longitude, officeLatitude, officeLongitude);
-            $('#distance-value').text(distanceFromOffice.toFixed(0) + ' meters');
+              $('#loading-location').hide();
+              $('#location-coordinates').text(latitude.toFixed(6) + ', ' + longitude.toFixed(6)).show();
 
-            isInRange = distanceFromOffice <= maxDistanceInMeters;
+              distanceFromOffice = calculateDistance(latitude, longitude, officeLatitude, officeLongitude);
+              $('#distance-value').text(distanceFromOffice.toFixed(0) + ' meters');
 
-            $('#location-office').text(officeName);
+              isInRange = distanceFromOffice <= maxDistanceInMeters;
 
-            updateLocationStatus();
-            checkEnableConfirm();
-          },
-          function(error) {
-            console.error("Geolocation error:", error);
-            $('#location-office').text("Office not found");
-            $('#loading-location').text("Could not get location");
-            $('#distance-value').text("Unknown");
-            $('#location-status').text('Location Error').removeClass('in-range anywhere-mode').addClass('out-range');
+              $('#location-office').text(officeName);
+
+              updateLocationStatus();
+              checkEnableConfirm();
+            },
+            function(error) {
+              console.error("Geolocation error:", error);
+              $('#location-office').text("Office not found");
+              $('#loading-location').text("Could not get location");
+              $('#distance-value').text("Unknown");
+              $('#location-status').text('Location Error').removeClass('in-range anywhere-mode').addClass('out-range');
+            }
+          );
+        } else {
+          $('#location-office').text("Office not found");
+          $('#loading-location').text("Geolocation not supported");
+          $('#distance-value').text("Unknown");
+          $('#location-status').text('Not Supported').removeClass('in-range anywhere-mode').addClass('out-range');
+        }
+      }
+
+      function updateLocationStatus() {
+        const statusElement = $('#location-status');
+
+        if (workFromMode === 'anywhere') {
+          statusElement
+            .text('Work From Anywhere')
+            .removeClass('in-range out-range')
+            .addClass('anywhere-mode');
+        } else {
+          if (isInRange) {
+            statusElement
+              .text('In Range')
+              .removeClass('out-range anywhere-mode')
+              .addClass('in-range');
+          } else {
+            statusElement
+              .text('Out of Range')
+              .removeClass('in-range anywhere-mode')
+              .addClass('out-range');
           }
-        );
-      } else {
-        $('#location-office').text("Office not found");
-        $('#loading-location').text("Geolocation not supported");
-        $('#distance-value').text("Unknown");
-        $('#location-status').text('Not Supported').removeClass('in-range anywhere-mode').addClass('out-range');
-      }
-    }
-
-    function updateLocationStatus() {
-      const statusElement = $('#location-status');
-
-      if (workFromMode === 'anywhere') {
-        statusElement
-          .text('Work From Anywhere')
-          .removeClass('in-range out-range')
-          .addClass('anywhere-mode');
-      } else {
-        if (isInRange) {
-          statusElement
-            .text('In Range')
-            .removeClass('out-range anywhere-mode')
-            .addClass('in-range');
-        } else {
-          statusElement
-            .text('Out of Range')
-            .removeClass('in-range anywhere-mode')
-            .addClass('out-range');
         }
       }
-    }
 
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371e3;
-      const φ1 = lat1 * Math.PI / 180;
-      const φ2 = lat2 * Math.PI / 180;
-      const Δφ = (lat2 - lat1) * Math.PI / 180;
-      const Δλ = (lon2 - lon1) * Math.PI / 180;
+      function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-        Math.cos(φ1) * Math.cos(φ2) *
-        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-      return R * c;
-    }
+        return R * c;
+      }
 
-    function capturePhoto() {
-      const video = document.getElementById('camera-feed');
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
+      function capturePhoto() {
+        const video = document.getElementById('camera-feed');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      canvas.toBlob(function(blob) {
-        photoBase64 = blob;
-        isFrozen = true;
+        canvas.toBlob(function(blob) {
+          photoBase64 = blob;
+          isFrozen = true;
 
-        const imageUrl = URL.createObjectURL(blob);
-        document.getElementById('captured-image').src = imageUrl;
-        document.getElementById('camera-feed').style.display = 'none';
-        document.getElementById('captured-image').style.display = 'block';
+          const imageUrl = URL.createObjectURL(blob);
+          document.getElementById('captured-image').src = imageUrl;
+          document.getElementById('camera-feed').style.display = 'none';
+          document.getElementById('captured-image').style.display = 'block';
 
-        $('#take-photo i').removeClass('bi-camera').addClass('bi-x-circle');
-        $('#take-photo').off('click').click(retakePhoto);
-        $('#switch-camera').addClass('hidden');
+          $('#take-photo i').removeClass('bi-camera').addClass('bi-x-circle');
+          $('#take-photo').off('click').click(retakePhoto);
+          $('#switch-camera').addClass('hidden');
+
+          checkEnableConfirm();
+        }, 'image/jpeg');
+      }
+
+      function retakePhoto() {
+        document.getElementById('camera-feed').style.display = 'block';
+        document.getElementById('captured-image').style.display = 'none';
+        photoBase64 = null;
+        isFrozen = false;
+
+        $('#take-photo i').removeClass('bi-x-circle').addClass('bi-camera');
+        $('#take-photo').off('click').click(capturePhoto);
+        if (availableCameras.length > 1) {
+          $('#switch-camera').removeClass('hidden');
+        }
 
         checkEnableConfirm();
-      }, 'image/jpeg');
-    }
-
-    function retakePhoto() {
-      document.getElementById('camera-feed').style.display = 'block';
-      document.getElementById('captured-image').style.display = 'none';
-      photoBase64 = null;
-      isFrozen = false;
-
-      $('#take-photo i').removeClass('bi-x-circle').addClass('bi-camera');
-      $('#take-photo').off('click').click(capturePhoto);
-      if (availableCameras.length > 1) {
-        $('#switch-camera').removeClass('hidden');
+        getLocation();
       }
 
-      checkEnableConfirm();
-      getLocation();
-    }
-
-    function checkEnableConfirm() {
-      if (photoBase64 && latitude && longitude) {
-        $('#confirm-button').removeClass('disabled');
-      } else {
-        $('#confirm-button').addClass('disabled');
+      function checkEnableConfirm() {
+        if (photoBase64 && latitude && longitude) {
+          $('#confirm-button').removeClass('disabled');
+        } else {
+          $('#confirm-button').addClass('disabled');
+        }
       }
-    }
 
-    function closeConfirmation() {
-      $('#confirmation-modal').css('display', 'none');
-    }
+      function closeConfirmation() {
+        $('#confirmation-modal').css('display', 'none');
+      }
 
-    function submitAttendance() {
-      $('#final-confirm').text('Processing...').prop('disabled', true);
+      function submitAttendance() {
+        $('#final-confirm').text('Processing...').prop('disabled', true);
 
-      const formData = new FormData();
-      formData.append('employee_id', employeeId);
-      formData.append('latitude', latitude);
-      formData.append('longitude', longitude);
-      formData.append('photo', photoBase64);
-      formData.append('distance_from_office', distanceFromOffice);
-      formData.append('work_from', workFromMode);
-      formData.append('type', clockType);
-      formData.append('_token', '{{ csrf_token() }}');
+        const formData = new FormData();
+        formData.append('employee_id', employeeId);
+        formData.append('latitude', latitude);
+        formData.append('longitude', longitude);
+        formData.append('photo', photoBase64);
+        formData.append('distance_from_office', distanceFromOffice);
+        formData.append('work_from', workFromMode);
+        formData.append('type', clockType);
+        formData.append('_token', '{{ csrf_token() }}');
 
-      $.ajax({
-        url: '{{ route('attendance.submit') }}',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-          if (response.success) {
-            window.location.href = '{{ route('attendance.index') }}?success=' + (clockType === 'in' ? 'clockin' :
-              'clockout');
-          } else {
-            showAlert('danger', response.message || 'There was an error submitting your attendance');
+        $.ajax({
+          url: '{{ route('attendance.submit') }}',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            if (response.success) {
+              window.location.href = '{{ route('attendance.index.mobile') }}?success=' + (clockType === 'in' ?
+                'clockin' : 'clockout');
+            } else {
+              showAlert('danger', response.message || 'There was an error submitting your attendance');
+              $('#final-confirm').text('Yes, Confirm').prop('disabled', false);
+            }
+          },
+          error: function(xhr) {
+            showAlert('danger', (xhr.responseJSON?.message || 'Something went wrong'));
             $('#final-confirm').text('Yes, Confirm').prop('disabled', false);
           }
-        },
-        error: function(xhr) {
-          showAlert('danger', (xhr.responseJSON?.message || 'Something went wrong'));
-          $('#final-confirm').text('Yes, Confirm').prop('disabled', false);
+        });
+      }
+
+      $(window).on('beforeunload', function() {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
         }
       });
-    }
-
-    $(window).on('beforeunload', function() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    });
-  </script>
-@endsection
+    </script>
+  @endsection

@@ -8,23 +8,35 @@ use App\Libraries\FileUpload;
 use App\Models\GlobalData;
 use App\Models\Leave as ModelsLeave;
 use App\Models\Organization;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class Leave extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = $request->user();
         $params = [
             'user' => $user,
             'types' => GlobalData::where('group', 'leave_type')->get(),
-            'currentEmployee' => $request->user()->employee
+            'currentEmployee' => $user?->employee
         ];
 
-        $view = isMobile() ? '_front.leave.mobile' : '_front.leave.index';
-        return view($view, $params);
+        return view('_front.leave.index', $params);
+    }
+
+    public function index_mobile(Request $request): View
+    {
+        $user = $request->user();
+        $params = [
+            'user' => $user,
+            'types' => GlobalData::where('group', 'leave_type')->get(),
+            'currentEmployee' => $user?->employee
+        ];
+
+        return view('_front.leave.mobile', $params);
     }
 
     public function data(Request $request)
@@ -33,6 +45,7 @@ class Leave extends Controller
         $roleName = strtolower(optional($user->role)->name);
         $isHR = $roleName === 'hrga';
         $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+        $isSuperOrHR = in_array($roleName, ['developer', 'superadmin', 'administrator', 'hrga']);
         $canApproveRoute = $user->hasRoute('leave.approve') || $isSuper;
         $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
 
@@ -43,9 +56,20 @@ class Leave extends Controller
 
         $query = $this->baseLeaveQuery();
 
-        if (!$isSuper && $userCompany) {
-            $query->whereHas('employee', function ($empQ) use ($userCompany) {
-                $empQ->where('company_id', $userCompany);
+        if ($isSuperOrHR) {
+            if (!$isSuper && $userCompany) {
+                $query->whereHas('employee', function ($empQ) use ($userCompany) {
+                    $empQ->where('company_id', $userCompany);
+                });
+            }
+        } else {
+            // Non-admin roles: only see their own leave records
+            $query->where(function ($q) use ($user) {
+                if ($user->employ_id) {
+                    $q->where('employ_id', $user->employ_id);
+                } else {
+                    $q->where('created_by', $user->id);
+                }
             });
         }
 
@@ -109,7 +133,7 @@ class Leave extends Controller
 
         $leaves = $query->get();
 
-        $processedLeaves = $leaves->map(function ($leave) use ($user, $isHR, $isSuper, $canApproveRoute, $userCompany) {
+        $processedLeaves = $leaves->map(function ($leave) use ($user, $isHR, $isSuper, $isSuperOrHR, $canApproveRoute, $userCompany) {
             $employee = optional($leave->employee);
             $org = optional($employee->organization);
             $auth1 = optional($org->authorized1);
@@ -141,18 +165,14 @@ class Leave extends Controller
             $leave->setAttribute('can_cancel', ($leave->created_by == $user->id || $leave->employ_id == optional($user->employee)->id));
 
             $leave->setAttribute('can_view', false);
-            if ($org && $userOrgId) {
-                $orgPathIds = explode('/', trim($org->path, '/'));
-                if (in_array($userOrgId, $orgPathIds)) {
+            if ($isSuperOrHR) {
+                if ($isSuper) {
                     $leave->setAttribute('can_view', true);
-                }
-            }
-            if ($isSuper) {
-                $leave->setAttribute('can_view', true);
-            } elseif ($isHR && $userCompany) {
-                $leaveEmpCompany = optional($employee)->company_id ?? optional($org)->company_id;
-                if ($leaveEmpCompany == $userCompany) {
-                    $leave->setAttribute('can_view', true);
+                } elseif ($isHR && $userCompany) {
+                    $leaveEmpCompany = optional($employee)->company_id ?? optional($org)->company_id;
+                    if ($leaveEmpCompany == $userCompany) {
+                        $leave->setAttribute('can_view', true);
+                    }
                 }
             }
 
@@ -166,13 +186,16 @@ class Leave extends Controller
             return $leave;
         });
 
-        $processedLeaves = $processedLeaves->filter(function ($leave) {
-            return $leave->is_user_leave
-                || $leave->can_evaluate
-                || $leave->can_approve_1
-                || $leave->can_approve_2
-                || $leave->can_cancel
-                || $leave->can_view;
+        $processedLeaves = $processedLeaves->filter(function ($leave) use ($isSuperOrHR) {
+            if ($isSuperOrHR) {
+                return $leave->is_user_leave
+                    || $leave->can_evaluate
+                    || $leave->can_approve_1
+                    || $leave->can_approve_2
+                    || $leave->can_cancel
+                    || $leave->can_view;
+            }
+            return $leave->is_user_leave;
         })->values();
 
         return response()->json(['data' => $processedLeaves]);
@@ -718,24 +741,13 @@ class Leave extends Controller
         }
 
         if (!in_array($roleName, ['hrga', 'developer', 'superadmin', 'administrator'])) {
-            $userOrgId = $user->organization->id ?? null;
-            if ($userOrgId) {
-                $allOrgs = Organization::all()->keyBy('id');
-
-                $getChildOrgIds = function ($orgId) use ($allOrgs, &$getChildOrgIds) {
-                    $children = $allOrgs->where('parent_id', $orgId);
-                    $ids = [$orgId];
-                    foreach ($children as $child) {
-                        $ids = array_merge($ids, $getChildOrgIds($child->id));
-                    }
-                    return $ids;
-                };
-
-                $allowedOrgIds = $getChildOrgIds($userOrgId);
-                $query->whereHas('employee', function ($q) use ($allowedOrgIds) {
-                    $q->whereIn('org_id', $allowedOrgIds);
-                });
-            }
+            $query->where(function ($q) use ($user) {
+                if ($user->employ_id) {
+                    $q->where('employ_id', $user->employ_id);
+                } else {
+                    $q->where('created_by', $user->id);
+                }
+            });
         }
 
         $leaves = $query->get();

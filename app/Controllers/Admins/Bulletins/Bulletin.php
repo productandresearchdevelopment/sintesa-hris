@@ -9,12 +9,13 @@ use App\Models\Bulletins\Bulletin as BulletinModel;
 use App\Models\Bulletins\BulletinCategory as BulletinModelCategory;
 use App\SystemModels\Auth\User;
 use App\SystemModels\Globals\Upload;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class Bulletin extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $user = $request->user();
         $categories = BulletinModelCategory::all()->map(function ($category) {
@@ -29,13 +30,29 @@ class Bulletin extends Controller
             'user' => $user
         ];
 
-        if (!in_array($user->role->name, ['DEVELOPER', 'SUPERADMIN', 'ADMINISTRATOR', 'HRGA'])) {
-            $view = isMobile() ? '_front.bulletin.mobile' : '_front.bulletin.index';
-            return view($view, $params);
-        } else {
-            $view = isMobile() ? '_front.bulletin.mobile' : '_bak.bulletin.main';
-            return view($view, $params);
-        }
+        $view = in_array($user?->role?->name, ['DEVELOPER', 'SUPERADMIN', 'ADMINISTRATOR', 'HRGA'])
+            ? '_bak.bulletin.main'
+            : '_front.bulletin.index';
+
+        return view($view, $params);
+    }
+
+    public function index_mobile(Request $request): View
+    {
+        $user = $request->user();
+        $categories = BulletinModelCategory::all()->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'name' => $category->name
+            ];
+        });
+
+        $params = [
+            'category' => $categories,
+            'user' => $user
+        ];
+
+        return view('_front.bulletin.mobile', $params);
     }
 
 

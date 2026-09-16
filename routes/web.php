@@ -59,6 +59,7 @@ Route::middleware(['auth', 'roles'])->group(function () {
         });
         Route::controller(Bulletin::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/index-mobile', 'index_mobile')->name('index.mobile');
             Route::get('/data', 'data')->name('data');
             Route::get('/view/{id?}', 'view')->name('view');
             Route::post('/create', 'create')->name('create');
@@ -208,6 +209,7 @@ Route::middleware(['auth', 'roles'])->group(function () {
     Route::prefix('employee')->name('employee.')->group(function () {
         Route::controller(Employee::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/index-mobile', 'index_mobile')->name('index.mobile');
             Route::get('/data', 'data')->name('data');
             Route::get('/view/{id?}', 'view')->name('view');
             Route::post('/create', 'create')->name('create');
@@ -370,6 +372,7 @@ Route::middleware(['auth', 'roles'])->group(function () {
     Route::prefix('leave')->name('leave.')->group(function () {
         Route::controller(Leave::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/index-mobile', 'index_mobile')->name('index.mobile');
             Route::get('/data', 'data')->name('data');
             Route::get('/export/excel', 'exportExcel')->name('export.excel');
             Route::get('/data/{id?}', 'get')->name('get');
@@ -399,7 +402,10 @@ Route::middleware(['auth', 'roles'])->group(function () {
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::controller(Attendance::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/index-mobile', 'index_mobile')->name('index.mobile');
             Route::get('/report', 'report')->name('report');
+            Route::get('/report-mobile', 'report_mobile')->name('report.mobile');
+            Route::get('/report/index-mobile', 'report_mobile');
             Route::post('/submit', 'submit')->name('submit');
             Route::post('/store', 'store')->name('store');
             Route::post('/update', 'update')->name('update');

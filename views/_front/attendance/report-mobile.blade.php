@@ -2,7 +2,8 @@
 
 @section('head')
   <style>
-    html, body {
+    html,
+    body {
       background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
@@ -92,6 +93,7 @@
       .report-header-banner {
         display: none !important;
       }
+
       .content-body {
         margin-top: 0 !important;
         padding: 0 !important;
@@ -258,9 +260,20 @@
       gap: 4px;
     }
 
-    .status-on-time { background: #ecfdf5; color: #059669; }
-    .status-late { background: #fffbe0; color: #d97706; }
-    .status-absent { background: #fef2f2; color: #dc2626; }
+    .status-on-time {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .status-late {
+      background: #fffbe0;
+      color: #d97706;
+    }
+
+    .status-absent {
+      background: #fef2f2;
+      color: #dc2626;
+    }
 
     .media-btn-link {
       font-size: 11px;
@@ -324,31 +337,32 @@
 @endsection
 
 @section('content')
-  {{-- MOBILE VIEW --}}
   <div class="report-page-wrapper">
     <div class="report-header-banner">
       <div class="top-action-bar">
-        <a href="{{ route('attendance.index') }}" class="btn-back-link">
+        <a href="{{ route('attendance.index.mobile') }}" class="btn-back-link">
           <i class="bi bi-arrow-left"></i>
         </a>
         <h1 class="header-page-title">Attendance Report</h1>
         <div class="dropdown">
-          <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false" title="More Options">
+          <button type="button" class="btn-dots-more" data-bs-toggle="dropdown" aria-expanded="false"
+            title="More Options">
             <i class="bi bi-three-dots-vertical"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2" style="z-index: 99999;">
             <li>
-              <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3" href="{{ route('attendance.export.excel', request()->all()) }}">
+              <a class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-success py-2 rounded-3"
+                href="{{ route('attendance.export.excel', request()->all()) }}">
                 <i class="bi bi-file-earmark-excel fs-6"></i> Export Excel
               </a>
             </li>
-            @if ($isHR)
+            {{-- @if ($isHR)
               <li>
                 <button type="button" class="dropdown-item fw-semibold d-flex align-items-center gap-2 text-primary py-2 rounded-3" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
                   <i class="bi bi-plus-circle fs-6"></i> Add Attendance
                 </button>
               </li>
-            @endif
+            @endif --}}
           </ul>
         </div>
       </div>
@@ -360,15 +374,16 @@
         <div class="d-flex align-items-center justify-content-between">
           <div>
             <span class="summary-label">Attendance Records</span>
-            <h4 class="summary-value mb-0">{{ isset($formattedLogs) ? count($formattedLogs) : 0 }} <small style="font-size: 13px; font-weight: 600; color: #64748b;">Logs</small></h4>
+            <h4 class="summary-value mb-0">{{ isset($formattedLogs) ? count($formattedLogs) : 0 }} <small
+                style="font-size: 13px; font-weight: 600; color: #64748b;">Logs</small></h4>
           </div>
-          @if ($isHR)
+          {{-- @if ($isHR)
             <div class="d-flex align-items-center gap-2">
               <button type="button" class="btn-summary-action btn-primary-action" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
                 <i class="bi bi-plus-lg me-1"></i> Add Record
               </button>
             </div>
-          @endif
+          @endif --}}
         </div>
       </div>
 
@@ -376,12 +391,13 @@
       <div class="filter-card">
         <div class="filter-card-title">
           <span><i class="bi bi-funnel-fill text-primary me-1"></i> Attendance Filter</span>
-          <a href="{{ route('attendance.report') }}" class="text-decoration-none text-muted fw-bold" style="font-size: 11.5px;">
+          <a href="{{ route('attendance.report.mobile') }}" class="text-decoration-none text-muted fw-bold"
+            style="font-size: 11.5px;">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
           </a>
         </div>
 
-        <form action="{{ route('attendance.report') }}" method="GET" id="reportForm">
+        <form action="{{ route('attendance.report.mobile') }}" method="GET" id="reportForm">
           <div class="row g-2">
             <div class="col-6">
               <select name="month" class="filter-select-custom" id="month-selector" onchange="this.form.submit()">
@@ -413,7 +429,8 @@
                 <select name="org_id" class="filter-select-custom" id="org-selector" onchange="this.form.submit()">
                   <option value="">All Organizations</option>
                   @foreach ($orgTree as $org)
-                    <option value="{{ $org['id'] }}" {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
+                    <option value="{{ $org['id'] }}"
+                      {{ (string) $selectedOrgId === (string) $org['id'] ? 'selected' : '' }}>
                       {{ $org['name'] }}
                     </option>
                   @endforeach
@@ -421,10 +438,12 @@
               </div>
 
               <div class="col-12">
-                <select name="employee_id" class="filter-select-custom" id="employee-selector" onchange="this.form.submit()">
+                <select name="employee_id" class="filter-select-custom" id="employee-selector"
+                  onchange="this.form.submit()">
                   <option value="">All Employees</option>
                   @foreach ($employeesList as $emp)
-                    <option value="{{ $emp->id }}" {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>
+                    <option value="{{ $emp->id }}"
+                      {{ (string) $selectedEmployeeId === (string) $emp->id ? 'selected' : '' }}>
                       {{ $emp->fullname }}
                     </option>
                   @endforeach
@@ -443,7 +462,8 @@
               <div class="record-card-header">
                 <div>
                   <h3 class="record-emp-name">{{ $log['employee_name'] }}</h3>
-                  <span class="record-date-badge"><i class="bi bi-calendar3 me-1"></i> {{ $log['day'] }}, {{ $log['date'] }}</span>
+                  <span class="record-date-badge"><i class="bi bi-calendar3 me-1"></i> {{ $log['day'] }},
+                    {{ $log['date'] }}</span>
                 </div>
 
                 @php
@@ -468,14 +488,17 @@
               <div class="d-flex align-items-center justify-content-between pt-2 border-top">
                 <div class="d-flex align-items-center gap-2">
                   @if ($log['clock_in_photo'])
-                    <a href="{{ $log['clock_in_photo'] }}" target="_blank" rel="noopener noreferrer" class="media-btn-link" title="Open Clock In Photo in new tab">
+                    <a href="{{ $log['clock_in_photo'] }}" target="_blank" rel="noopener noreferrer"
+                      class="media-btn-link" title="Open Clock In Photo in new tab">
                       <i class="bi bi-box-arrow-up-right"></i> In Photo
                     </a>
                   @else
                     <span class="text-muted" style="font-size: 11px;">No In Photo</span>
                   @endif
                   @if ($log['clock_out_photo'])
-                    <a href="{{ $log['clock_out_photo'] }}" target="_blank" rel="noopener noreferrer" class="media-btn-link text-danger border-danger-subtle bg-danger-subtle" title="Open Clock Out Photo in new tab">
+                    <a href="{{ $log['clock_out_photo'] }}" target="_blank" rel="noopener noreferrer"
+                      class="media-btn-link text-danger border-danger-subtle bg-danger-subtle"
+                      title="Open Clock Out Photo in new tab">
                       <i class="bi bi-box-arrow-up-right"></i> Out Photo
                     </a>
                   @else
@@ -483,13 +506,13 @@
                   @endif
                 </div>
 
-                @if ($isHR)
+                {{-- @if ($isHR)
                   <button class="edit-btn-icon edit-attendance-btn" title="Edit Attendance" data-id="{{ $log['id'] }}"
                     data-name="{{ $log['employee_name'] }}" data-date="{{ $log['date'] }}"
                     data-clock-in="{{ $log['raw_clock_in'] }}" data-clock-out="{{ $log['raw_clock_out'] }}">
                     <i class="bi bi-pencil-square"></i>
                   </button>
-                @endif
+                @endif --}}
               </div>
             </div>
           @endforeach
@@ -528,13 +551,15 @@
               <div class="col-6">
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-muted">Clock In Time</label>
-                  <input type="time" class="form-control" name="clock_in" id="edit-clock-in" style="border-radius: 10px;">
+                  <input type="time" class="form-control" name="clock_in" id="edit-clock-in"
+                    style="border-radius: 10px;">
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
                   <label class="form-label small fw-bold text-muted">Clock Out Time</label>
-                  <input type="time" class="form-control" name="clock_out" id="edit-clock-out" style="border-radius: 10px;">
+                  <input type="time" class="form-control" name="clock_out" id="edit-clock-out"
+                    style="border-radius: 10px;">
                 </div>
               </div>
             </div>
@@ -561,8 +586,10 @@
             @csrf
             <div class="modal-body">
               <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Select Employee <span class="text-danger">*</span></label>
-                <select name="employee_id" id="create-employee-id" class="form-select" style="border-radius: 10px;" required>
+                <label class="form-label small fw-bold text-muted">Select Employee <span
+                    class="text-danger">*</span></label>
+                <select name="employee_id" id="create-employee-id" class="form-select" style="border-radius: 10px;"
+                  required>
                   <option value="">-- Select Employee --</option>
                   @foreach ($employeesList as $emp)
                     <option value="{{ $emp->id }}">{{ $emp->fullname }}</option>
@@ -571,19 +598,22 @@
               </div>
               <div class="mb-3">
                 <label class="form-label small fw-bold text-muted">Date <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" name="date" id="create-date" value="{{ date('Y-m-d') }}" style="border-radius: 10px;" required>
+                <input type="date" class="form-control" name="date" id="create-date"
+                  value="{{ date('Y-m-d') }}" style="border-radius: 10px;" required>
               </div>
               <div class="row">
                 <div class="col-6">
                   <div class="mb-3">
                     <label class="form-label small fw-bold text-muted">Clock In Time</label>
-                    <input type="time" class="form-control" name="clock_in" id="create-clock-in" style="border-radius: 10px;">
+                    <input type="time" class="form-control" name="clock_in" id="create-clock-in"
+                      style="border-radius: 10px;">
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="mb-3">
                     <label class="form-label small fw-bold text-muted">Clock Out Time</label>
-                    <input type="time" class="form-control" name="clock_out" id="create-clock-out" style="border-radius: 10px;">
+                    <input type="time" class="form-control" name="clock_out" id="create-clock-out"
+                      style="border-radius: 10px;">
                   </div>
                 </div>
               </div>
