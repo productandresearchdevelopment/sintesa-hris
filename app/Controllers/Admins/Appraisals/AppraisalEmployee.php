@@ -31,12 +31,19 @@ class AppraisalEmployee extends Controller
     public function data(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $roleName = strtolower($user?->role?->name ?? '');
 
         $query = Mod::with(['period', 'employee', 'template', 'evaluator1', 'evaluator2', 'appraisal_employee_questions', 'appraisal_employee_summaries']);
 
-        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        if (!in_array($roleName, ['superadmin', 'developer', 'administrator', 'hrga'])) {
+            $employId = $user?->employ_id ?? $user?->employee?->id;
+            if ($employId) {
+                $query->where('employ_id', $employId);
+            } else {
+                $query->whereRaw('1=0');
+            }
+        } else if ($roleName !== 'superadmin' && $roleName !== 'developer') {
+            $userCompany = $user?->employee?->company_id ?? $user?->company_id;
             if ($userCompany) {
                 $query->whereHas('employee', function ($q) use ($userCompany) {
                     $q->where('company_id', $userCompany);
@@ -67,7 +74,8 @@ class AppraisalEmployee extends Controller
     public function data_employee(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $roleName = strtolower($user?->role?->name ?? '');
+        $isManagerOrAdmin = in_array($roleName, ['superadmin', 'developer', 'administrator', 'hrga']);
 
         $query = Employee::with([
             'user',
@@ -94,23 +102,25 @@ class AppraisalEmployee extends Controller
         ]);
 
         if ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            $userCompany = $user?->employee?->company_id ?? $user?->company_id;
             if ($userCompany) {
-                $query->where('company_id', $userCompany);
+                $query->where('iq_employ.company_id', $userCompany);
             }
         }
 
-        if ($request->filled('organization')) {
-            $userOrg = $request->organization;
-            $childOrganizations = array_merge([$userOrg], $this->getAllChildOrganizations($userOrg));
-            $query->whereIn('org_id', $childOrganizations);
-            $query->orderByRaw("FIELD(org_id, " . implode(',', $childOrganizations) . ")");
-        } elseif ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userOrg = optional(optional($user)->employee)->org_id ?? optional($user)->organization_id;
-            if ($userOrg) {
+        if (!$isManagerOrAdmin) {
+            $employId = $user?->employ_id ?? $user?->employee?->id;
+            if ($employId) {
+                $query->where('iq_employ.id', $employId);
+            } else {
+                $query->whereRaw('1=0');
+            }
+        } else {
+            if ($request->filled('organization')) {
+                $userOrg = $request->organization;
                 $childOrganizations = array_merge([$userOrg], $this->getAllChildOrganizations($userOrg));
-                $query->whereIn('org_id', $childOrganizations);
-                $query->orderByRaw("FIELD(org_id, " . implode(',', $childOrganizations) . ")");
+                $query->whereIn('iq_employ.org_id', $childOrganizations);
+                $query->orderByRaw("FIELD(iq_employ.org_id, " . implode(',', $childOrganizations) . ")");
             }
         }
 
@@ -129,6 +139,17 @@ class AppraisalEmployee extends Controller
             $query->onlyTrashed();
         }
 
+        $periodId = $request->input('period_id');
+        $periodYear = $request->input('period_year');
+        $periodSmt = $request->input('period_smt');
+
+        if (!$request->filled('sort')) {
+            $query->leftJoin('iq_org', 'iq_employ.org_id', '=', 'iq_org.id')
+                ->select('iq_employ.*')
+                ->orderByRaw("COALESCE(iq_org.path, CONCAT('/', iq_employ.org_id), '/999999') ASC")
+                ->orderBy('iq_employ.fullname', 'ASC');
+        }
+
         $result = Query::open($query, [
             'nickname',
             'fullname',
@@ -139,6 +160,45 @@ class AppraisalEmployee extends Controller
             'company.id',
             'company.name',
         ], $counter);
+
+        if (!$request->filled('sort')) {
+            $sortFn = function ($a, $b) use ($periodId, $periodYear, $periodSmt) {
+                $orgPathA = $a->organization?->path ?? ($a->organization?->id ? '/' . $a->organization->id : '/999999');
+                $orgPathB = $b->organization?->path ?? ($b->organization?->id ? '/' . $b->organization->id : '/999999');
+                $cmpOrg = strnatcmp($orgPathA, $orgPathB);
+                if ($cmpOrg !== 0) {
+                    return $cmpOrg;
+                }
+
+                $appA = $a->appraisal_employees?->first(function ($app) use ($periodId, $periodYear, $periodSmt) {
+                    if ($periodId && ($app->period_id == $periodId || $app->period?->period_id == $periodId)) return true;
+                    if ($periodYear && $periodSmt && $app->period?->appraisal_period?->period == $periodYear && $app->period?->appraisal_period?->smester == $periodSmt) return true;
+                    return !$periodId && !$periodYear;
+                });
+
+                $appB = $b->appraisal_employees?->first(function ($app) use ($periodId, $periodYear, $periodSmt) {
+                    if ($periodId && ($app->period_id == $periodId || $app->period?->period_id == $periodId)) return true;
+                    if ($periodYear && $periodSmt && $app->period?->appraisal_period?->period == $periodYear && $app->period?->appraisal_period?->smester == $periodSmt) return true;
+                    return !$periodId && !$periodYear;
+                });
+
+                $hasScoreA = $appA && (($appA->total_point !== null && $appA->total_point !== '') || $appA->evaluator1_by || $appA->evaluator2_by);
+                $hasScoreB = $appB && (($appB->total_point !== null && $appB->total_point !== '') || $appB->evaluator1_by || $appB->evaluator2_by);
+
+                if ($hasScoreA !== $hasScoreB) {
+                    return $hasScoreA ? 1 : -1;
+                }
+
+                return strnatcasecmp($a->fullname ?? '', $b->fullname ?? '');
+            };
+
+            if (is_array($result) && isset($result['data'])) {
+                $sorted = $result['data']->values()->sort($sortFn)->values();
+                $result['data'] = $sorted;
+            } elseif ($result instanceof \Illuminate\Support\Collection) {
+                $result = $result->values()->sort($sortFn)->values();
+            }
+        }
 
         return $result;
     }

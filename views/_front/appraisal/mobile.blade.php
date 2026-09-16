@@ -800,6 +800,7 @@
         filteredEmployees = allEmployees.filter(employee =>
           query === '' || employee.fullname.toLowerCase().includes(query.toLowerCase())
         );
+
         currentIndex = 0;
         renderEmployees(filteredEmployees.slice(0, loadLimit));
 
@@ -808,14 +809,21 @@
 
       function fetchEmployees() {
         showLoading();
+        const selYear = selectedPeriod?.appraisal_period?.period || selectedPeriod?.period;
+        const selSmester = selectedPeriod?.appraisal_period?.smester || selectedPeriod?.smester;
+        const selPeriodId = selectedPeriod?.id || selectedPeriod?.period_id || selectedPeriod?.appraisal_period?.id;
+
         $.ajax({
           url: '{{ route('appraisal.employee.data.employee') }}',
           method: 'GET',
           data: {
-            trash: 1
+            trash: 1,
+            period_id: selPeriodId,
+            period_year: selYear,
+            period_smt: selSmester
           },
           success: function(response) {
-            allEmployees = response.data;
+            allEmployees = response.data || [];
             filterData();
           },
           error: function() {
@@ -1483,9 +1491,11 @@
               category_id: q.category_id,
               group_kpi: q.group_kpi,
               weight: q.weight,
-              evaluator1_point: formatScore(ans.evaluator1_point !== null && ans.evaluator1_point !== undefined && ans
+              evaluator1_point: formatScore(ans.evaluator1_point !== null && ans.evaluator1_point !== undefined &&
+                ans
                 .evaluator1_point !== '' ? ans.evaluator1_point : ans.evaluator1_value),
-              evaluator2_point: formatScore(ans.evaluator2_point !== null && ans.evaluator2_point !== undefined && ans
+              evaluator2_point: formatScore(ans.evaluator2_point !== null && ans.evaluator2_point !== undefined &&
+                ans
                 .evaluator2_point !== '' ? ans.evaluator2_point : ans.evaluator2_value),
               evaluator1_note: formatNote(ans.evaluator1_note),
               evaluator2_note: formatNote(ans.evaluator2_note),
@@ -1500,9 +1510,11 @@
               category_id: q.category_id || item.category_id,
               group_kpi: q.group_kpi || item.group_kpi,
               weight: q.weight || item.weight,
-              evaluator1_point: formatScore(item.evaluator1_point !== null && item.evaluator1_point !== undefined && item
+              evaluator1_point: formatScore(item.evaluator1_point !== null && item.evaluator1_point !==
+                undefined && item
                 .evaluator1_point !== '' ? item.evaluator1_point : item.evaluator1_value),
-              evaluator2_point: formatScore(item.evaluator2_point !== null && item.evaluator2_point !== undefined && item
+              evaluator2_point: formatScore(item.evaluator2_point !== null && item.evaluator2_point !==
+                undefined && item
                 .evaluator2_point !== '' ? item.evaluator2_point : item.evaluator2_value),
               evaluator1_note: formatNote(item.evaluator1_note),
               evaluator2_note: formatNote(item.evaluator2_note),
