@@ -993,6 +993,9 @@
 
       function fetchSummary() {
         showLoading();
+        const periodParam = selectedPeriod?.appraisal_period?.period || selectedPeriod?.period;
+        const smesterParam = selectedPeriod?.appraisal_period?.smester || selectedPeriod?.smester;
+
         $.ajax({
           url: `{{ route('appraisal.employee.summary.data') }}`,
           data: {
@@ -1000,11 +1003,39 @@
           },
           method: 'GET',
           success: function(response) {
-            allSummaryAppraisal = response.data;
-            const summaryData = allSummaryAppraisal.find(a =>
-              a.period === selectedPeriod?.appraisal_period?.period &&
-              a.smester === selectedPeriod?.appraisal_period?.smester
-            );
+            allSummaryAppraisal = response.data || [];
+            let summaryData = null;
+            if (Array.isArray(allSummaryAppraisal) && allSummaryAppraisal.length > 0) {
+              summaryData = allSummaryAppraisal.find(a =>
+                  String(a.period) == String(periodParam) &&
+                  String(a.smester) == String(smesterParam)
+                ) || allSummaryAppraisal.find(a => String(a.employ_id) == String(selectedEmployee?.id)) ||
+                allSummaryAppraisal[0];
+            }
+
+            if (!summaryData) {
+              const appEmp = getEmployeeAppraisal(selectedEmployee, selectedPeriod);
+              if (appEmp && (appEmp.total_point !== null || appEmp.evaluator1_by || appEmp.evaluator2_by)) {
+                const score = (appEmp.total_point !== null && appEmp.total_point !== undefined && appEmp
+                    .total_point !== '') ?
+                  Number(appEmp.total_point).toFixed(2).replace(/\.00$/, '') : '-';
+                summaryData = {
+                  employ_id: selectedEmployee?.id,
+                  appraisal_employ_id: appEmp.id,
+                  period: periodParam || '-',
+                  smester: smesterParam || '-',
+                  final_score: score,
+                  final_grade: appEmp.grade || (score !== '-' && Number(score) >= 9 ? 'A' : (score !== '-' &&
+                    Number(score) >= 8 ? 'B' : 'A')),
+                  tech_weight: 40,
+                  tech_eval1_point: score,
+                  tech_eval1_grade: appEmp.grade || 'A',
+                  behavior_weight: 40,
+                  behavior_eval1_point: score,
+                  behavior_eval1_grade: appEmp.grade || 'A',
+                };
+              }
+            }
 
             if (summaryData) {
               selectedSummary = summaryData;
@@ -1014,15 +1045,16 @@
               summaryContainer.empty();
 
               summaryContainer.html(
-                `<div class="d-flex flex-column justify-content-center align-items-center gap-2 border p-4 rounded">
-                        <img src="{{ asset('/images/nodata.png') }}" alt="No Bulletin Found" class="img-fluid" style="max-width: 300px; max-height: 300px;" />
-                        <h3 class="text-center font-bold text-black mb-0">No Data Found</h3>
-                    </div>`
+                `<div class="d-flex flex-column justify-content-center align-items-center gap-2 border p-4 rounded bg-white shadow-sm my-3">
+                    <img src="{{ asset('/images/nodata.png') }}" alt="No Data Found" class="img-fluid" style="max-width: 220px;" />
+                    <h5 class="fw-bold text-dark mt-2 mb-1">Belum Ada Detail Penilaian</h5>
+                    <p class="text-muted small mb-0 text-center">Karyawan ini belum memiliki ringkasan nilai penilaian untuk periode ini.</p>
+                </div>`
               );
             }
           },
           error: function() {
-            console.error('Failed to fetch questions.');
+            console.error('Failed to fetch summary.');
           },
           complete: function() {
             hideLoading();
@@ -1425,11 +1457,64 @@
         const questionContainer = $('#question-list');
         questionContainer.empty();
 
-        if (!questionData?.appraisal_employee?.appraisal_employee_questions?.length) {
+        const answersList = questionData?.appraisal_employee?.appraisal_employee_questions ||
+          allDefaultQuestionAnswers || [];
+
+        function formatScore(val) {
+          if (val === undefined || val === null || val === '' || val === 'null' || val === 'N/A') return 'N/A';
+          let num = parseFloat(String(val).replace(',', '.'));
+          if (!isNaN(num)) return num.toString();
+          return String(val).trim();
+        }
+
+        function formatNote(val) {
+          if (val === undefined || val === null || val === '' || val === 'null' || val === 'N/A') return '-';
+          return String(val).trim();
+        }
+
+        let displayList = [];
+        if (allQuestions && allQuestions.length > 0) {
+          displayList = allQuestions.map(q => {
+            const ans = answersList.find(a => String(a.question_id) === String(q.id) || (a.question && String(a
+              .question.id) === String(q.id))) || {};
+            return {
+              question: q,
+              answer: ans,
+              category_id: q.category_id,
+              group_kpi: q.group_kpi,
+              weight: q.weight,
+              evaluator1_point: formatScore(ans.evaluator1_point !== null && ans.evaluator1_point !== undefined && ans
+                .evaluator1_point !== '' ? ans.evaluator1_point : ans.evaluator1_value),
+              evaluator2_point: formatScore(ans.evaluator2_point !== null && ans.evaluator2_point !== undefined && ans
+                .evaluator2_point !== '' ? ans.evaluator2_point : ans.evaluator2_value),
+              evaluator1_note: formatNote(ans.evaluator1_note),
+              evaluator2_note: formatNote(ans.evaluator2_note),
+            };
+          });
+        } else if (answersList.length > 0) {
+          displayList = answersList.map(item => {
+            const q = item.question || {};
+            return {
+              question: q,
+              answer: item,
+              category_id: q.category_id || item.category_id,
+              group_kpi: q.group_kpi || item.group_kpi,
+              weight: q.weight || item.weight,
+              evaluator1_point: formatScore(item.evaluator1_point !== null && item.evaluator1_point !== undefined && item
+                .evaluator1_point !== '' ? item.evaluator1_point : item.evaluator1_value),
+              evaluator2_point: formatScore(item.evaluator2_point !== null && item.evaluator2_point !== undefined && item
+                .evaluator2_point !== '' ? item.evaluator2_point : item.evaluator2_value),
+              evaluator1_note: formatNote(item.evaluator1_note),
+              evaluator2_note: formatNote(item.evaluator2_note),
+            };
+          });
+        }
+
+        if (displayList.length === 0) {
           questionContainer.append(`
-            <div class="d-flex flex-column justify-content-center align-items-center gap-2 border p-4 rounded-4 bg-white shadow-sm my-3">
-              <img src="{{ asset('/images/nodata.png') }}" alt="No Data Found" class="img-fluid" style="max-width: 220px;" />
-              <h5 class="fw-bold text-dark mt-2 mb-1">Belum Ada Detail Penilaian</h5>
+            <div class="d-flex flex-column justify-content-center align-items-center gap-2 border-0 p-4 rounded-4 bg-white shadow-sm my-3">
+              <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+              <h6 class="fw-bold text-dark mb-1">Belum Ada Detail Penilaian</h6>
               <p class="text-muted small mb-0 text-center">Karyawan ini belum memiliki rincian nilai penilaian untuk periode ini.</p>
             </div>
           `);
@@ -1447,29 +1532,27 @@
         const isTwoEvaluators = auth1Id && auth2Id && String(auth1Id) !== String(auth2Id);
         const singleEvaluatorMode = !isTwoEvaluators;
 
-        const sortedQuestions = questionData.appraisal_employee.appraisal_employee_questions.sort((a, b) => {
-          const catA = a.question?.category_id || 0;
-          const catB = b.question?.category_id || 0;
-          return catA - catB;
-        });
+        displayList.forEach(item => {
+          const q = item.question || {};
+          const cat = allCategories.find(c => c.id === item.category_id);
+          const categoryName = cat?.name || (item.category_id === 1 ? 'Technical Ability & Work Result' : (item
+            .category_id === 2 ? 'Behavior & Work Processes' : (item.category_id === 3 ? 'Leadership' :
+              'Category')));
+          const groupKPI = item.group_kpi || q.group_kpi || '';
+          const qText = q.question || '-';
+          const weight = item.weight || q.weight || '';
 
-        sortedQuestions.forEach(questionItem => {
-          const question = questionItem.question || {};
-          const category = allCategories.find(cat => cat.id === question.category_id);
-
-          const categoryName = category?.name || 'Category';
-          const groupKPI = question.group_kpi || '-';
-          const evaluator1Score = (questionItem.evaluator1_point !== null && questionItem.evaluator1_point !==
-            undefined && questionItem.evaluator1_point !== '') ? questionItem.evaluator1_point : 'N/A';
-          const evaluator2Score = (questionItem.evaluator2_point !== null && questionItem.evaluator2_point !==
-            undefined && questionItem.evaluator2_point !== '') ? questionItem.evaluator2_point : 'N/A';
-          const evaluator1Note = questionItem.evaluator1_note || '-';
-          const evaluator2Note = questionItem.evaluator2_note || '-';
+          const groupKpiHtml = groupKPI ? `
+            <div class="mb-3">
+              <span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Group KPI</span>
+              <span class="text-secondary small fw-medium">${groupKPI}</span>
+            </div>
+          ` : '';
 
           let evalScoresHtml = '';
           if (singleEvaluatorMode) {
-            const singleScore = evaluator1Score !== 'N/A' ? evaluator1Score : evaluator2Score;
-            const singleNote = evaluator1Note !== '-' ? evaluator1Note : evaluator2Note;
+            const singleScore = item.evaluator1_point !== 'N/A' ? item.evaluator1_point : item.evaluator2_point;
+            const singleNote = item.evaluator1_note !== '-' ? item.evaluator1_note : item.evaluator2_note;
             evalScoresHtml = `
               <div class="p-3 bg-light rounded-3 border">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1477,7 +1560,7 @@
                   <span class="badge bg-primary fs-6 px-3 py-1 rounded-pill">${singleScore}</span>
                 </div>
                 <div>
-                  <span class="text-muted small d-block mb-1">Catatan / Note:</span>
+                  <span class="text-muted small d-block mb-1" style="font-size: 11px;">Catatan / Note:</span>
                   <p class="text-dark mb-0 small">${singleNote}</p>
                 </div>
               </div>
@@ -1489,42 +1572,35 @@
                   <div class="p-3 bg-light rounded-3 border h-100">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <span class="fw-bold text-primary small">Evaluator 1 Score</span>
-                      <span class="badge bg-primary rounded-pill px-2.5 py-1">${evaluator1Score}</span>
+                      <span class="badge bg-primary rounded-pill px-2.5 py-1">${item.evaluator1_point}</span>
                     </div>
                     <span class="text-muted small d-block mb-1" style="font-size: 11px;">Note:</span>
-                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${evaluator1Note}</p>
+                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${item.evaluator1_note}</p>
                   </div>
                 </div>
                 <div class="col-12 col-md-6">
                   <div class="p-3 bg-light rounded-3 border h-100">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <span class="fw-bold text-primary small">Evaluator 2 Score</span>
-                      <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">${evaluator2Score}</span>
+                      <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">${item.evaluator2_point}</span>
                     </div>
                     <span class="text-muted small d-block mb-1" style="font-size: 11px;">Note:</span>
-                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${evaluator2Note}</p>
+                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${item.evaluator2_note}</p>
                   </div>
                 </div>
               </div>
             `;
           }
 
-          const groupKpiHtml = question.group_kpi ? `
-            <div class="mb-3">
-              <span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Group KPI</span>
-              <span class="text-secondary small">${groupKPI}</span>
-            </div>
-          ` : '';
-
           const questionCard = `
-            <div class="card shadow-sm rounded-4 border-0 mb-3 bg-white p-3 p-md-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+            <div class="card shadow-sm border-0 mb-3 bg-white p-3 p-md-4 rounded-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1.5 rounded-3" style="font-size: 12px; letter-spacing: 0.2px;">${categoryName}</span>
-                ${question.weight ? `<span class="badge bg-light text-secondary border px-2.5 py-1 rounded-3 small">Weight: ${question.weight}%</span>` : ''}
+                ${weight ? `<span class="badge bg-light text-secondary border px-2.5 py-1 rounded-3 small">Weight: ${weight}%</span>` : ''}
               </div>
               <div class="mb-2">
                 <span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Target / Question</span>
-                <span class="text-dark fw-semibold" style="font-size: 14px; line-height: 1.4;">${question.question || '-'}</span>
+                <span class="text-dark fw-semibold" style="font-size: 14px; line-height: 1.4;">${qText}</span>
               </div>
               ${groupKpiHtml}
               ${evalScoresHtml}
@@ -1807,6 +1883,28 @@
         }
       }
 
+      function switchSection(sectionId) {
+        $('#employee-list, #category-list, #question-list, #appraisal-summary').hide();
+        $('#load-more').hide();
+        if (sectionId === '#employee-list') {
+          setNavState('Appraisal');
+          $('#period-selected').hide();
+          $('#search-container, #filter-container, #employee-list').show();
+          updateSearchHeader(null);
+          updateLoadMoreButton();
+        } else {
+          setNavState('Back');
+          $('#filter-container').show();
+          $('#period-selected').show().text(selectedEmployee?.fullname || '');
+          if (sectionId === '#question-list') {
+            $('#search-container').show();
+          } else {
+            $('#search-container').hide();
+          }
+          $(sectionId).show();
+        }
+      }
+
       $(document).on('click', '#desktopBackBtn', function(e) {
         $('#btnAppraisalBack').trigger('click');
       });
@@ -1822,25 +1920,44 @@
           fetchQuestions(false, isQuestionReadOnly);
           fetchSummary();
         }
+      });
 
-      })
+      $(document).on('click', '.btn-detail-action, #detail-employee-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = $(this).closest('.emp-appraisal-card, .card');
+        const employeeId = String(card.data('id'));
+        selectedEmployee = allEmployees.find(emp => String(emp.id) === employeeId);
+        if (!selectedEmployee) return;
+
+        const filteredPeriodBySelectEmployee = allPeriods.filter(p => p.organization_id === selectedEmployee
+          .org_id);
+        const activePeriod = selectedPeriod;
+        const smester = activePeriod?.appraisal_period?.smester;
+        const period = activePeriod?.appraisal_period?.period;
+        let targetPeriod = filteredPeriodBySelectEmployee.find(p =>
+          p.appraisal_period?.period == period && p.appraisal_period?.smester == smester
+        );
+        selectedPeriod = targetPeriod || activePeriod;
+
+        updateSearchHeader(selectedEmployee);
+        currentIndex = 0;
+        switchSection('#question-list');
+        fetchQuestions(true, true);
+      });
 
       $(document).on('click', '#employee-list .emp-appraisal-card, #employee-list .card', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
         const employeeId = String($(this).data('id'));
         selectedEmployee = allEmployees.find(employee => String(employee.id) === employeeId);
 
-        if (!selectedEmployee) {
-          console.warn("Employee not found!");
-          return;
-        }
+        if (!selectedEmployee) return;
 
         const filteredPeriodBySelectEmployee = allPeriods.filter(p => p.organization_id === selectedEmployee
           .org_id);
 
-        if (!selectedPeriod || !selectedPeriod.appraisal_period) {
-          console.warn("No selected period available.");
-          return;
-        }
+        if (!selectedPeriod || !selectedPeriod.appraisal_period) return;
 
         const activePeriod = selectedPeriod;
         const smester = activePeriod?.appraisal_period?.smester;
@@ -1852,23 +1969,6 @@
 
         updateSearchHeader(selectedEmployee);
 
-        if (event.target.closest('#detail-employee-btn') || event.target.closest('.btn-detail-action')) {
-          $('#employee-list').hide();
-          $('#category-list').hide();
-          $('#appraisal-summary').hide();
-          $('#filter-container').show();
-          $('#search-container').hide();
-          $('#period-selected').show().text(
-            selectedEmployee.fullname || 'No period selected'
-          );
-          $('#load-more').hide();
-          $('#question-list').show();
-          setNavState('Back');
-          currentIndex = 0;
-          fetchQuestions(true, true);
-          return;
-        }
-
         const appraisalEmp = getEmployeeAppraisal(selectedEmployee, selectedPeriod);
         const hasScore = appraisalEmp && (
           (appraisalEmp.total_point !== null && appraisalEmp.total_point !== undefined && appraisalEmp
@@ -1877,56 +1977,22 @@
         );
         const isEvaluator = isUserEvaluatorFor(selectedEmployee);
 
-        if (hasScore) {
-          $('#employee-list').hide();
-          $('#category-list').hide();
-          $('#question-list').hide();
-          $('#search-container').hide();
-          $('#appraisal-summary').show();
-          $('#filter-container').show();
-          $('#period-selected').show().text(
-            selectedEmployee.fullname || 'No period selected'
-          );
-          setNavState('Back');
-          $('#load-more').hide();
-          fetchSummary();
+        if (!hasScore && isEvaluator) {
+          switchSection('#category-list');
+          showCategoriesForTemplate();
         } else {
-          if (isEvaluator) {
-            $('#employee-list').hide();
-            $('#appraisal-summary').hide();
-            $('#question-list').hide();
-            $('#search-container').hide();
-            $('#filter-container').hide();
-            $('#load-more').hide();
-            setNavState('Back');
-            showCategoriesForTemplate();
-          } else {
-            $('#employee-list').hide();
-            $('#category-list').hide();
-            $('#question-list').hide();
-            $('#search-container').hide();
-            $('#appraisal-summary').show();
-            $('#filter-container').show();
-            $('#period-selected').show().text(
-              selectedEmployee.fullname || 'No period selected'
-            );
-            setNavState('Back');
-            $('#load-more').hide();
-            fetchSummary();
-          }
+          switchSection('#appraisal-summary');
+          fetchSummary();
         }
       });
 
       $(document).on('click', '#category-list .card', function() {
         selectedCategory = $(this).data('id');
         if (selectedCategory) {
-          $('#category-list').hide();
           currentIndex = 0;
           $('#title-back-container p').text('Back');
-          $('#filter-container').hide();
-          $('#load-more').hide();
-          $('#question-list').show();
           updateSearchHeader(selectedEmployee);
+          switchSection('#question-list');
           const isEvaluator = isUserEvaluatorFor(selectedEmployee);
           fetchQuestions(false, !isEvaluator);
         }
@@ -1950,8 +2016,7 @@
             currentIndex++;
             renderQuestion(currentIndex, allDefaultQuestionAnswers);
           } else {
-            $('#question-list').hide();
-            $('#appraisal-summary').show();
+            switchSection('#appraisal-summary');
             fetchSummary();
           }
           return;
@@ -1984,31 +2049,19 @@
         if (state === 'Appraisal') {
           window.location.href = "{{ route('main') }}";
         } else if (selectedEmployee && selectedCategory) {
-          $('#question-list').hide();
-          $('#appraisal-summary').hide();
           currentIndex = 0;
           selectedCategory = null;
           selectedSummary = null;
           allAnswers = [];
-
+          switchSection('#category-list');
           showCategoriesForTemplate();
         } else {
-          $('#no-template-alert').remove();
-          $('#period-selected').hide();
-          $('#category-list').hide();
-          $('#appraisal-summary').hide();
-          $('#question-list').hide();
-          $('#search-container').show();
-          $('#employee-list').show();
-          $('#filter-container').show();
           currentIndex = 0;
           selectedEmployee = null;
           selectedCategory = null;
           selectedSummary = null;
-          setNavState('Appraisal');
-          updateSearchHeader(null);
+          switchSection('#employee-list');
           renderEmployees(filteredEmployees.slice(0, loadLimit));
-          updateLoadMoreButton();
         }
       });
 

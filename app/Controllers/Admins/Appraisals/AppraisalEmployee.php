@@ -165,115 +165,88 @@ class AppraisalEmployee extends Controller
             return response()->json(['message' => 'Data not found'], 404);
         }
 
-        $data_appraisal_template = null;
-        $data_appraisal_employee = null;
-
         $periodYear = $request->input('period_year');
         $periodSmt = $request->input('period_smt');
 
+        $period = null;
         if ($periodYear && $periodSmt) {
-            $periodQuery = AppraisalPeriod::with('appraisal_period_organizations')
+            $period = AppraisalPeriod::with('appraisal_period_organizations')
                 ->where('period', $periodYear)
-                ->where('smester', $periodSmt);
+                ->where('smester', $periodSmt)
+                ->when($data->company_id, fn($q) => $q->where('company_id', $data->company_id))
+                ->first();
+        }
 
-            if ($data->company_id) {
-                $periodQuery->where('company_id', $data->company_id);
+        $data_appraisal_employee = Mod::with([
+            'period',
+            'employee',
+            'template',
+            'evaluator1',
+            'evaluator2',
+            'appraisal_employee_questions',
+            'appraisal_employee_questions.question',
+            'appraisal_employee_summaries',
+        ])
+            ->where('employ_id', $data->id)
+            ->when($period, function ($q) use ($period, $data) {
+                $orgPeriodIds = $period->appraisal_period_organizations
+                    ->where('organization_id', $data->org_id)
+                    ->pluck('id')
+                    ->toArray();
+
+                $q->where(function ($sub) use ($period, $orgPeriodIds) {
+                    $sub->where('period_id', $period->id)
+                        ->orWhereHas('period', fn($qp) => $qp->where('period_id', $period->id));
+                    if (!empty($orgPeriodIds)) {
+                        $sub->orWhereIn('period_id', $orgPeriodIds);
+                    }
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $data_appraisal_template = null;
+        $templateRelations = ['appraisal_questions', 'appraisal_questions.category', 'division'];
+
+        if ($period) {
+            $orgTemplateId = $period->appraisal_period_organizations
+                ->where('organization_id', $data->org_id)
+                ->pluck('template_id')
+                ->filter()
+                ->first();
+
+            if ($orgTemplateId) {
+                $data_appraisal_template = AppraisalQuestionTemplate::with($templateRelations)
+                    ->where('id', $orgTemplateId)
+                    ->where('is_archived', 0)
+                    ->first();
             }
 
-            $period = $periodQuery->first();
-
-            if ($period) {
-                $period_orgs = $period->appraisal_period_organizations
-                    ->where('organization_id', $data->org_id);
-
-                $template = null;
-                $period_organization = null;
-
-                foreach ($period_orgs as $p_org) {
-                    if ($p_org->template_id) {
-                        $t = AppraisalQuestionTemplate::with([
-                            'appraisal_questions',
-                            'appraisal_questions.category',
-                            'division',
-                        ])
-                            ->where('id', $p_org->template_id)
-                            ->where('period_year', $periodYear)
-                            ->where('period_smt',  $periodSmt)
-                            ->where('is_archived', 0)
-                            ->first();
-
-                        if ($t) {
-                            $template = $t;
-                            $period_organization = $p_org;
-                            break;
-                        }
-                    }
-                }
-
-                if (!$template) {
-                    $templateQuery = AppraisalQuestionTemplate::with([
-                        'appraisal_questions',
-                        'appraisal_questions.category',
-                        'division',
-                    ])
-                        ->where('period_year', $periodYear)
-                        ->where('period_smt',  $periodSmt)
-                        ->where('is_archived', 0);
-
-                    if ($data->division_id) {
-                        $templateQuery->where(function($q) use ($data) {
-                            $q->where('division_id', $data->division_id)
-                              ->orWhereNull('division_id');
-                        });
-                    }
-
-                    $template = $templateQuery->first();
-                    $period_organization = $period->appraisal_period_organizations
-                        ->firstWhere('organization_id', $data->org_id)
-                        ?? $period->appraisal_period_organizations->first();
-                }
-
-                $data_appraisal_template = $template;
-
-                $data_appraisal_employee = Mod::with([
-                    'period',
-                    'employee',
-                    'template',
-                    'evaluator1',
-                    'evaluator2',
-                    'appraisal_employee_questions',
-                    'appraisal_employee_questions.question',
-                    'appraisal_employee_summaries',
-                ])
-                    ->where('employ_id', $data->id)
-                    ->where(function($q) use ($period_organization, $period) {
-                        if ($period_organization) {
-                            $q->where('period_id', $period_organization->id);
-                        } else {
-                            $q->whereHas('period', function($qp) use ($period) {
-                                $qp->where('period_id', $period->id);
-                            });
-                        }
+            if (!$data_appraisal_template) {
+                $data_appraisal_template = AppraisalQuestionTemplate::with($templateRelations)
+                    ->where('period_year', $periodYear)
+                    ->where('period_smt', $periodSmt)
+                    ->where('is_archived', 0)
+                    ->when($data->division_id, function ($q) use ($data) {
+                        $q->where(fn($sub) => $sub->where('division_id', $data->division_id)->orWhereNull('division_id'));
                     })
-                    ->orderBy('created_at', 'desc')
                     ->first();
             }
         }
 
-        if ($data_appraisal_employee?->template_id) {
-            $data_appraisal_template = AppraisalQuestionTemplate::with([
-                'appraisal_questions',
-                'appraisal_questions.category',
-                'division',
-            ])->find($data_appraisal_employee->template_id);
+        if (!$data_appraisal_template && $data_appraisal_employee?->template_id) {
+            $data_appraisal_template = AppraisalQuestionTemplate::with($templateRelations)
+                ->find($data_appraisal_employee->template_id);
+        }
+
+        if (!$data_appraisal_template) {
+            $data_appraisal_template = AppraisalQuestionTemplate::with($templateRelations)
+                ->where('is_archived', 0)
+                ->first();
         }
 
         $data->appraisal_template = $data_appraisal_template;
         $data->appraisal_employee = $data_appraisal_employee;
-
-        // $parentOrg = $data->organization?->parent;
-        // $data->evaluator1 = $parentOrg?->leader;
-        // $data->evaluator2 = $parentOrg?->parent?->leader;
 
         return response()->json($data);
     }
