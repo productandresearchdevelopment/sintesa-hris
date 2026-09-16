@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             Appraisals\AppraisalMasterSeeder::class,
             AuthUserSeeder::class,
             BulletinSeeder::class,
+            LeaveSeeder::class,
+            AttendanceSeeder::class,
         ]);
     }
 }

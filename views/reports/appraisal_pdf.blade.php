@@ -79,11 +79,22 @@
 
   {{-- Employee & Evaluators --}}
   @php
-    $infoSections = [
-        'Employee Information' => $employee,
-        'Evaluator 1 Information' => $appraisal['evaluator1'] ?? [],
-        'Evaluator 2 Information' => $appraisal['evaluator2'] ?? [],
-    ];
+    $auth1Id = $employee->organization->authorized1_id ?? ($employee->organization->authorized1->id ?? ($employee->organization->authorized1 ?? null));
+    $auth2Id = $employee->organization->authorized2_id ?? ($employee->organization->authorized2->id ?? ($employee->organization->authorized2 ?? null));
+    $isTwoEvaluators = $auth1Id && $auth2Id && (string)$auth1Id !== (string)$auth2Id;
+
+    if ($isTwoEvaluators) {
+      $infoSections = [
+          'Employee Information' => $employee,
+          'Evaluator 1 Information' => $appraisal['evaluator1'] ?? [],
+          'Evaluator 2 Information' => $appraisal['evaluator2'] ?? [],
+      ];
+    } else {
+      $infoSections = [
+          'Employee Information' => $employee,
+          'Evaluator Information' => $appraisal['evaluator1'] ?? ($appraisal['evaluator2'] ?? []),
+      ];
+    }
   @endphp
 
   @foreach ($infoSections as $title => $data)
@@ -119,8 +130,12 @@
         <tr>
           <th>Category</th>
           <th>Weight</th>
-          <th>Evaluator 1</th>
-          <th>Evaluator 2</th>
+          @if ($isTwoEvaluators)
+            <th>Evaluator 1</th>
+            <th>Evaluator 2</th>
+          @else
+            <th>Evaluator</th>
+          @endif
         </tr>
       </thead>
       <tbody>
@@ -137,19 +152,23 @@
             <tr>
               <td>{{ $label }}</td>
               <td>{{ isset($appraisal[$weightKey]) ? $appraisal[$weightKey] . '%' : '-' }}</td>
-              <td>{{ $appraisal[$eval1Key] ?? '-' }}</td>
-              <td>{{ $appraisal[$eval2Key] ?? '-' }}</td>
+              @if ($isTwoEvaluators)
+                <td>{{ $appraisal[$eval1Key] ?? '-' }}</td>
+                <td>{{ $appraisal[$eval2Key] ?? '-' }}</td>
+              @else
+                <td>{{ $appraisal[$eval1Key] ?? ($appraisal[$eval2Key] ?? '-') }}</td>
+              @endif
             </tr>
           @endif
         @endforeach
       </tbody>
       <tfoot>
         <tr>
-          <th colspan="3" style="text-align: center">Final Score</th>
+          <th colspan="{{ $isTwoEvaluators ? 3 : 2 }}" style="text-align: center">Final Score</th>
           <td>{{ $appraisal['final_score'] ?? 0 }}</td>
         </tr>
         <tr>
-          <th colspan="3" style="text-align: center">Final Grade</th>
+          <th colspan="{{ $isTwoEvaluators ? 3 : 2 }}" style="text-align: center">Final Grade</th>
           <td>{{ $appraisal['final_grade'] ?? 'N/A' }}</td>
         </tr>
       </tfoot>
@@ -201,14 +220,23 @@
               @endif
               <th rowspan="2">Formula</th>
               <th rowspan="2">Weight</th>
-              <th colspan="2">Evaluator 1</th>
-              <th colspan="2">Evaluator 2</th>
+              @if ($isTwoEvaluators)
+                <th colspan="2">Evaluator 1</th>
+                <th colspan="2">Evaluator 2</th>
+              @else
+                <th colspan="2">Evaluator</th>
+              @endif
             </tr>
             <tr>
-              <th>Point</th>
-              <th>Total</th>
-              <th>Point</th>
-              <th>Total</th>
+              @if ($isTwoEvaluators)
+                <th>Point</th>
+                <th>Total</th>
+                <th>Point</th>
+                <th>Total</th>
+              @else
+                <th>Point</th>
+                <th>Total</th>
+              @endif
             </tr>
           </thead>
           <tbody>
@@ -219,10 +247,12 @@
                 $previousGroup = $groupKpi;
 
                 $weight = (float) ($item['question']['weight'] ?? 0);
-                $eval1 = (float) ($item['evaluator1_point'] ?? 0);
-                $eval2 = (float) ($item['evaluator2_point'] ?? 0);
-                $total1 = number_format(($weight * $eval1) / 100, 2);
-                $total2 = number_format(($weight * $eval2) / 100, 2);
+                $eval1 = $item['evaluator1_point'] !== null && $item['evaluator1_point'] !== '' ? (float)$item['evaluator1_point'] : null;
+                $eval2 = $item['evaluator2_point'] !== null && $item['evaluator2_point'] !== '' ? (float)$item['evaluator2_point'] : null;
+                $singlePoint = $eval1 ?? ($eval2 ?? 0);
+                $singleTotal = number_format(($weight * $singlePoint) / 100, 2);
+                $total1 = $eval1 !== null ? number_format(($weight * $eval1) / 100, 2) : '-';
+                $total2 = $eval2 !== null ? number_format(($weight * $eval2) / 100, 2) : '-';
               @endphp
               <tr>
                 <td style="padding: 8px;">{{ $showGroup ? $groupKpi : '' }}</td>
@@ -233,14 +263,19 @@
                 @endif
                 <td style="text-align: left; padding: 8px;">{!! nl2br(e($item['question']['formula_description'] ?? '-')) !!}</td>
                 <td style="padding: 8px;">{{ $weight }}</td>
-                <td style="padding: 8px;">{{ $eval1 }}</td>
-                <td style="padding: 8px;">{{ $total1 }}</td>
-                <td style="padding: 8px;">{{ $eval2 }}</td>
-                <td style="padding: 8px;">{{ $total2 }}</td>
+                @if ($isTwoEvaluators)
+                  <td style="padding: 8px;">{{ $eval1 ?? '-' }}</td>
+                  <td style="padding: 8px;">{{ $total1 }}</td>
+                  <td style="padding: 8px;">{{ $eval2 ?? '-' }}</td>
+                  <td style="padding: 8px;">{{ $total2 }}</td>
+                @else
+                  <td style="padding: 8px;">{{ $singlePoint }}</td>
+                  <td style="padding: 8px;">{{ $singleTotal }}</td>
+                @endif
               </tr>
             @empty
               <tr>
-                <td colspan="{{ $config['show_target'] ? 8 : 7 }}">No data available.</td>
+                <td colspan="{{ ($config['show_target'] ? 4 : 3) + ($isTwoEvaluators ? 4 : 2) }}">No data available.</td>
               </tr>
             @endforelse
           </tbody>

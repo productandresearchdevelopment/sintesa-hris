@@ -115,18 +115,27 @@
     me.setAuth = function() {
       var template = grids.getRec(true);
       var rec = me.getRec(true);
-      if (rec) {
+      if (rec && template) {
         http.request({
           method: 'GET',
           url: '{{ route('appraisal.period.data') }}',
           success: function(response) {
             try {
               let periods = JSON.parse(response.responseText);
-              let period = periods.data.filter(p => p.smester === template.period_smt && p.period ===
-                template
-                .period_year)[0];
+              let periodList = periods.data || [];
+              let period = periodList.find(p =>
+                String(p.smester) === String(template.period_smt) &&
+                String(p.period) === String(template.period_year) &&
+                (!template.division?.company_id || !p.company_id || String(p.company_id) === String(template.division.company_id))
+              ) || periodList.find(p =>
+                String(p.smester) === String(template.period_smt) &&
+                String(p.period) === String(template.period_year)
+              );
 
-              if (!period) return;
+              if (!period) {
+                Ext.example.msg('Warning!', 'Period not found for year ' + template.period_year + ' SMT ' + template.period_smt);
+                return;
+              }
               let period_id = period.id;
 
               http.request({
@@ -139,8 +148,11 @@
                   '_method': 'PUT',
                   '_token': '{{ csrf_token() }}',
                 },
+                success: function() {
+                  Ext.example.msg('Success', 'Organization assignment updated successfully.');
+                },
                 failure: function() {
-                  Ext.example.msg('Failed!', 'Set Module Group!');
+                  Ext.example.msg('Failed!', 'Failed to update organization assignment.');
                   me.storeLoad();
                 }
               });

@@ -32,15 +32,13 @@ class AppraisalPeriod extends Controller
     {
         $user = $request->user();
         $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
         $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
 
-        $query = Mod::with(['appraisal_period_organizations']);
+        $query = Mod::with(['company', 'appraisal_period_organizations']);
 
         if (!$isSuperUser && $userCompany) {
-            $query->whereHas('appraisal_period_organizations.organization', function ($q) use ($userCompany) {
-                $q->where('company_id', $userCompany);
-            });
+            $query->where('company_id', $userCompany);
         }
 
         if (!$request->trash) {
@@ -65,13 +63,18 @@ class AppraisalPeriod extends Controller
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with(['appraisal_period_organizations'])->where('id', $id)->first();
+        return Mod::with(['company', 'appraisal_period_organizations'])->where('id', $id)->first();
     }
 
     public function create(Request $request)
     {
         try {
+            $user = $request->user();
+            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            $companyId = $request->input('company_id') ?? $userCompany;
+
             $validator = Validator::make($request->all(), [
+                'company_id' => 'nullable|integer|exists:iq_company,id',
                 'period' => 'required|string',
                 'smester' => 'required|integer|in:1,2',
                 'start_date' => 'required|date',
@@ -81,13 +84,16 @@ class AppraisalPeriod extends Controller
                 'organization_id' => 'nullable|integer|exists:iq_org,id',
             ]);
 
-            $validator->after(function ($validator) use ($request) {
-                $exists = Mod::where('period', $request->period)
-                    ->where('smester', $request->smester)
-                    ->exists();
+            $validator->after(function ($validator) use ($request, $companyId) {
+                $query = Mod::where('period', $request->period)
+                    ->where('smester', $request->smester);
 
-                if ($exists) {
-                    $validator->errors()->add('smester', 'This combination of period and smester already exists.');
+                if ($companyId) {
+                    $query->where('company_id', $companyId);
+                }
+
+                if ($query->exists()) {
+                    $validator->errors()->add('smester', 'This combination of period and smester already exists for this company.');
                 }
             });
 
@@ -102,6 +108,7 @@ class AppraisalPeriod extends Controller
             DB::beginTransaction();
 
             $appraisal = Mod::create([
+                'company_id' => $companyId,
                 'period' => $request->period,
                 'smester' => $request->smester,
                 'start_date' => $request->start_date,
@@ -130,8 +137,12 @@ class AppraisalPeriod extends Controller
     public function update(Request $request)
     {
         try {
+            $user = $request->user();
+            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+
             $validator = Validator::make($request->all(), [
                 'id' => 'required|integer|exists:iq_appraisal_period,id',
+                'company_id' => 'nullable|integer|exists:iq_company,id',
                 'period' => 'required|string',
                 'smester' => 'required|integer|in:1,2',
                 'start_date' => 'required|date',
@@ -142,15 +153,27 @@ class AppraisalPeriod extends Controller
                 'appraisal_period_organization_id' => 'nullable|integer|exists:iq_appraisal_period_organization,id',
             ]);
 
-            // Custom validation to check uniqueness of period and smester
-            $validator->after(function ($validator) use ($request) {
-                $exists = Mod::where('period', $request->period)
-                    ->where('smester', $request->smester)
-                    ->where('id', '!=', $request->id) // Exclude the current record
-                    ->exists();
+            $appraisal = Mod::find($request->id);
+            if (!$appraisal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Appraisal not found'
+                ], 404);
+            }
 
-                if ($exists) {
-                    $validator->errors()->add('smester', 'This combination of period and smester already exists.');
+            $companyId = $request->input('company_id') ?? $appraisal->company_id ?? $userCompany;
+
+            $validator->after(function ($validator) use ($request, $companyId) {
+                $query = Mod::where('period', $request->period)
+                    ->where('smester', $request->smester)
+                    ->where('id', '!=', $request->id);
+
+                if ($companyId) {
+                    $query->where('company_id', $companyId);
+                }
+
+                if ($query->exists()) {
+                    $validator->errors()->add('smester', 'This combination of period and smester already exists for this company.');
                 }
             });
 
@@ -162,23 +185,21 @@ class AppraisalPeriod extends Controller
                 ], 422);
             }
 
-            $appraisal = Mod::find($request->id);
-            if (!$appraisal) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Appraisal not found'
-                ], 404);
-            }
-
             DB::beginTransaction();
 
-            $appraisal->update([
+            $updateData = [
                 'period' => $request->period,
                 'smester' => $request->smester,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'is_closed' => $request->has('is_closed') ? (int)$request->is_closed : ($appraisal->is_closed ?? 0),
-            ]);
+            ];
+
+            if ($request->has('company_id')) {
+                $updateData['company_id'] = $request->company_id;
+            }
+
+            $appraisal->update($updateData);
 
             DB::commit();
 

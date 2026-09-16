@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->unique('title');
+            $table->unique(['title', 'period_year', 'period_smt'], 'iq_appr_tpl_title_period_unique');
             $table->index('period_year');
             $table->index('division_id');
             $table->foreign('division_id')->references('id')->on('iq_division')->onDelete('cascade')->onUpdate('cascade');

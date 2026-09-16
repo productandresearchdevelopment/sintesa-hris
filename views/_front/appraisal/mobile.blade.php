@@ -2,7 +2,8 @@
 
 @section('head')
   <style>
-    html, body {
+    html,
+    body {
       background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
@@ -58,6 +59,8 @@
       letter-spacing: -0.3px;
       margin: 0;
       color: #ffffff;
+      flex: 1;
+      text-align: center;
     }
 
     .content-body {
@@ -174,10 +177,12 @@
     .select2-results__options::-webkit-scrollbar {
       width: 5px;
     }
+
     .select2-results__options::-webkit-scrollbar-track {
       background: #f8fafc;
       border-radius: 10px;
     }
+
     .select2-results__options::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
@@ -541,7 +546,7 @@
       font-weight: 800 !important;
       font-size: 14px !important;
       width: 100% !important;
-      max-width: 220px !important;
+      max-width: 100% !important;
       margin-bottom: 12px !important;
       background: #f8fafc;
     }
@@ -567,6 +572,13 @@
       box-shadow: 0 0 0 3px rgba(0, 115, 230, 0.15) !important;
       outline: none;
     }
+
+    @media (min-width: 768px) {
+      .apr-header-banner .btn-back-link.desktop-hidden {
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+    }
   </style>
 @endsection
 
@@ -574,7 +586,7 @@
   <div class="apr-page-wrapper">
     <div class="apr-header-banner">
       <div class="top-action-bar">
-        <a href="{{ route('main') }}" class="btn-back-link" id="btnAppraisalBack">
+        <a href="{{ route('main') }}" class="btn-back-link desktop-hidden" id="btnAppraisalBack">
           <i class="bi bi-arrow-left"></i>
         </a>
         <h1 class="header-page-title" id="page-header-title">Employee Assessment</h1>
@@ -584,8 +596,10 @@
 
     <div class="content-body">
       <!-- Desktop Back Bar (chevron + Back) -->
-      <div id="desktop-back-bar" class="d-none d-md-block mb-3" style="display: none !important; text-align: left !important; width: 100% !important;">
-        <button type="button" class="btn btn-link text-decoration-none p-0 text-primary fw-bold" id="desktopBackBtn" style="font-size: 14px !important; margin: 0 !important; float: left !important; display: inline-flex !important; align-items: center !important;">
+      <div id="desktop-back-bar" class="d-none d-md-block mb-3"
+        style="display: none !important; text-align: left !important; width: 100% !important;">
+        <button type="button" class="btn btn-link text-decoration-none p-0 text-primary fw-bold" id="desktopBackBtn"
+          style="font-size: 14px !important; margin: 0 !important; float: left !important; display: inline-flex !important; align-items: center !important;">
           <i class="bi bi-chevron-left me-1"></i> Back
         </button>
         <div style="clear: both;"></div>
@@ -595,7 +609,8 @@
         <div class="row g-2 align-items-center">
           <div class="col-12 col-md-7">
             <div class="search-box-wrapper">
-              <input type="text" class="form-control search-input" name="query" id="search" placeholder="Search employee name...">
+              <input type="text" class="form-control search-input" name="query" id="search"
+                placeholder="Search employee name...">
               <i class="bi bi-search search-icon"></i>
             </div>
           </div>
@@ -611,11 +626,13 @@
         <div class="category-header-card mb-3" id="cat-employee-card">
           <div class="d-flex align-items-center gap-3">
             <div class="emp-avatar-box-sm">
-              <img id="cat-emp-avatar" src="{{ asset('/images/image-no-user.png') }}" alt="Employee Avatar" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
+              <img id="cat-emp-avatar" src="{{ asset('/images/image-no-user.png') }}" alt="Employee Avatar"
+                onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
             </div>
             <div class="flex-grow-1 min-w-0">
               <h5 class="cat-header-name text-truncate" id="cat-employee-name">Select Category</h5>
-              <span class="cat-header-org text-truncate" id="cat-employee-org"><i class="bi bi-building me-1"></i>Employee</span>
+              <span class="cat-header-org text-truncate" id="cat-employee-org"><i
+                  class="bi bi-building me-1"></i>Employee</span>
             </div>
           </div>
         </div>
@@ -725,14 +742,20 @@
         if (employee && employee.fullname) {
           searchInput.val(employee.fullname);
           searchInput.prop('disabled', true);
-          searchInput.css({'background-color': '#e9ecef', 'cursor': 'not-allowed'});
+          searchInput.css({
+            'background-color': '#e9ecef',
+            'cursor': 'not-allowed'
+          });
           if (searchIcon.length) {
             searchIcon.removeClass('bi-search').addClass('bi-person-fill');
           }
         } else {
           searchInput.val(query || '');
           searchInput.prop('disabled', false);
-          searchInput.css({'background-color': '#f8fafc', 'cursor': 'text'});
+          searchInput.css({
+            'background-color': '#f8fafc',
+            'cursor': 'text'
+          });
           searchInput.attr('placeholder', 'Search employee name...');
           if (searchIcon.length) {
             searchIcon.removeClass('bi-person-fill').addClass('bi-search');
@@ -818,7 +841,7 @@
           if (app.period && selPeriodId && String(app.period.period_id) === String(selPeriodId)) return true;
           if (app.period && app.period.appraisal_period && selYear && selSmester) {
             if (String(app.period.appraisal_period.period) === String(selYear) &&
-                String(app.period.appraisal_period.smester) === String(selSmester)) {
+              String(app.period.appraisal_period.smester) === String(selSmester)) {
               return true;
             }
           }
@@ -846,30 +869,41 @@
           const cursorStyle = canAssess ? 'cursor: pointer;' : 'cursor: default;';
 
           const appraisalEmployee = getEmployeeAppraisal(employee, selectedPeriod);
+          const hasScore = appraisalEmployee && (
+            (appraisalEmployee.total_point !== null && appraisalEmployee.total_point !== undefined &&
+              appraisalEmployee.total_point !== '') ||
+            appraisalEmployee.evaluator1_by || appraisalEmployee.evaluator2_by
+          );
+
           const imageUrl = employee.photo_id ?
             `{{ route('file', ['id' => '__ID__']) }}`.replace('__ID__', employee.photo_id) :
             `{{ asset('/images/image-no-user.png') }}`;
 
           let scoreValue = '-';
-          if (appraisalEmployee && appraisalEmployee.total_point !== null && appraisalEmployee.total_point !== undefined && appraisalEmployee.total_point !== '') {
+          if (appraisalEmployee && appraisalEmployee.total_point !== null && appraisalEmployee.total_point !==
+            undefined && appraisalEmployee.total_point !== '') {
             const num = parseFloat(appraisalEmployee.total_point);
             if (!isNaN(num)) {
               scoreValue = num.toFixed(2).replace(/\.00$/, '');
             }
           }
 
-          const scoreBadge = `
+          const scoreBadge = hasScore ? `
             <div class="emp-score-box">
               <span class="score-badge">${scoreValue}</span>
-              <button class="btn-detail-action">
+              <button class="btn-detail-action" title="View Assessment Details">
                 Detail <i class="bi bi-chevron-right ms-1"></i>
               </button>
+            </div>
+          ` : `
+            <div class="emp-score-box">
+              <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 11px; font-weight: 500;">Belum Dinilai</span>
             </div>
           `;
 
           const card = `
             <div class="emp-appraisal-card ${cursorClass}" style="${cursorStyle}"
-                data-id="${employee.id}" data-score="${appraisalEmployee ? '1' : ''}">
+                data-id="${employee.id}" data-score="${hasScore ? '1' : ''}">
               <div class="emp-avatar-box">
                 <img src="${imageUrl}" alt="${employee.fullname}" onerror="this.onerror=null;this.src='{{ asset('/images/image-no-user.png') }}';">
               </div>
@@ -1001,16 +1035,19 @@
         summaryContainer.empty();
 
         const filteredPeriod = allPeriods.find(p =>
-          p.appraisal_period.period == data.period &&
-          p.appraisal_period.smester == data.smester &&
-          p.organization_id == selectedEmployee.org_id
-        );
+          p.appraisal_period?.period == data.period &&
+          p.appraisal_period?.smester == data.smester &&
+          p.organization_id == selectedEmployee?.org_id
+        ) || selectedPeriod;
 
-        const isSelf = selectedEmployee && selectedEmployee.id == user.employ_id;
+        const isClosed = filteredPeriod?.appraisal_period?.is_closed == 1 ||
+          filteredPeriod?.appraisal_period?.is_closed === true ||
+          filteredPeriod?.is_closed == 1 ||
+          filteredPeriod?.is_closed === true ||
+          selectedPeriod?.appraisal_period?.is_closed == 1 ||
+          selectedPeriod?.appraisal_period?.is_closed === true;
         const isEvaluator = selectedEmployee ? isUserEvaluatorFor(selectedEmployee) : false;
-        const isClosed = filteredPeriod?.appraisal_period?.is_closed == 1 || filteredPeriod?.appraisal_period
-          ?.is_closed === true;
-        const isEditable = !isSelf && !isClosed && isEvaluator;
+        const isEditable = isEvaluator && !isClosed;
 
         const componentEdit = isEditable ? `
         <button class="btn btn-warning" onclick="editAppraisal('${data.appraisal_employ_id}')">
@@ -1033,53 +1070,62 @@
 
         additionalInfoHTML += `</div>`;
 
+        const auth1Id = selectedEmployee?.organization?.authorized1?.id || (typeof selectedEmployee?.organization
+          ?.authorized1 === 'object' ? null : selectedEmployee?.organization?.authorized1);
+        const auth2Id = selectedEmployee?.organization?.authorized2?.id || (typeof selectedEmployee?.organization
+          ?.authorized2 === 'object' ? null : selectedEmployee?.organization?.authorized2);
+        const isTwoEvaluators = auth1Id && auth2Id && String(auth1Id) !== String(auth2Id);
+
+        const renderCategoryScore = (eval1Point, eval1Grade, eval2Point, eval2Grade) => {
+          if (!isTwoEvaluators) {
+            const point = eval1Point ?? eval2Point ?? '-';
+            const grade = eval1Grade ?? eval2Grade ?? 'N/A';
+            return `<p>Evaluator: ${point} | Grade: ${grade}</p>`;
+          }
+          return `
+            <p>Evaluator 1: ${eval1Point ?? '-'} | Grade: ${eval1Grade ?? 'N/A'}</p>
+            <p>Evaluator 2: ${eval2Point ?? '-'} | Grade: ${eval2Grade ?? 'N/A'}</p>
+          `;
+        };
+
+        const renderCategoryItem = (icon, title, eval1Point, eval1Grade, eval2Point, eval2Grade, weight) => {
+          if (!weight && eval1Point === null && eval2Point === null) return '';
+          return `
+            <div class="summary-item">
+              <i class="bi ${icon}"></i>
+              <div>
+                <h6>${title}</h6>
+                ${renderCategoryScore(eval1Point, eval1Grade, eval2Point, eval2Grade)}
+                <p>Weight: ${weight ? weight + '%' : '-'}</p>
+              </div>
+            </div>
+          `;
+        };
+
+        const techHtml = renderCategoryItem('bi-tools', 'Technical Ability & Work Result', data.tech_eval1_point, data
+          .tech_eval1_grade, data.tech_eval2_point, data.tech_eval2_grade, data.tech_weight);
+        const behaviorHtml = renderCategoryItem('bi-list-task', 'Behavior & Work Processes', data
+          .behavior_eval1_point, data.behavior_eval1_grade, data.behavior_eval2_point, data.behavior_eval2_grade,
+          data.behavior_weight);
+        const leadershipHtml = renderCategoryItem('bi-person-badge', 'Leadership', data.leadership_eval1_point, data
+          .leadership_eval1_grade, data.leadership_eval2_point, data.leadership_eval2_grade, data.leadership_weight);
+
         summaryContainer.html(`
-            <div class="summary-card">
+          <div class="summary-card">
             <div class="summary-header">
-                <h5 class="mb-0 text-center">Period ${data.period}</h5>
-                ${additionalInfoHTML}
+              <h5 class="mb-0 text-center">Period ${data.period}</h5>
+              ${additionalInfoHTML}
             </div>
-
-            ${(data.tech_weight > 0 || data.tech_eval1_point !== null || data.tech_eval2_point !== null) ? `
-                            <div class="summary-item">
-                                <i class="bi bi-tools"></i>
-                                <div>
-                                <h6>Technical Ability & Work Result</h6>
-                                <p>Evaluator 1: ${data.tech_eval1_point ?? '-'} | Grade: ${data.tech_eval1_grade ?? 'N/A'}</p>
-                                <p>Evaluator 2: ${data.tech_eval2_point ?? '-'} | Grade: ${data.tech_eval2_grade ?? 'N/A'}</p>
-                                <p>Weight: ${data.tech_weight ? data.tech_weight + '%' : '-'}</p>
-                                </div>
-                            </div>` : ''}
-
-            ${(data.behavior_weight > 0 || data.behavior_eval1_point !== null || data.behavior_eval2_point !== null) ? `
-                            <div class="summary-item">
-                                <i class="bi bi-list-task"></i>
-                                <div>
-                                <h6>Behavior & Work Processes</h6>
-                                <p>Evaluator 1: ${data.behavior_eval1_point ?? '-'} | Grade: ${data.behavior_eval1_grade ?? 'N/A'}</p>
-                                <p>Evaluator 2: ${data.behavior_eval2_point ?? '-'} | Grade: ${data.behavior_eval2_grade ?? 'N/A'}</p>
-                                <p>Weight: ${data.behavior_weight ? data.behavior_weight + '%' : '-'}</p>
-                                </div>
-                            </div>` : ''}
-
-            ${(data.leadership_weight > 0 || data.leadership_eval1_point !== null || data.leadership_eval2_point !== null) ? `
-                            <div class="summary-item">
-                                <i class="bi bi-person-badge"></i>
-                                <div>
-                                <h6>Leadership</h6>
-                                <p>Evaluator 1: ${data.leadership_eval1_point ?? '-'} | Grade: ${data.leadership_eval1_grade ?? 'N/A'}</p>
-                                <p>Evaluator 2: ${data.leadership_eval2_point ?? '-'} | Grade: ${data.leadership_eval2_grade ?? 'N/A'}</p>
-                                <p>Weight: ${data.leadership_weight ? data.leadership_weight + '%' : '-'}</p>
-                                </div>
-                            </div>` : ''}
-
+            ${techHtml}
+            ${behaviorHtml}
+            ${leadershipHtml}
             <div class="d-flex gap-2 mt-4">
-                <button id="export-pdf" class="btn btn-primary">
+              <button id="export-pdf" class="btn btn-primary">
                 <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
-                </button>
-                ${componentEdit}
+              </button>
+              ${componentEdit}
             </div>
-            </div>
+          </div>
         `);
       }
 
@@ -1108,21 +1154,29 @@
               return new Date(a.created_at) - new Date(b.created_at);
             });
             allCategories = [
-              ...new Map(allQuestions.map(q => [q.category ? q.category.id : q.category_id, q.category || { id: q.category_id, name: 'Category' }])).values()
+              ...new Map(allQuestions.map(q => [q.category ? q.category.id : q.category_id, q.category || {
+                id: q.category_id,
+                name: 'Category'
+              }])).values()
             ];
             allDefaultQuestionAnswers = questionData.appraisal_employee?.appraisal_employee_questions || [];
             currentIndex = allQuestions.findIndex(q => q.category_id === selectedCategory);
             if (currentIndex < 0) currentIndex = 0;
 
             allAnswers = [];
-            if (allDefaultQuestionAnswers.length > 0) {
+            if ((window.isEditingMode || isQuestionReadOnly) && allDefaultQuestionAnswers.length > 0) {
               allQuestions.forEach((q, idx) => {
-                const def = allDefaultQuestionAnswers.find(item => String(item.question_id) === String(q.id)) ||
-                  allDefaultQuestionAnswers.find(item => item.question?.id && String(item.question.id) === String(q.id)) ||
-                  allDefaultQuestionAnswers.find(item => item.question_id && allQuestions[idx] && String(item.question_id) === String(allQuestions[idx].id));
+                const def = allDefaultQuestionAnswers.find(item => String(item.question_id) === String(q
+                    .id)) ||
+                  allDefaultQuestionAnswers.find(item => item.question?.id && String(item.question.id) ===
+                    String(q.id)) ||
+                  allDefaultQuestionAnswers.find(item => item.question_id && allQuestions[idx] && String(
+                    item.question_id) === String(allQuestions[idx].id));
                 if (def) {
-                  const val1 = (def.evaluator1_point !== null && def.evaluator1_point !== undefined && def.evaluator1_point !== '') ? def.evaluator1_point : (def.evaluator1_value ?? '');
-                  const val2 = (def.evaluator2_point !== null && def.evaluator2_point !== undefined && def.evaluator2_point !== '') ? def.evaluator2_point : (def.evaluator2_value ?? '');
+                  const val1 = (def.evaluator1_point !== null && def.evaluator1_point !== undefined && def
+                    .evaluator1_point !== '') ? def.evaluator1_point : (def.evaluator1_value ?? '');
+                  const val2 = (def.evaluator2_point !== null && def.evaluator2_point !== undefined && def
+                    .evaluator2_point !== '') ? def.evaluator2_point : (def.evaluator2_value ?? '');
                   allAnswers[idx] = {
                     questionId: q.id,
                     categoryId: q.category_id,
@@ -1186,18 +1240,32 @@
         let isAdmin = false;
         if (user.role) {
           const roleName = user.role.name.toLowerCase();
-          isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'hrga');
+          isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'administrator');
         }
 
-        const auth1Id = questionData.organization?.authorized1?.id || (typeof questionData.organization?.authorized1 === 'object' ? null : questionData.organization?.authorized1);
-        const auth2Id = questionData.organization?.authorized2?.id || (typeof questionData.organization?.authorized2 === 'object' ? null : questionData.organization?.authorized2);
+        const auth1Id = questionData.organization?.authorized1?.id || (typeof questionData.organization
+          ?.authorized1 === 'object' ? null : questionData.organization?.authorized1) || (selectedEmployee
+          ?.organization?.authorized1?.id || (typeof selectedEmployee?.organization?.authorized1 === 'object' ?
+            null : selectedEmployee?.organization?.authorized1));
+        const auth2Id = questionData.organization?.authorized2?.id || (typeof questionData.organization
+          ?.authorized2 === 'object' ? null : questionData.organization?.authorized2) || (selectedEmployee
+          ?.organization?.authorized2?.id || (typeof selectedEmployee?.organization?.authorized2 === 'object' ?
+            null : selectedEmployee?.organization?.authorized2));
 
-        let singleEvaluatorMode = auth1Id && auth2Id && String(auth1Id) === String(auth2Id);
-        let evaluator1Enabled = isQuestionReadOnly || isAdmin || (auth1Id && String(auth1Id) === String(userOrgId));
-        let evaluator2Enabled = isQuestionReadOnly || isAdmin || (auth2Id && String(auth2Id) === String(userOrgId));
+        const isTwoEvaluators = auth1Id && auth2Id && String(auth1Id) !== String(auth2Id);
+        const singleEvaluatorMode = !isTwoEvaluators;
+        let isAuth1 = auth1Id && String(auth1Id) === String(userOrgId);
+        let isAuth2 = auth2Id && String(auth2Id) === String(userOrgId);
+        let isEvaluator = isAuth1 || isAuth2 || isAdmin;
+
+        let evaluator1Enabled = !isQuestionReadOnly && (isAdmin || isAuth1);
+        let evaluator2Enabled = !isQuestionReadOnly && (isAdmin || isAuth2);
+        let singleEnabled = !isQuestionReadOnly && isEvaluator;
 
         const currentQuestionAnswer = allAnswers[index] || {};
-        const defaultQuestionAnswer = defaultAnswers.find(item => String(item.question_id) === String(question.id) || (item.question && String(item.question.id) === String(question.id))) || {};
+        const defaultQuestionAnswer = (window.isEditingMode || isQuestionReadOnly) ?
+          (defaultAnswers.find(item => String(item.question_id) === String(question.id) ||
+            (item.question && String(item.question.id) === String(question.id))) || {}) : {};
 
         function getScoreVal(...scores) {
           for (let s of scores) {
@@ -1225,112 +1293,126 @@
         const savedEvaluator1 = getScoreVal(
           currentQuestionAnswer.evaluator1,
           currentQuestionAnswer.evaluator1_point,
-          defaultQuestionAnswer.evaluator1_point,
-          defaultQuestionAnswer.evaluator1_value
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator1_point : null,
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator1_value : null
         );
 
         const savedEvaluator2 = getScoreVal(
           currentQuestionAnswer.evaluator2,
           currentQuestionAnswer.evaluator2_point,
-          defaultQuestionAnswer.evaluator2_point,
-          defaultQuestionAnswer.evaluator2_value
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator2_point : null,
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator2_value : null
         );
 
         const savedEvaluator1Note = getNoteVal(
           currentQuestionAnswer.evaluator1Note,
           currentQuestionAnswer.evaluator1_note,
-          defaultQuestionAnswer.evaluator1_note
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator1_note : null
         );
 
         const savedEvaluator2Note = getNoteVal(
           currentQuestionAnswer.evaluator2Note,
           currentQuestionAnswer.evaluator2_note,
-          defaultQuestionAnswer.evaluator2_note
+          (window.isEditingMode || isQuestionReadOnly) ? defaultQuestionAnswer.evaluator2_note : null
         );
 
         const questionHtml = question.question ?
-          `<p class="d-flex flex-column mb-2"><strong>Target:</strong>${question.question}</p>` : '';
+          `<div class="mb-2"><span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Target / Question</span><span class="text-dark fw-semibold" style="font-size: 14px; line-height: 1.4;">${question.question}</span></div>` :
+          '';
         const groupKpiHtml = question.group_kpi ?
-          `<p class="d-flex flex-column mb-2"><strong>Group KPI:</strong> ${question.group_kpi}</p>` : '';
+          `<div class="mb-2"><span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Group KPI</span><span class="text-secondary small">${question.group_kpi}</span></div>` :
+          '';
         const formulaDescriptionHtml = question.formula_description ?
-          `<p class="d-flex flex-column mb-2"><strong>Formula:</strong> ${question.formula_description.replace(/\r\n/g, '<br>')}</p>` :
+          `<div class="mb-2"><span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Formula</span><span class="text-secondary small">${question.formula_description.replace(/\r\n/g, '<br>')}</span></div>` :
           '';
         const weightHtml = question.weight ?
-          `<p class="d-flex flex-column mb-2"><strong>Weight:</strong> ${question.weight}%</p>` : '';
+          `<span class="badge bg-light text-secondary border px-2.5 py-1 rounded-3 small">Weight: ${question.weight}%</span>` :
+          '';
 
         let evaluatorHtml = '';
 
-        const disabledAttr = isQuestionReadOnly ? 'disabled' : '';
+        const singleDisabledAttr = (!singleEnabled || isQuestionReadOnly) ? 'disabled' : '';
         const scorePlaceholder = isQuestionReadOnly ? '' : 'Enter score 1-10';
         const notePlaceholder = isQuestionReadOnly ? '' : 'Add note...';
 
-        const inputType = isQuestionReadOnly ? 'text' : 'number';
+        const inputType = (isQuestionReadOnly || !isEvaluator) ? 'text' : 'number';
 
         if (singleEvaluatorMode) {
           const val = getScoreVal(savedEvaluator1, savedEvaluator2);
           const note = getNoteVal(savedEvaluator1Note, savedEvaluator2Note);
           evaluatorHtml = `
-            <div class="evaluator-section mt-3">
+            <div class="evaluator-section mt-3 p-3 bg-light rounded-3 border">
               <div class="mb-3">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Evaluator Score (1-10):</label>
-                <input type="${inputType}" class="evaluator-input form-control form-control-sm" ${disabledAttr} data-evaluator="both" data-id="${question.id}"
-                    min="1" max="10" value="${val}" placeholder="${scorePlaceholder}" style="max-width: 200px;">
+                <input type="${inputType}" class="evaluator-input form-control form-control-sm w-100" ${singleDisabledAttr} data-evaluator="both" data-id="${question.id}"
+                    min="1" max="10" value="${val}" placeholder="${scorePlaceholder}">
               </div>
-              <div class="mb-3">
+              <div class="mb-0">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Note:</label>
-                <textarea class="evaluator-note form-control form-control-sm" ${disabledAttr} data-evaluator="both" data-id="${question.id}"
+                <textarea class="evaluator-note form-control form-control-sm w-100" ${singleDisabledAttr} data-evaluator="both" data-id="${question.id}"
                         rows="3" placeholder="${notePlaceholder}">${note}</textarea>
               </div>
             </div>
           `;
         } else {
-          const eval1Html = evaluator1Enabled ? `
+          const eval1DisabledAttr = (!evaluator1Enabled || isQuestionReadOnly) ? 'disabled' : '';
+          const eval2DisabledAttr = (!evaluator2Enabled || isQuestionReadOnly) ? 'disabled' : '';
+
+          const eval1Html = `
             <div class="evaluator-card p-3 border rounded mb-3 bg-light">
-              <h6 class="fw-bold text-primary mb-2" style="font-size: 13px;">Evaluator 1</h6>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-primary mb-0" style="font-size: 13px;">Evaluator 1</h6>
+                ${!evaluator1Enabled && !isQuestionReadOnly ? '<span class="badge bg-secondary-subtle text-secondary" style="font-size: 10.5px;">Read Only</span>' : ''}
+              </div>
               <div class="mb-3">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Evaluator 1 Score (1-10):</label>
-                <input type="${inputType}" class="evaluator-input form-control form-control-sm" ${disabledAttr} data-evaluator="1" data-id="${question.id}"
-                    min="1" max="10" value="${savedEvaluator1}" placeholder="${scorePlaceholder}" style="max-width: 200px;">
+                <input type="${evaluator1Enabled ? 'number' : 'text'}" class="evaluator-input form-control form-control-sm w-100" ${eval1DisabledAttr} data-evaluator="1" data-id="${question.id}"
+                    min="1" max="10" value="${savedEvaluator1}" placeholder="${scorePlaceholder}">
               </div>
-              <div class="mb-2">
+              <div class="mb-0">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Evaluator 1 Note:</label>
-                <textarea class="evaluator-note form-control form-control-sm" ${disabledAttr} data-evaluator="1" data-id="${question.id}"
+                <textarea class="evaluator-note form-control form-control-sm w-100" ${eval1DisabledAttr} data-evaluator="1" data-id="${question.id}"
                         rows="2" placeholder="${notePlaceholder}">${savedEvaluator1Note}</textarea>
               </div>
             </div>
-          ` : '';
+          `;
 
-          const eval2Html = evaluator2Enabled ? `
+          const eval2Html = `
             <div class="evaluator-card p-3 border rounded mb-3 bg-light">
-              <h6 class="fw-bold text-info mb-2" style="font-size: 13px;">Evaluator 2</h6>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-primary mb-0" style="font-size: 13px;">Evaluator 2</h6>
+                ${!evaluator2Enabled && !isQuestionReadOnly ? '<span class="badge bg-secondary-subtle text-secondary" style="font-size: 10.5px;">Read Only</span>' : ''}
+              </div>
               <div class="mb-3">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Evaluator 2 Score (1-10):</label>
-                <input type="${inputType}" class="evaluator-input form-control form-control-sm" ${disabledAttr} data-evaluator="2" data-id="${question.id}"
-                    min="1" max="10" value="${savedEvaluator2}" placeholder="${scorePlaceholder}" style="max-width: 200px;">
+                <input type="${evaluator2Enabled ? 'number' : 'text'}" class="evaluator-input form-control form-control-sm w-100" ${eval2DisabledAttr} data-evaluator="2" data-id="${question.id}"
+                    min="1" max="10" value="${savedEvaluator2}" placeholder="${scorePlaceholder}">
               </div>
-              <div class="mb-2">
+              <div class="mb-0">
                 <label class="form-label fw-bold text-dark small d-block mb-1">Evaluator 2 Note:</label>
-                <textarea class="evaluator-note form-control form-control-sm" ${disabledAttr} data-evaluator="2" data-id="${question.id}"
+                <textarea class="evaluator-note form-control form-control-sm w-100" ${eval2DisabledAttr} data-evaluator="2" data-id="${question.id}"
                         rows="2" placeholder="${notePlaceholder}">${savedEvaluator2Note}</textarea>
               </div>
             </div>
-          ` : '';
+          `;
 
           evaluatorHtml = `<div class="mt-3">${eval1Html}${eval2Html}</div>`;
         }
 
         const card = `
-            <div class="question-container p-4 shadow-sm rounded fade-in border">
-                <p class="question-category">${currentCategory?.name}</p>
-                <p class="question-progress">${index + 1} / ${allQuestions.length}</p>
+            <div class="question-container p-4 shadow-sm rounded-4 fade-in border bg-white mb-3" style="box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1.5 rounded-3" style="font-size: 12px;">${currentCategory?.name || 'Category'}</span>
+                  <span class="badge bg-light text-dark border px-2.5 py-1 rounded-3">${index + 1} / ${allQuestions.length}</span>
+                </div>
                 ${questionHtml}
                 ${groupKpiHtml}
                 ${formulaDescriptionHtml}
-                ${weightHtml}
+                <div class="mb-2">${weightHtml}</div>
                 ${evaluatorHtml}
-                <div class="mt-4 d-flex gap-1">
-                    <button class="btn btn-secondary" id="prev-btn" ${index === 0 ? 'disabled' : ''}>Previous</button>
-                    <button class="btn btn-primary" id="next-btn">${index === allQuestions.length - 1 ? 'Submit' : 'Next'}</button>
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn btn-secondary rounded-3 px-4" id="prev-btn" ${index === 0 ? 'disabled' : ''}>Previous</button>
+                    <button class="btn btn-primary rounded-3 px-4" id="next-btn">${index === allQuestions.length - 1 ? (isQuestionReadOnly ? 'Close' : 'Submit') : 'Next'}</button>
                 </div>
             </div>
         `;
@@ -1344,42 +1426,110 @@
         questionContainer.empty();
 
         if (!questionData?.appraisal_employee?.appraisal_employee_questions?.length) {
-          questionContainer.append(`<div class="d-flex flex-column justify-content-center align-items-center gap-2 border p-4 rounded">
-                        <img src="{{ asset('/images/nodata.png') }}" alt="No Bulletin Found" class="img-fluid" style="max-width: 300px; max-height: 300px;" />
-                        <h3 class="text-center font-bold text-black mb-0">No Data Found</h3>
-                    </div>`);
+          questionContainer.append(`
+            <div class="d-flex flex-column justify-content-center align-items-center gap-2 border p-4 rounded-4 bg-white shadow-sm my-3">
+              <img src="{{ asset('/images/nodata.png') }}" alt="No Data Found" class="img-fluid" style="max-width: 220px;" />
+              <h5 class="fw-bold text-dark mt-2 mb-1">Belum Ada Detail Penilaian</h5>
+              <p class="text-muted small mb-0 text-center">Karyawan ini belum memiliki rincian nilai penilaian untuk periode ini.</p>
+            </div>
+          `);
           return;
         }
 
-        const sortedQuestions = questionData.appraisal_employee.appraisal_employee_questions.sort((a, b) => a.question
-          .category_id - b.question.category_id);
+        const auth1Id = questionData.organization?.authorized1?.id || (typeof questionData.organization
+          ?.authorized1 === 'object' ? null : questionData.organization?.authorized1) || (selectedEmployee
+          ?.organization?.authorized1?.id || (typeof selectedEmployee?.organization?.authorized1 === 'object' ?
+            null : selectedEmployee?.organization?.authorized1));
+        const auth2Id = questionData.organization?.authorized2?.id || (typeof questionData.organization
+          ?.authorized2 === 'object' ? null : questionData.organization?.authorized2) || (selectedEmployee
+          ?.organization?.authorized2?.id || (typeof selectedEmployee?.organization?.authorized2 === 'object' ?
+            null : selectedEmployee?.organization?.authorized2));
+        const isTwoEvaluators = auth1Id && auth2Id && String(auth1Id) !== String(auth2Id);
+        const singleEvaluatorMode = !isTwoEvaluators;
+
+        const sortedQuestions = questionData.appraisal_employee.appraisal_employee_questions.sort((a, b) => {
+          const catA = a.question?.category_id || 0;
+          const catB = b.question?.category_id || 0;
+          return catA - catB;
+        });
 
         sortedQuestions.forEach(questionItem => {
-          const question = questionItem.question;
+          const question = questionItem.question || {};
           const category = allCategories.find(cat => cat.id === question.category_id);
 
-          const categoryName = category?.name || 'Unknown Category';
-          const groupKPI = question?.group_kpi || 'N/A';
-          const evaluator1Score = questionItem?.evaluator1_point || 'N/A';
-          const evaluator2Score = questionItem?.evaluator2_point || 'N/A';
-          const evaluator1Note = questionItem?.evaluator1_note || 'N/A';
-          const evaluator2Note = questionItem?.evaluator2_note || 'N/A';
-          const questionHtml = question?.question ? `<p class="mb-1"><strong>Target:</strong> ${question.question}</p>` : '';
-          const weightHtml = question?.weight ? `<p class="mb-1"><strong>Weight:</strong> ${question.weight}%</p>` : '';
+          const categoryName = category?.name || 'Category';
+          const groupKPI = question.group_kpi || '-';
+          const evaluator1Score = (questionItem.evaluator1_point !== null && questionItem.evaluator1_point !==
+            undefined && questionItem.evaluator1_point !== '') ? questionItem.evaluator1_point : 'N/A';
+          const evaluator2Score = (questionItem.evaluator2_point !== null && questionItem.evaluator2_point !==
+            undefined && questionItem.evaluator2_point !== '') ? questionItem.evaluator2_point : 'N/A';
+          const evaluator1Note = questionItem.evaluator1_note || '-';
+          const evaluator2Note = questionItem.evaluator2_note || '-';
+
+          let evalScoresHtml = '';
+          if (singleEvaluatorMode) {
+            const singleScore = evaluator1Score !== 'N/A' ? evaluator1Score : evaluator2Score;
+            const singleNote = evaluator1Note !== '-' ? evaluator1Note : evaluator2Note;
+            evalScoresHtml = `
+              <div class="p-3 bg-light rounded-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-bold text-dark small">Evaluator Score:</span>
+                  <span class="badge bg-primary fs-6 px-3 py-1 rounded-pill">${singleScore}</span>
+                </div>
+                <div>
+                  <span class="text-muted small d-block mb-1">Catatan / Note:</span>
+                  <p class="text-dark mb-0 small">${singleNote}</p>
+                </div>
+              </div>
+            `;
+          } else {
+            evalScoresHtml = `
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="p-3 bg-light rounded-3 border h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="fw-bold text-primary small">Evaluator 1 Score</span>
+                      <span class="badge bg-primary rounded-pill px-2.5 py-1">${evaluator1Score}</span>
+                    </div>
+                    <span class="text-muted small d-block mb-1" style="font-size: 11px;">Note:</span>
+                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${evaluator1Note}</p>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="p-3 bg-light rounded-3 border h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="fw-bold text-primary small">Evaluator 2 Score</span>
+                      <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">${evaluator2Score}</span>
+                    </div>
+                    <span class="text-muted small d-block mb-1" style="font-size: 11px;">Note:</span>
+                    <p class="text-dark mb-0 small" style="font-size: 12.5px;">${evaluator2Note}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          const groupKpiHtml = question.group_kpi ? `
+            <div class="mb-3">
+              <span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Group KPI</span>
+              <span class="text-secondary small">${groupKPI}</span>
+            </div>
+          ` : '';
 
           const questionCard = `
-            <div class="question-container p-4 shadow-sm rounded fade-in border mb-3 bg-white" style="border-radius: 20px;">
-                <p class="question-category mb-2" style="font-weight:800; color:#0073e6;">${categoryName}</p>
-                <p class="question-group-kpi mb-1"><strong>Group KPI:</strong> ${groupKPI}</p>
-                ${questionHtml}
-                ${weightHtml}
-                <div class="mt-3 p-3 bg-light rounded border">
-                  <div class="mb-2"><strong>Evaluator 1 Score:</strong> <span class="badge bg-primary px-2 py-1">${evaluator1Score}</span></div>
-                  <div class="mb-2"><strong>Evaluator 1 Note:</strong> ${evaluator1Note}</div>
-                  <div class="mb-2"><strong>Evaluator 2 Score:</strong> <span class="badge bg-info px-2 py-1">${evaluator2Score}</span></div>
-                  <div class="mb-0"><strong>Evaluator 2 Note:</strong> ${evaluator2Note}</div>
-                </div>
-            </div>`;
+            <div class="card shadow-sm rounded-4 border-0 mb-3 bg-white p-3 p-md-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1.5 rounded-3" style="font-size: 12px; letter-spacing: 0.2px;">${categoryName}</span>
+                ${question.weight ? `<span class="badge bg-light text-secondary border px-2.5 py-1 rounded-3 small">Weight: ${question.weight}%</span>` : ''}
+              </div>
+              <div class="mb-2">
+                <span class="text-muted small d-block" style="font-size: 11px; text-transform: uppercase; font-weight: 600;">Target / Question</span>
+                <span class="text-dark fw-semibold" style="font-size: 14px; line-height: 1.4;">${question.question || '-'}</span>
+              </div>
+              ${groupKpiHtml}
+              ${evalScoresHtml}
+            </div>
+          `;
 
           questionContainer.append(questionCard);
         });
@@ -1421,10 +1571,14 @@
             evaluator2_note: note,
           };
         } else {
-          const evaluator1 = input1.length ? (input1.val() || null) : (existing.evaluator1 ?? existing.evaluator1_point ?? null);
-          const evaluator2 = input2.length ? (input2.val() || null) : (existing.evaluator2 ?? existing.evaluator2_point ?? null);
-          const evaluator1Note = note1.length ? (note1.val() || '') : (existing.evaluator1Note ?? existing.evaluator1_note ?? '');
-          const evaluator2Note = note2.length ? (note2.val() || '') : (existing.evaluator2Note ?? existing.evaluator2_note ?? '');
+          const evaluator1 = input1.length ? (input1.val() || null) : (existing.evaluator1 ?? existing
+            .evaluator1_point ?? null);
+          const evaluator2 = input2.length ? (input2.val() || null) : (existing.evaluator2 ?? existing
+            .evaluator2_point ?? null);
+          const evaluator1Note = note1.length ? (note1.val() || '') : (existing.evaluator1Note ?? existing
+            .evaluator1_note ?? '');
+          const evaluator2Note = note2.length ? (note2.val() || '') : (existing.evaluator2Note ?? existing
+            .evaluator2_note ?? '');
 
           allAnswers[currentIndex] = {
             questionId,
@@ -1457,11 +1611,20 @@
       function submitAnswers() {
         if (!validateAnswers()) return showAlert('danger', 'Please answer all questions before submitting!');
 
-        const auth1Id = questionData.organization?.authorized1?.id || (typeof questionData.organization?.authorized1 === 'object' ? null : questionData.organization?.authorized1);
-        const auth2Id = questionData.organization?.authorized2?.id || (typeof questionData.organization?.authorized2 === 'object' ? null : questionData.organization?.authorized2);
+        const auth1Id = questionData.organization?.authorized1?.id || (typeof questionData.organization
+          ?.authorized1 === 'object' ? null : questionData.organization?.authorized1) || (selectedEmployee
+          ?.organization?.authorized1?.id || (typeof selectedEmployee?.organization?.authorized1 === 'object' ?
+            null : selectedEmployee?.organization?.authorized1));
+        const auth2Id = questionData.organization?.authorized2?.id || (typeof questionData.organization
+          ?.authorized2 === 'object' ? null : questionData.organization?.authorized2) || (selectedEmployee
+          ?.organization?.authorized2?.id || (typeof selectedEmployee?.organization?.authorized2 === 'object' ?
+            null : selectedEmployee?.organization?.authorized2));
+
+        const isTwoEvaluators = auth1Id && auth2Id && String(auth1Id) !== String(auth2Id);
+        const singleEvaluatorMode = !isTwoEvaluators;
 
         let evaluatorRole = null;
-        if (auth1Id && auth2Id && String(auth1Id) === String(userOrgId) && String(auth2Id) === String(userOrgId)) {
+        if (singleEvaluatorMode) {
           evaluatorRole = "single_evaluator";
         } else if (auth1Id && String(auth1Id) === String(userOrgId)) {
           evaluatorRole = "evaluator1";
@@ -1473,23 +1636,10 @@
           let isAdmin = false;
           if (user.role) {
             const roleName = user.role.name.toLowerCase();
-            isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'hrga');
+            isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'administrator');
           }
           if (isAdmin) {
-            let singleEvaluatorMode = auth1Id && auth2Id && String(auth1Id) === String(auth2Id);
-            if (singleEvaluatorMode) {
-              evaluatorRole = "single_evaluator";
-            } else {
-              const hasVal1 = $('.evaluator-input[data-evaluator="1"]').length > 0;
-              const hasVal2 = $('.evaluator-input[data-evaluator="2"]').length > 0;
-              if (hasVal1) {
-                evaluatorRole = "evaluator1";
-              } else if (hasVal2) {
-                evaluatorRole = "evaluator2";
-              } else {
-                evaluatorRole = "evaluator1";
-              }
-            }
+            evaluatorRole = singleEvaluatorMode ? "single_evaluator" : "evaluator1";
           }
         }
 
@@ -1554,13 +1704,20 @@
         let isAdmin = false;
         if (user.role) {
           const roleName = user.role.name.toLowerCase();
-          isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'hrga');
+          isAdmin = (roleName === 'developer' || roleName === 'superadmin' || roleName === 'administrator');
         }
         if (isAdmin) return true;
 
         const empOrg = employee?.organization;
         if (!empOrg) return false;
-        return empOrg.authorized1 == userOrgId || empOrg.authorized2 == userOrgId;
+
+        const auth1Id = empOrg.authorized1?.id || (typeof empOrg.authorized1 === 'object' ? null : empOrg
+          .authorized1);
+        const auth2Id = empOrg.authorized2?.id || (typeof empOrg.authorized2 === 'object' ? null : empOrg
+          .authorized2);
+
+        return (auth1Id && String(auth1Id) === String(userOrgId)) || (auth2Id && String(auth2Id) === String(
+          userOrgId));
       }
 
       function showCategoriesForTemplate(callback) {
@@ -1586,6 +1743,7 @@
             $('#technical-category, #behavior-category, #leadership-category').hide();
 
             if (questions.length === 0 || !response.appraisal_template) {
+              $('#category-list').hide();
               $('#category-list').before(`
                 <div id="no-template-alert" class="alert alert-warning text-center shadow-sm rounded-4 p-4 my-3">
                   <i class="bi bi-exclamation-triangle-fill fs-2 text-warning d-block mb-2"></i>
@@ -1601,9 +1759,10 @@
                   $(sel).show();
                 }
               });
+              $('#category-list').show();
             }
 
-            if (callback) callback();
+            if (callback) callback(questions.length > 0 && !!response.appraisal_template);
           },
           error: function() {
             console.error('Failed to fetch template questions for categories.');
@@ -1615,6 +1774,7 @@
       }
 
       window.editAppraisal = function(appraisalEmployId) {
+        window.isEditingMode = true;
         $('#employee-list').hide();
         $('#appraisal-summary').hide();
         $('#question-list').hide();
@@ -1630,22 +1790,18 @@
         $('#title-back-container p').text('Back');
         updateSearchHeader(selectedEmployee);
 
-        showCategoriesForTemplate(function() {
-          $('#category-list').show();
-        });
+        showCategoriesForTemplate();
       };
 
       function setNavState(state) {
         window.currentNavState = state;
         if (state === 'Back') {
           $('#page-header-title').text('Assessment Details');
-          if (!isMobile()) {
-            $('#desktop-back-bar').attr('style', 'display: block !important; text-align: left !important; width: 100% !important;');
-          } else {
-            $('#desktop-back-bar').attr('style', 'display: none !important;');
-          }
+          $('#btnAppraisalBack').removeClass('desktop-hidden');
+          $('#desktop-back-bar').attr('style', 'display: none !important;');
         } else {
           $('#page-header-title').text('Employee Assessment');
+          $('#btnAppraisalBack').addClass('desktop-hidden');
           $('#desktop-back-bar').attr('style', 'display: none !important;');
           updateSearchHeader(null);
         }
@@ -1678,7 +1834,8 @@
           return;
         }
 
-        const filteredPeriodBySelectEmployee = allPeriods.filter(p => p.organization_id === selectedEmployee.org_id);
+        const filteredPeriodBySelectEmployee = allPeriods.filter(p => p.organization_id === selectedEmployee
+          .org_id);
 
         if (!selectedPeriod || !selectedPeriod.appraisal_period) {
           console.warn("No selected period available.");
@@ -1708,22 +1865,56 @@
           $('#question-list').show();
           setNavState('Back');
           currentIndex = 0;
-          fetchQuestions(false, true);
+          fetchQuestions(true, true);
           return;
         }
 
-        $('#employee-list').hide();
-        $('#category-list').hide();
-        $('#question-list').hide();
-        $('#search-container').hide();
-        $('#appraisal-summary').show();
-        $('#filter-container').show();
-        $('#period-selected').show().text(
-          selectedEmployee.fullname || 'No period selected'
+        const appraisalEmp = getEmployeeAppraisal(selectedEmployee, selectedPeriod);
+        const hasScore = appraisalEmp && (
+          (appraisalEmp.total_point !== null && appraisalEmp.total_point !== undefined && appraisalEmp
+            .total_point !== '') ||
+          appraisalEmp.evaluator1_by || appraisalEmp.evaluator2_by
         );
-        setNavState('Back');
-        $('#load-more').hide();
-        fetchSummary();
+        const isEvaluator = isUserEvaluatorFor(selectedEmployee);
+
+        if (hasScore) {
+          $('#employee-list').hide();
+          $('#category-list').hide();
+          $('#question-list').hide();
+          $('#search-container').hide();
+          $('#appraisal-summary').show();
+          $('#filter-container').show();
+          $('#period-selected').show().text(
+            selectedEmployee.fullname || 'No period selected'
+          );
+          setNavState('Back');
+          $('#load-more').hide();
+          fetchSummary();
+        } else {
+          if (isEvaluator) {
+            $('#employee-list').hide();
+            $('#appraisal-summary').hide();
+            $('#question-list').hide();
+            $('#search-container').hide();
+            $('#filter-container').hide();
+            $('#load-more').hide();
+            setNavState('Back');
+            showCategoriesForTemplate();
+          } else {
+            $('#employee-list').hide();
+            $('#category-list').hide();
+            $('#question-list').hide();
+            $('#search-container').hide();
+            $('#appraisal-summary').show();
+            $('#filter-container').show();
+            $('#period-selected').show().text(
+              selectedEmployee.fullname || 'No period selected'
+            );
+            setNavState('Back');
+            $('#load-more').hide();
+            fetchSummary();
+          }
+        }
       });
 
       $(document).on('click', '#category-list .card', function() {
@@ -1736,7 +1927,8 @@
           $('#load-more').hide();
           $('#question-list').show();
           updateSearchHeader(selectedEmployee);
-          fetchQuestions(false, false);
+          const isEvaluator = isUserEvaluatorFor(selectedEmployee);
+          fetchQuestions(false, !isEvaluator);
         }
       });
 
@@ -1799,9 +1991,7 @@
           selectedSummary = null;
           allAnswers = [];
 
-          showCategoriesForTemplate(function() {
-            $('#category-list').show();
-          });
+          showCategoriesForTemplate();
         } else {
           $('#no-template-alert').remove();
           $('#period-selected').hide();

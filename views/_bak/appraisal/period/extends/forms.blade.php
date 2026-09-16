@@ -49,7 +49,32 @@
             name: '_method',
             value: 'PUT'
           },
-          {
+          @if (in_array(strtolower($user->role->name ?? ''), ['superadmin', 'developer', 'administrator']))
+            {
+              xtype: 'combo',
+              fieldLabel: 'Company',
+              name: 'company_id',
+              store: Ext.create('Ext.data.Store', {
+                fields: ['id', 'name'],
+                proxy: {
+                  type: 'ajax',
+                  url: '{{ route('company.data') }}',
+                  reader: {
+                    type: 'json',
+                    rootProperty: 'data'
+                  }
+                },
+                autoLoad: true
+              }),
+              displayField: 'name',
+              valueField: 'id',
+              queryMode: 'local',
+              forceSelection: true,
+              editable: false,
+              allowBlank: true,
+              emptyText: 'Select Company'
+            },
+          @endif {
             xtype: 'combo',
             fieldLabel: 'Period',
             afterLabelTextTpl: '<span style="color:red;">*</span>',

@@ -142,16 +142,18 @@
     };
 
     me.sortStore = function() {
-      let sortedData = me.store.getRange().sort((a, b) => {
-        let groupCompare = a.get('group_kpi').localeCompare(b.get('group_kpi'));
-        if (groupCompare !== 0) {
-          return groupCompare;
-        }
+      me.store.sort({
+        sorterFn: function(a, b) {
+          var groupCompare = (a.get('group_kpi') || '').localeCompare(b.get('group_kpi') || '');
+          if (groupCompare !== 0) {
+            return groupCompare;
+          }
 
-        return new Date(a.get('created_at')) - new Date(b.get('created_at'));
+          var d1 = a.get('created_at') ? new Date(a.get('created_at')).getTime() : (a.get('id') || 0);
+          var d2 = b.get('created_at') ? new Date(b.get('created_at')).getTime() : (b.get('id') || 0);
+          return d1 - d2;
+        }
       });
-      me.store.removeAll();
-      me.store.loadData(sortedData);
     };
 
     me.openAddModal = function() {

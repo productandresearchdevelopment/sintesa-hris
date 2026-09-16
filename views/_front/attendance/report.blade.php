@@ -111,7 +111,8 @@
               <th class="py-2 px-3 text-muted small" style="font-size: 12px;">Clock In</th>
               <th class="py-2 px-3 text-muted small" style="font-size: 12px;">Clock Out</th>
               <th class="py-2 px-3 text-muted small" style="font-size: 12px;">Status</th>
-              <th class="py-2 px-3 text-muted small text-center" style="font-size: 12px;">Photos & Actions</th>
+              <th class="py-2 px-3 text-muted small text-center" style="font-size: 12px;">Photos</th>
+              <th class="py-2 px-3 text-muted small text-center" style="font-size: 12px;">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -138,32 +139,43 @@
                   <td class="py-2 px-3 text-center">
                     <div class="d-inline-flex align-items-center gap-1">
                       @if ($log['clock_in_photo'])
-                        <a href="{{ $log['clock_in_photo'] }}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;">
-                          <i class="bi bi-image me-1"></i> In Photo
+                        <a href="{{ $log['clock_in_photo'] }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;" title="Open Clock In Photo in new tab">
+                          <i class="bi bi-box-arrow-up-right me-1"></i> In Photo
                         </a>
+                      @else
+                        <span class="text-muted" style="font-size: 11px;">-</span>
                       @endif
+
+                      <span class="text-muted mx-1">|</span>
+
                       @if ($log['clock_out_photo'])
-                        <a href="{{ $log['clock_out_photo'] }}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;">
-                          <i class="bi bi-image me-1"></i> Out Photo
+                        <a href="{{ $log['clock_out_photo'] }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;" title="Open Clock Out Photo in new tab">
+                          <i class="bi bi-box-arrow-up-right me-1"></i> Out Photo
                         </a>
-                      @endif
-                      @if ($isHR)
-                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 edit-attendance-btn" style="font-size: 11px;"
-                          data-id="{{ $log['id'] }}"
-                          data-name="{{ $log['employee_name'] }}"
-                          data-date="{{ $log['date'] }}"
-                          data-clock-in="{{ $log['raw_clock_in'] }}"
-                          data-clock-out="{{ $log['raw_clock_out'] }}">
-                          <i class="bi bi-pencil"></i> Edit
-                        </button>
+                      @else
+                        <span class="text-muted" style="font-size: 11px;">-</span>
                       @endif
                     </div>
+                  </td>
+                  <td class="py-2 px-3 text-center">
+                    @if ($isHR)
+                      <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 edit-attendance-btn" style="font-size: 11px;"
+                        data-id="{{ $log['id'] }}"
+                        data-name="{{ $log['employee_name'] }}"
+                        data-date="{{ $log['date'] }}"
+                        data-clock-in="{{ $log['raw_clock_in'] }}"
+                        data-clock-out="{{ $log['raw_clock_out'] }}">
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
+                    @else
+                      <span class="text-muted small">-</span>
+                    @endif
                   </td>
                 </tr>
               @endforeach
             @else
               <tr>
-                <td colspan="7" class="text-center py-4 text-muted small">
+                <td colspan="8" class="text-center py-4 text-muted small">
                   <i class="bi bi-inbox fs-3 d-block mb-1"></i>
                   <span>No attendance records found</span>
                 </td>

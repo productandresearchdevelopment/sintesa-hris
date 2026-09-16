@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('iq_appraisal_period', function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('company_id')->nullable();
             $table->string('period', 4)->nullable();
             $table->tinyInteger('smester')->nullable();
             $table->date('start_date')->nullable();
@@ -21,6 +22,8 @@ return new class extends Migration
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->dateTime('deleted_at')->nullable();
+            $table->index('company_id');
+            $table->foreign('company_id')->references('id')->on('iq_company')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

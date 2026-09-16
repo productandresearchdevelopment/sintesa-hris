@@ -59,7 +59,7 @@ class AuthUserSeeder extends Seeder
             ],
             // PT Dieboldnixdorf Users
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0001-000000000001',
                 'role_id' => 15, // HRGA
                 'organization_id' => 1, // Human Resource (Diebold)
                 'employ_id' => 'e0000000-0000-0000-0001-000000000001',
@@ -73,7 +73,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0001-000000000002',
                 'role_id' => 17, // STAFF
                 'organization_id' => 2, // Staff (Diebold)
                 'employ_id' => 'e0000000-0000-0000-0001-000000000002',
@@ -87,7 +87,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0001-000000000003',
                 'role_id' => 17, // STAFF
                 'organization_id' => 2, // Staff (Diebold)
                 'employ_id' => 'e0000000-0000-0000-0001-000000000003',
@@ -101,7 +101,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0001-000000000004',
                 'role_id' => 17, // STAFF
                 'organization_id' => 2, // Staff (Diebold)
                 'employ_id' => 'e0000000-0000-0000-0001-000000000004',
@@ -117,7 +117,7 @@ class AuthUserSeeder extends Seeder
 
             // PT Hitachi Users
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0002-000000000001',
                 'role_id' => 15, // HRGA
                 'organization_id' => 3, // Human Resource (Hitachi)
                 'employ_id' => 'e0000000-0000-0000-0002-000000000001',
@@ -131,7 +131,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0002-000000000002',
                 'role_id' => 17, // STAFF
                 'organization_id' => 4, // Staff (Hitachi)
                 'employ_id' => 'e0000000-0000-0000-0002-000000000002',
@@ -145,7 +145,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0002-000000000003',
                 'role_id' => 17, // STAFF
                 'organization_id' => 4, // Staff (Hitachi)
                 'employ_id' => 'e0000000-0000-0000-0002-000000000003',
@@ -159,7 +159,7 @@ class AuthUserSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'id' => (string) Str::uuid(),
+                'id' => 'u0000000-0000-0000-0002-000000000004',
                 'role_id' => 17, // STAFF
                 'organization_id' => 4, // Staff (Hitachi)
                 'employ_id' => 'e0000000-0000-0000-0002-000000000004',

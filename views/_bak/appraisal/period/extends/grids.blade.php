@@ -14,6 +14,14 @@
               type: 'auto'
             },
             {
+              name: 'company',
+              type: 'auto'
+            },
+            {
+              name: 'company_id',
+              type: 'auto'
+            },
+            {
               name: 'period',
               type: 'auto'
             },
@@ -157,7 +165,18 @@
                 store: me.store
               }
             ],
-            columns: [{
+            columns: [
+              @if (in_array(strtolower($user->role->name ?? ''), ['superadmin', 'developer', 'administrator']))
+                {
+                  text: "Company",
+                  dataIndex: 'company',
+                  width: 180,
+                  flex: 1,
+                  renderer: function(val) {
+                    return val?.name || '-';
+                  }
+                },
+              @endif {
                 text: "Period",
                 dataIndex: 'period',
                 width: 200,

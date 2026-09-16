@@ -200,7 +200,7 @@
     };
 
     me.render = function(rec, action) {
-      me.form.url = '{{ route('appraisal.question.template.update', ':id') }}'.replace(':id', rec.id);
+      me.form.url = '{{ route('appraisal.question.template.update') }}';
 
       me.form.getForm().setValues({
         _method: 'PUT',
@@ -220,6 +220,13 @@
         var form = me.form.getForm();
         var values = form.getValues();
 
+        if (!values.hasOwnProperty('is_locked')) {
+          values['is_locked'] = '0';
+        }
+        if (!values.hasOwnProperty('is_archived')) {
+          values['is_archived'] = '0';
+        }
+
         Ext.Ajax.request({
           url: me.form.url,
           method: 'POST',
@@ -230,15 +237,22 @@
             me.window.hide();
           },
           failure: function(response) {
-            let jsonResponse = Ext.decode(response.responseText);
+            let jsonResponse = {};
+            try {
+              jsonResponse = Ext.decode(response.responseText);
+            } catch(e) {
+              jsonResponse = {};
+            }
 
             if (jsonResponse.errors) {
               let errorMessage = '';
               Ext.Object.each(jsonResponse.errors, function(field, errors) {
-                errorMessage += errors.join(', ') + "\n";
+                errorMessage += (Array.isArray(errors) ? errors.join(', ') : errors) + "\n";
               });
 
               Ext.Msg.alert('Error', errorMessage);
+            } else if (jsonResponse.message) {
+              Ext.Msg.alert('Error', jsonResponse.message);
             } else {
               Ext.Msg.alert('Error', 'Failed to save data.');
             }

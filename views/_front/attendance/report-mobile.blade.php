@@ -466,16 +466,20 @@
               </div>
 
               <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                <div class="d-flex gap-2">
+                <div class="d-flex align-items-center gap-2">
                   @if ($log['clock_in_photo'])
-                    <a href="{{ $log['clock_in_photo'] }}" target="_blank" class="media-btn-link">
-                      <i class="bi bi-image"></i> In Photo
+                    <a href="{{ $log['clock_in_photo'] }}" target="_blank" rel="noopener noreferrer" class="media-btn-link" title="Open Clock In Photo in new tab">
+                      <i class="bi bi-box-arrow-up-right"></i> In Photo
                     </a>
+                  @else
+                    <span class="text-muted" style="font-size: 11px;">No In Photo</span>
                   @endif
                   @if ($log['clock_out_photo'])
-                    <a href="{{ $log['clock_out_photo'] }}" target="_blank" class="media-btn-link">
-                      <i class="bi bi-image"></i> Out Photo
+                    <a href="{{ $log['clock_out_photo'] }}" target="_blank" rel="noopener noreferrer" class="media-btn-link text-danger border-danger-subtle bg-danger-subtle" title="Open Clock Out Photo in new tab">
+                      <i class="bi bi-box-arrow-up-right"></i> Out Photo
                     </a>
+                  @else
+                    <span class="text-muted" style="font-size: 11px;">No Out Photo</span>
                   @endif
                 </div>
 

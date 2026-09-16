@@ -32,8 +32,9 @@ class Leave extends Controller
         $user = $request->user();
         $roleName = strtolower(optional($user->role)->name);
         $isHR = $roleName === 'hrga';
-        $isSuper = in_array($roleName, ['developer', 'superadmin']);
+        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
         $canApproveRoute = $user->hasRoute('leave.approve') || $isSuper;
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
 
         $search = $request->input('search') ?? $request->input('query');
         $leaveTypeFilter = $request->input('leave_type');
@@ -41,6 +42,13 @@ class Leave extends Controller
         $viewFilter = $request->input('view');
 
         $query = $this->baseLeaveQuery();
+
+        if (!$isSuper && $userCompany) {
+            $query->whereHas('employee', function ($empQ) use ($userCompany) {
+                $empQ->where('company_id', $userCompany);
+            });
+        }
+
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('type_id', 'like', "%{$search}%")
@@ -101,7 +109,7 @@ class Leave extends Controller
 
         $leaves = $query->get();
 
-        $processedLeaves = $leaves->map(function ($leave) use ($user, $isHR, $isSuper, $canApproveRoute) {
+        $processedLeaves = $leaves->map(function ($leave) use ($user, $isHR, $isSuper, $canApproveRoute, $userCompany) {
             $employee = optional($leave->employee);
             $org = optional($employee->organization);
             $auth1 = optional($org->authorized1);
@@ -129,8 +137,8 @@ class Leave extends Controller
             }
 
             $leave->setAttribute('is_super', $isSuper);
-            $leave->setAttribute('is_user_leave', ($leave->created_by == $user->id));
-            $leave->setAttribute('can_cancel', $leave->created_by == $user->id);
+            $leave->setAttribute('is_user_leave', ($leave->created_by == $user->id || $leave->employ_id == optional($user->employee)->id));
+            $leave->setAttribute('can_cancel', ($leave->created_by == $user->id || $leave->employ_id == optional($user->employee)->id));
 
             $leave->setAttribute('can_view', false);
             if ($org && $userOrgId) {
@@ -139,8 +147,13 @@ class Leave extends Controller
                     $leave->setAttribute('can_view', true);
                 }
             }
-            if ($isSuper || $isHR) {
+            if ($isSuper) {
                 $leave->setAttribute('can_view', true);
+            } elseif ($isHR && $userCompany) {
+                $leaveEmpCompany = optional($employee)->company_id ?? optional($org)->company_id;
+                if ($leaveEmpCompany == $userCompany) {
+                    $leave->setAttribute('can_view', true);
+                }
             }
 
             $leave->setAttribute(
@@ -340,7 +353,12 @@ class Leave extends Controller
 
     public function get(Request $request, $id = null)
     {
-        $leave = ModelsLeave::with([
+        $user = $request->user();
+        $roleName = strtolower(optional($user->role)->name);
+        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+
+        $query = ModelsLeave::with([
             'type',
             'file',
             'approver1',
@@ -351,7 +369,15 @@ class Leave extends Controller
             'employee.organization',
             'employee.organization.authorized1',
             'employee.organization.authorized2'
-        ])->find($id);
+        ]);
+
+        if (!$isSuper && $userCompany) {
+            $query->whereHas('employee', function ($empQ) use ($userCompany) {
+                $empQ->where('company_id', $userCompany);
+            });
+        }
+
+        $leave = $query->find($id);
 
         if (!$leave) {
             return response()->json([
@@ -399,7 +425,7 @@ class Leave extends Controller
 
             $user = $request->user();
             $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin']);
+            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
@@ -504,7 +530,7 @@ class Leave extends Controller
 
             $user = $request->user();
             $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin']);
+            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
@@ -590,7 +616,7 @@ class Leave extends Controller
 
             $user = $request->user();
             $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin']);
+            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
 
             if ($leave->created_by != $user->id && !$isSuper) {
                 return response()->json([
@@ -682,7 +708,16 @@ class Leave extends Controller
         }
 
         $roleName = strtolower(optional($user->role)->name);
-        if (!in_array($roleName, ['hrga', 'developer', 'superadmin'])) {
+        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+
+        if (!$isSuper && $userCompany) {
+            $query->whereHas('employee', function ($q) use ($userCompany) {
+                $q->where('company_id', $userCompany);
+            });
+        }
+
+        if (!in_array($roleName, ['hrga', 'developer', 'superadmin', 'administrator'])) {
             $userOrgId = $user->organization->id ?? null;
             if ($userOrgId) {
                 $allOrgs = Organization::all()->keyBy('id');

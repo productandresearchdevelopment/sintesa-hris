@@ -241,7 +241,7 @@ class Attendance extends Controller
         }
 
         $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
-        $isSuperUser = in_array($userRole, ['developer', 'superadmin']);
+        $isSuperUser = in_array($userRole, ['developer', 'superadmin', 'administrator']);
         $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
 
         $query = IqAttendance::whereBetween('date', [$startDate, $endDate])
@@ -365,8 +365,8 @@ class Attendance extends Controller
         $year = $request->year ?? Carbon::now()->year;
 
         $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
-        $isSuperUser = in_array($userRole, ['developer', 'superadmin']);
-        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin']);
+        $isSuperUser = in_array($userRole, ['developer', 'superadmin', 'administrator']);
+        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator']);
         $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
 
         $allowedOrgIds = null;
@@ -411,8 +411,8 @@ class Attendance extends Controller
                 'work_hours' => $work['text'],
                 'status' => ucfirst(str_replace('_', ' ', $log->status)),
                 'status_class' => $this->getStatusClass($log->status),
-                'clock_in_photo' => $log->clock_in_photo ? fileUri($log->clock_in_photo) : null,
-                'clock_out_photo' => $log->clock_out_photo ? fileUri($log->clock_out_photo) : null,
+                'clock_in_photo' => $log->clock_in_photo ? (filter_var($log->clock_in_photo, FILTER_VALIDATE_URL) || str_starts_with($log->clock_in_photo, '/') ? $log->clock_in_photo : (fileUri($log->clock_in_photo) ?: route('file', $log->clock_in_photo))) : null,
+                'clock_out_photo' => $log->clock_out_photo ? (filter_var($log->clock_out_photo, FILTER_VALIDATE_URL) || str_starts_with($log->clock_out_photo, '/') ? $log->clock_out_photo : (fileUri($log->clock_out_photo) ?: route('file', $log->clock_out_photo))) : null,
                 'clock_in_lat' => $log->clock_in_lat ?? '-',
                 'clock_in_lng' => $log->clock_in_lng ?? '-',
                 'clock_out_lat' => $log->clock_out_lat ?? '-',
@@ -444,7 +444,7 @@ class Attendance extends Controller
 
         $employee = IqEmployee::where('id', Auth::user()->employ_id)->first();
         $userRole = strtolower(optional(Auth::user()->role)->name);
-        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin']);
+        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator']);
 
         $reportData = $this->buildReportQuery($request, $employee, $isHR);
         $startDate = $reportData['startDate'];
@@ -570,7 +570,7 @@ class Attendance extends Controller
     public function update(Request $request)
     {
         $userRole = strtolower(optional(Auth::user()->role)->name);
-        if (!in_array($userRole, ['hrga', 'developer', 'superadmin'])) {
+        if (!in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized action'
@@ -632,7 +632,7 @@ class Attendance extends Controller
     public function store(Request $request)
     {
         $userRole = strtolower(optional(Auth::user()->role)->name);
-        if (!in_array($userRole, ['hrga', 'developer', 'superadmin'])) {
+        if (!in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized action'

@@ -14,6 +14,11 @@ class AppraisalPeriod extends Model
     protected $table   = 'iq_appraisal_period';
     protected $guarded = ['id'];
 
+    public function company()
+    {
+        return $this->belongsTo(\App\Models\Company::class, 'company_id', 'id');
+    }
+
     public function appraisal_period_organizations()
     {
         return $this->hasMany(AppraisalPeriodOrganization::class, 'period_id', 'id');

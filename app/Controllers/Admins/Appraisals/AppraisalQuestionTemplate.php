@@ -57,7 +57,7 @@ class AppraisalQuestionTemplate extends Controller
         $query = Mod::with(['division', 'appraisal_questions']);
         $user = $request->user();
         $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
         $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
 
         if (!$isSuperUser && $userCompany) {
@@ -119,12 +119,18 @@ class AppraisalQuestionTemplate extends Controller
             return response()->json([]);
         }
 
-        $template = Mod::find($role);
+        $template = Mod::with('division')->find($role);
         if (!$template) {
             return response()->json([]);
         }
 
-        $data = $this->treeModules($template);
+        $user = $request->user();
+        $userCompanyId = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $templateCompanyId = optional($template->division)->company_id;
+
+        $companyId = $templateCompanyId ?? $userCompanyId;
+
+        $data = $this->treeModules($template, null, $companyId);
         return response()->json($data);
     }
 
@@ -253,7 +259,8 @@ class AppraisalQuestionTemplate extends Controller
                 'period_smt' => 'required|integer',
                 'division_id' => 'required|integer|exists:iq_division,id',
                 'duplicate_id' => 'nullable|integer|exists:iq_appraisal_question_template,id',
-                'is_locked' => 'required|boolean',
+                'is_locked' => 'nullable|boolean',
+                'is_archived' => 'nullable|boolean',
                 'description' => 'nullable|string',
                 'tech.*' => 'nullable',
                 'behavior.*' => 'nullable',
@@ -282,30 +289,49 @@ class AppraisalQuestionTemplate extends Controller
                 'period_year' => $request->period_year,
                 'period_smt' => $request->period_smt,
                 'division_id' => $request->division_id,
-                'is_locked' => $request->is_locked,
-                'is_archived' => $request->is_archived,
+                'is_locked' => $request->has('is_locked') ? (int)$request->is_locked : 0,
+                'is_archived' => $request->has('is_archived') ? (int)$request->is_archived : 0,
                 'description' => $request->description
             ]);
 
             $data_detail_appraisal = [
-                'tech' => array_map(fn($item) => Arr::except($item, ['id']), $request->tech ?? []),
-                'behavior' => array_map(fn($item) => Arr::except($item, ['id']), $request->behavior ?? []),
-                'leadership' => array_map(fn($item) => Arr::except($item, ['id']), $request->leadership ?? [])
+                'tech' => $this->deduplicateQuestions($request->tech ?? []),
+                'behavior' => $this->deduplicateQuestions($request->behavior ?? []),
+                'leadership' => $this->deduplicateQuestions($request->leadership ?? [])
             ];
 
+            AppraisalQuestion::where('template_id', $appraisal->id)->forceDelete();
             $this->processAppraisalDetail($data_detail_appraisal, $appraisal->id);
 
             if ($request->filled('duplicate_id')) {
-                $sourceOrganizations = DB::table('iq_appraisal_period_organization')
-                    ->where('template_id', $request->duplicate_id)
-                    ->get();
+                $templateDivision = DB::table('iq_division')->where('id', $request->division_id)->first();
+                $companyId = $templateDivision?->company_id;
 
-                foreach ($sourceOrganizations as $srcOrg) {
-                    DB::table('iq_appraisal_period_organization')->insert([
-                        'period_id' => $srcOrg->period_id,
-                        'organization_id' => $srcOrg->organization_id,
-                        'template_id' => $appraisal->id,
-                    ]);
+                $targetPeriodQuery = DB::table('iq_appraisal_period')
+                    ->where('period', $request->period_year)
+                    ->where('smester', $request->period_smt);
+                if ($companyId) {
+                    $targetPeriodQuery->where('company_id', $companyId);
+                }
+                $targetPeriod = $targetPeriodQuery->first();
+
+                if ($targetPeriod) {
+                    $sourceOrganizations = DB::table('iq_appraisal_period_organization')
+                        ->where('template_id', $request->duplicate_id)
+                        ->get();
+
+                    foreach ($sourceOrganizations as $srcOrg) {
+                        DB::table('iq_appraisal_period_organization')
+                            ->where('period_id', $targetPeriod->id)
+                            ->where('organization_id', $srcOrg->organization_id)
+                            ->delete();
+
+                        DB::table('iq_appraisal_period_organization')->insert([
+                            'period_id' => $targetPeriod->id,
+                            'organization_id' => $srcOrg->organization_id,
+                            'template_id' => $appraisal->id,
+                        ]);
+                    }
                 }
             }
 
@@ -321,7 +347,7 @@ class AppraisalQuestionTemplate extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create appraisal template: ' . $e->getMessage(),
+                'message' => $this->formatExceptionMessage($e, 'Failed to create appraisal template.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -331,6 +357,7 @@ class AppraisalQuestionTemplate extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
+                'id' => 'required|integer|exists:iq_appraisal_question_template,id',
                 'title' => [
                     'required',
                     'string',
@@ -345,7 +372,8 @@ class AppraisalQuestionTemplate extends Controller
                 'period_year' => 'required|string',
                 'period_smt' => 'required|integer',
                 'division_id' => 'required|integer|exists:iq_division,id',
-                'is_locked' => 'required|boolean',
+                'is_locked' => 'nullable|boolean',
+                'is_archived' => 'nullable|boolean',
                 'description' => 'nullable|string',
                 'tech.*' => 'nullable',
                 'behavior.*' => 'nullable',
@@ -412,8 +440,8 @@ class AppraisalQuestionTemplate extends Controller
             $appraisal->period_year = $request->period_year;
             $appraisal->period_smt = $request->period_smt;
             $appraisal->division_id = $request->division_id;
-            $appraisal->is_locked = $request->is_locked;
-            $appraisal->is_archived = $request->is_archived;
+            $appraisal->is_locked = $request->has('is_locked') ? (int)$request->is_locked : 0;
+            $appraisal->is_archived = $request->has('is_archived') ? (int)$request->is_archived : 0;
             $appraisal->description = $request->description;
             $appraisal->save();
 
@@ -429,7 +457,7 @@ class AppraisalQuestionTemplate extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating appraisal',
+                'message' => $this->formatExceptionMessage($e, 'Error updating appraisal.'),
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -672,6 +700,34 @@ class AppraisalQuestionTemplate extends Controller
                     'message' => 'Failed to process evaluation: ' . $validator->errors()->first(),
                     'errors' => $validator->errors()
                 ], 422);
+            }
+
+            $user = $request->user();
+            $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+            $isAdmin = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+
+            $targetEmployee = Employee::with(['organization', 'organization.authorized1', 'organization.authorized2'])->find($request->employee_id);
+            if (!$targetEmployee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Target employee not found.'
+                ], 404);
+            }
+
+            $userOrgId = optional(optional($user)->employee)->org_id ?? optional($user)->organization_id;
+            $empOrg = $targetEmployee->organization;
+
+            $auth1Id = $empOrg?->authorized1?->id ?? (is_scalar($empOrg?->authorized1) ? $empOrg?->authorized1 : null);
+            $auth2Id = $empOrg?->authorized2?->id ?? (is_scalar($empOrg?->authorized2) ? $empOrg?->authorized2 : null);
+
+            $isAuth1 = $auth1Id && $userOrgId && (string) $auth1Id === (string) $userOrgId;
+            $isAuth2 = $auth2Id && $userOrgId && (string) $auth2Id === (string) $userOrgId;
+
+            if (!$isAdmin && !$isAuth1 && !$isAuth2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized: You are not authorized as an evaluator for this employee.'
+                ], 403);
             }
 
             $appraisal_employee = AppraisalEmployee::firstOrCreate(
@@ -1127,6 +1183,22 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
+    private function deduplicateQuestions($items)
+    {
+        if (!is_array($items)) return [];
+        $unique = [];
+        $seen = [];
+        foreach ($items as $item) {
+            if (!$item || !is_array($item)) continue;
+            $key = trim($item['group_kpi'] ?? '') . '|' . trim($item['question'] ?? '') . '|' . trim($item['formula_description'] ?? '') . '|' . trim($item['weight'] ?? '');
+            if (!isset($seen[$key])) {
+                $seen[$key] = true;
+                $unique[] = Arr::except($item, ['id']);
+            }
+        }
+        return $unique;
+    }
+
     private function getGrade($score)
     {
         if ($score === null || $score === '') return null;
@@ -1155,9 +1227,13 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    private function treeModules($template, $parent = null)
+    private function treeModules($template, $parent = null, $companyId = null)
     {
         $query = Organization::query();
+
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
 
         if (is_null($parent)) {
             $query->whereNull('parent_id');
@@ -1168,7 +1244,7 @@ class AppraisalQuestionTemplate extends Controller
         $result = $query->orderBy('name')->get()->unique('id')->values();
 
         foreach ($result as $row) {
-            $row->children = $this->treeModules($template, $row->id);
+            $row->children = $this->treeModules($template, $row->id, $companyId);
             $row->leaf      = count($row->children) ? false : true;
             $row->checked   = $row->hasTemplateOrganization($template->id);
             $row->icon      = asset('images/icons/' . ($row->type->icon ?? 'home') . '.png');
@@ -1176,5 +1252,23 @@ class AppraisalQuestionTemplate extends Controller
         }
 
         return $result;
+    }
+
+    private function formatExceptionMessage(\Throwable $e, string $fallback = 'An unexpected error occurred.'): string
+    {
+        $msg = $e->getMessage();
+        if ($e instanceof \Illuminate\Database\QueryException || $e->getCode() == 23000) {
+            if (str_contains($msg, 'Duplicate entry') || str_contains($msg, '1062')) {
+                return 'An appraisal template with this title already exists for the selected period year and semester.';
+            }
+            if (str_contains($msg, 'Cannot delete or update a parent row') || str_contains($msg, '1451')) {
+                return 'Cannot delete this record because it is currently being referenced by other data.';
+            }
+            if (str_contains($msg, 'Cannot add or update a child row') || str_contains($msg, '1452')) {
+                return 'Invalid reference data provided. Please verify related records exist.';
+            }
+            return 'Database constraint error. Please check your data and try again.';
+        }
+        return $fallback;
     }
 }

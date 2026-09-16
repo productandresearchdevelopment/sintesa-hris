@@ -12,8 +12,10 @@ class AppraisalPeriodSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $data = [
+            // PT Dieboldnixdorf
             [
                 'id' => 1,
+                'company_id' => 1,
                 'period' => '2026',
                 'smester' => 1,
                 'start_date' => '2026-01-01',
@@ -26,6 +28,35 @@ class AppraisalPeriodSeeder extends Seeder
             ],
             [
                 'id' => 2,
+                'company_id' => 1,
+                'period' => '2026',
+                'smester' => 2,
+                'start_date' => '2026-07-01',
+                'end_date' => '2026-12-31',
+                'is_closed' => 0,
+                'created_by' => 'e0000000-0000-0000-0000-000000000001',
+                'updated_by' => 'e0000000-0000-0000-0000-000000000001',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+            // PT Hitachi
+            [
+                'id' => 3,
+                'company_id' => 2,
+                'period' => '2026',
+                'smester' => 1,
+                'start_date' => '2026-01-01',
+                'end_date' => '2026-06-30',
+                'is_closed' => 0,
+                'created_by' => 'e0000000-0000-0000-0000-000000000001',
+                'updated_by' => 'e0000000-0000-0000-0000-000000000001',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => 4,
+                'company_id' => 2,
                 'period' => '2026',
                 'smester' => 2,
                 'start_date' => '2026-07-01',

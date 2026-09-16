@@ -395,7 +395,7 @@
         <div class="card border-0 p-3 shadow-sm rounded-3 d-flex flex-row align-items-center justify-content-between" style="background: #f8fafc;">
           <div>
             <h2 class="fw-bold mb-0 text-dark">{{ $monthStats['absent'] }}</h2>
-            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total Absent</div>
+            <div class="small text-muted fw-semibold" style="font-size: 12px;">Total Not Present</div>
           </div>
           <div class="p-3 rounded-3" style="background: #fef2f2; color: #ef4444;">
             <i class="bi bi-person-x fs-4"></i>
@@ -516,7 +516,7 @@
         <div class="stat-mini-card">
           <div>
             <div class="stat-mini-val text-danger">{{ $monthStats['absent'] }}</div>
-            <div class="stat-mini-label">Absent</div>
+            <div class="stat-mini-label">Not Present</div>
           </div>
           <div class="stat-icon-box" style="background: #fef2f2; color: #ef4444;">
             <i class="bi bi-x-circle-fill"></i>
