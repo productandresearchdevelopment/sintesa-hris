@@ -14,7 +14,6 @@ class AppraisalEmployQuestionSeeder extends Seeder
 
         $appraisalEmploys = DB::table('iq_appraisal_employ')->get();
 
-        // Target scores per employee
         $scoresMap = [
             'a0000000-0000-0000-0001-000000000002' => ['score' => 9.0, 'note' => 'Kinerja sangat baik dan konsisten sesuai target'],
             'a0000000-0000-0000-0001-000000000003' => ['score' => 8.5, 'note' => 'Kinerja baik dan memuaskan'],

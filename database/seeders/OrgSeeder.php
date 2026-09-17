@@ -12,7 +12,6 @@ class OrgSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $orgs = [
-            // Company 1: PT Dieboldnixdorf
             [
                 'id' => 1,
                 'company_id' => 1,
@@ -39,8 +38,6 @@ class OrgSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-
-            // Company 2: PT Hitachi
             [
                 'id' => 3,
                 'company_id' => 2,

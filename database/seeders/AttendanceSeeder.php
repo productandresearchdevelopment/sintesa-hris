@@ -14,7 +14,6 @@ class AttendanceSeeder extends Seeder
             mkdir($imgDir, 0777, true);
         }
 
-        // Realistic clean portrait photos from Unsplash for each employee (In & Out)
         $photoSources = [
             'andi_clock_in.jpg' => 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&auto=format&fit=crop&q=80',
             'andi_clock_out.jpg' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80',
@@ -36,12 +35,9 @@ class AttendanceSeeder extends Seeder
         }
 
         $data = [
-            // ==========================================
-            // PT Dieboldnixdorf (3 Staff attendance records)
-            // ==========================================
             [
                 'id' => 'att00000-0000-0000-0001-000000000002',
-                'employee_id' => 'e0000000-0000-0000-0001-000000000002', // Andi Pratama (Staff)
+                'employee_id' => 'e0000000-0000-0000-0001-000000000002',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:25:00',
                 'clock_in_lat' => -6.208800,
@@ -62,7 +58,7 @@ class AttendanceSeeder extends Seeder
             ],
             [
                 'id' => 'att00000-0000-0000-0001-000000000003',
-                'employee_id' => 'e0000000-0000-0000-0001-000000000003', // Dewi Lestari (Staff)
+                'employee_id' => 'e0000000-0000-0000-0001-000000000003',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:20:00',
                 'clock_in_lat' => -6.208800,
@@ -83,7 +79,7 @@ class AttendanceSeeder extends Seeder
             ],
             [
                 'id' => 'att00000-0000-0000-0001-000000000004',
-                'employee_id' => 'e0000000-0000-0000-0001-000000000004', // Rizky Febrian (Staff)
+                'employee_id' => 'e0000000-0000-0000-0001-000000000004',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:15:00',
                 'clock_in_lat' => -6.208800,
@@ -102,13 +98,9 @@ class AttendanceSeeder extends Seeder
                 'created_at' => '2026-09-15 08:15:00',
                 'updated_at' => '2026-09-15 17:30:00',
             ],
-
-            // ==========================================
-            // PT Hitachi (3 Staff attendance records)
-            // ==========================================
             [
                 'id' => 'att00000-0000-0000-0002-000000000002',
-                'employee_id' => 'e0000000-0000-0000-0002-000000000002', // Ahmad Hidayat (Staff)
+                'employee_id' => 'e0000000-0000-0000-0002-000000000002',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:28:00',
                 'clock_in_lat' => -6.210000,
@@ -129,7 +121,7 @@ class AttendanceSeeder extends Seeder
             ],
             [
                 'id' => 'att00000-0000-0000-0002-000000000003',
-                'employee_id' => 'e0000000-0000-0000-0002-000000000003', // Nurul Hidayah (Staff)
+                'employee_id' => 'e0000000-0000-0000-0002-000000000003',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:18:00',
                 'clock_in_lat' => -6.210000,
@@ -150,7 +142,7 @@ class AttendanceSeeder extends Seeder
             ],
             [
                 'id' => 'att00000-0000-0000-0002-000000000004',
-                'employee_id' => 'e0000000-0000-0000-0002-000000000004', // Fajar Nugraha (Staff)
+                'employee_id' => 'e0000000-0000-0000-0002-000000000004',
                 'date' => '2026-09-15',
                 'clock_in_time' => '2026-09-15 08:10:00',
                 'clock_in_lat' => -6.210000,
@@ -183,17 +175,13 @@ class AttendanceSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 
-    /**
-     * Download photo from internet, crop to clean portrait selfie without any bounding boxes or overlays
-     */
-    private function downloadAndCropPhoto($url, $destPath)
+    private function downloadAndCropPhoto(string $url, string $destPath)
     {
         $targetW = 480;
         $targetH = 640;
 
         $rawImgData = null;
 
-        // Download image with curl or file_get_contents
         if (function_exists('curl_init')) {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -220,7 +208,6 @@ class AttendanceSeeder extends Seeder
             $srcW = imagesx($srcImg);
             $srcH = imagesy($srcImg);
 
-            // Center crop & scale to 480x640
             $targetRatio = $targetW / $targetH;
             $srcRatio = $srcW / $srcH;
 
@@ -233,13 +220,12 @@ class AttendanceSeeder extends Seeder
                 $cropW = $srcW;
                 $cropH = (int) ($srcW / $targetRatio);
                 $cropX = 0;
-                $cropY = (int) (($srcH - $cropH) / 4); // upper center for head and face
+                $cropY = (int) (($srcH - $cropH) / 4);
             }
 
             imagecopyresampled($canvas, $srcImg, 0, 0, $cropX, $cropY, $targetW, $targetH, $cropW, $cropH);
             imagedestroy($srcImg);
         } else {
-            // Fallback gradient if offline
             $bgTop = [30, 41, 59];
             $bgBottom = [15, 23, 42];
             for ($y = 0; $y < $targetH; $y++) {
@@ -251,7 +237,6 @@ class AttendanceSeeder extends Seeder
             }
         }
 
-        // Save pure clean image without any bounding boxes or watermarks
         imagejpeg($canvas, $destPath, 92);
         imagedestroy($canvas);
     }

@@ -12,7 +12,6 @@ class AppraisalPeriodSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $data = [
-            // PT Dieboldnixdorf
             [
                 'id' => 1,
                 'company_id' => 1,
@@ -39,8 +38,6 @@ class AppraisalPeriodSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-
-            // PT Hitachi
             [
                 'id' => 3,
                 'company_id' => 2,

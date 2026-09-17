@@ -13,7 +13,6 @@ class EmploySeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         $users = [
-            // DEVELOPER, SUPERADMIN & ADMINISTRATOR
             [
                 'username' => 'developer',
                 'employ_id' => 'e0000000-0000-0000-0000-000000000001',
@@ -47,8 +46,6 @@ class EmploySeeder extends Seeder
                 'org_id' => null,
                 'division_id' => null,
             ],
-
-            // PT DIEBOLDNIXDORF
             [
                 'username' => 'hr_diebold',
                 'employ_id' => 'e0000000-0000-0000-0001-000000000001',
@@ -93,8 +90,6 @@ class EmploySeeder extends Seeder
                 'org_id' => 2,
                 'division_id' => 4,
             ],
-
-            // PT HITACHI
             [
                 'username' => 'hr_hitachi',
                 'employ_id' => 'e0000000-0000-0000-0002-000000000001',

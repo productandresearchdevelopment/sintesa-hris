@@ -15,7 +15,6 @@ class AppraisalEmploySummarySeeder extends Seeder
         $appraisalEmploys = DB::table('iq_appraisal_employ')->get();
 
         foreach ($appraisalEmploys as $ae) {
-            // Get all evaluated questions for this employee with their category and weight
             $evaluatedQuestions = DB::table('iq_appraisal_employ_question')
                 ->join('iq_appraisal_question', 'iq_appraisal_employ_question.question_id', '=', 'iq_appraisal_question.id')
                 ->where('iq_appraisal_employ_question.appraisal_employ_id', $ae->id)
@@ -75,7 +74,6 @@ class AppraisalEmploySummarySeeder extends Seeder
                 ]);
             }
 
-            // Calculate overall final total point for the employee
             $finalTotalPoint = $totalWeight > 0 ? round($totalWeightedScore / $totalWeight, 2) : 0;
             $finalGrade = round($finalTotalPoint);
 

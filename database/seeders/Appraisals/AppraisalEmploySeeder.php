@@ -12,19 +12,16 @@ class AppraisalEmploySeeder extends Seeder
         $now = '2026-09-15 11:40:00';
 
         $data = [
-            // ==========================================
-            // PT Dieboldnixdorf (Staff in Period 1: 2026 Semester 1)
-            // ==========================================
             [
                 'id' => 'a0000000-0000-0000-0001-000000000002',
                 'period_id' => 1,
                 'template_id' => 2,
-                'employ_id' => 'e0000000-0000-0000-0001-000000000002', // Andi Pratama (Staff)
+                'employ_id' => 'e0000000-0000-0000-0001-000000000002',
                 'total_point' => 9.0,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0001-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0001-000000000001',
@@ -35,12 +32,12 @@ class AppraisalEmploySeeder extends Seeder
                 'id' => 'a0000000-0000-0000-0001-000000000003',
                 'period_id' => 1,
                 'template_id' => 2,
-                'employ_id' => 'e0000000-0000-0000-0001-000000000003', // Dewi Lestari (Staff)
+                'employ_id' => 'e0000000-0000-0000-0001-000000000003',
                 'total_point' => 8.5,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0001-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0001-000000000001',
@@ -51,32 +48,28 @@ class AppraisalEmploySeeder extends Seeder
                 'id' => 'a0000000-0000-0000-0001-000000000004',
                 'period_id' => 1,
                 'template_id' => 2,
-                'employ_id' => 'e0000000-0000-0000-0001-000000000004', // Rizky Febrian (Staff)
+                'employ_id' => 'e0000000-0000-0000-0001-000000000004',
                 'total_point' => 9.0,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator1_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001', // HR Budi Santoso
+                'evaluator2_by' => 'e0000000-0000-0000-0001-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0001-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0001-000000000001',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-
-            // ==========================================
-            // PT Hitachi (Staff in Period 3: 2026 Semester 1)
-            // ==========================================
             [
                 'id' => 'a0000000-0000-0000-0002-000000000002',
                 'period_id' => 3,
                 'template_id' => 4,
-                'employ_id' => 'e0000000-0000-0000-0002-000000000002', // Ahmad Hidayat (Staff)
+                'employ_id' => 'e0000000-0000-0000-0002-000000000002',
                 'total_point' => 9.0,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0002-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0002-000000000001',
@@ -87,12 +80,12 @@ class AppraisalEmploySeeder extends Seeder
                 'id' => 'a0000000-0000-0000-0002-000000000003',
                 'period_id' => 3,
                 'template_id' => 4,
-                'employ_id' => 'e0000000-0000-0000-0002-000000000003', // Nurul Hidayah (Staff)
+                'employ_id' => 'e0000000-0000-0000-0002-000000000003',
                 'total_point' => 8.5,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0002-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0002-000000000001',
@@ -103,12 +96,12 @@ class AppraisalEmploySeeder extends Seeder
                 'id' => 'a0000000-0000-0000-0002-000000000004',
                 'period_id' => 3,
                 'template_id' => 4,
-                'employ_id' => 'e0000000-0000-0000-0002-000000000004', // Fajar Nugraha (Staff)
+                'employ_id' => 'e0000000-0000-0000-0002-000000000004',
                 'total_point' => 9.0,
                 'grade' => 9,
-                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator1_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator1_at' => $now,
-                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001', // HR Siti Rahmawati
+                'evaluator2_by' => 'e0000000-0000-0000-0002-000000000001',
                 'evaluator2_at' => $now,
                 'created_by' => 'u0000000-0000-0000-0002-000000000001',
                 'updated_by' => 'u0000000-0000-0000-0002-000000000001',
