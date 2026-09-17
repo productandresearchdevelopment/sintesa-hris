@@ -7,6 +7,21 @@
     me.init = function() {
       me.inputColor = new Ext.inputColor();
 
+      @if ($isSuperUser)
+        me.storeCompany = Ext.create('Ext.data.Store', {
+          fields: ['id', 'name'],
+          proxy: {
+            type: 'ajax',
+            url: '{{ route('company.data') }}',
+            reader: {
+              root: 'data',
+              totalProperty: 'count'
+            }
+          },
+          autoLoad: true,
+        });
+      @endif
+
       me.form = Ext.widget('form', {
         bodyPadding: 15,
         width: 500,
@@ -32,6 +47,22 @@
             fieldLabel: 'Name',
             flex: 1
           },
+          @if ($isSuperUser)
+            {
+              xtype: 'combo',
+              fieldLabel: 'Company',
+              name: 'company_id',
+              store: me.storeCompany,
+              queryMode: 'local',
+              displayField: 'name',
+              valueField: 'id',
+              forceSelection: false,
+              editable: false,
+              allowBlank: true,
+              emptyText: '-- Global / All Companies --',
+              flex: 1,
+            },
+          @endif
           {
             xtype: 'fieldcontainer',
             defaultType: 'textfield',
@@ -80,6 +111,9 @@
     me.create = function() {
       me.show();
       me.reset();
+      @if ($isSuperUser)
+        me.setField('company_id', null);
+      @endif
       me.data = null;
       me.form.url = '{{ route('bulletin.category.push') }}';
     }
@@ -114,7 +148,9 @@
       me.setField('name', rec.name);
       me.setField('alias', rec.alias);
       me.setField('description', rec.description);
-
+      @if ($isSuperUser)
+        me.setField('company_id', rec.company_id || null);
+      @endif
       me.setField('color', rec.color);
     }
 

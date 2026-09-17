@@ -7,6 +7,21 @@
     me.init = function() {
       me.inputColor = new Ext.inputColor();
 
+      @if ($isSuperUser)
+        me.storeCompany = Ext.create('Ext.data.Store', {
+          fields: ['id', 'name'],
+          proxy: {
+            type: 'ajax',
+            url: '{{ route('company.data') }}',
+            reader: {
+              root: 'data',
+              totalProperty: 'count'
+            }
+          },
+          autoLoad: true,
+        });
+      @endif
+
       me.form = Ext.widget('form', {
         bodyPadding: 15,
         width: 500,
@@ -33,6 +48,22 @@
             allowBlank: false,
             flex: 1
           },
+          @if ($isSuperUser)
+            {
+              xtype: 'combo',
+              fieldLabel: 'Company',
+              name: 'company_id',
+              store: me.storeCompany,
+              queryMode: 'local',
+              displayField: 'name',
+              valueField: 'id',
+              forceSelection: false,
+              editable: false,
+              allowBlank: true,
+              emptyText: '-- Global / All Companies --',
+              flex: 1,
+            },
+          @endif
           {
             xtype: 'fieldcontainer',
             defaultType: 'textfield',
@@ -92,6 +123,9 @@
       me.show();
       me.reset();
       me.setField('flag_reduce_balance', false);
+      @if ($isSuperUser)
+        me.setField('company_id', null);
+      @endif
       me.data = null;
       me.form.url = '{{ route('leave.type.push') }}';
     }
@@ -127,6 +161,9 @@
       me.setField('alias', rec.alias);
       me.setField('description', rec.description);
       me.setField('color', rec.color);
+      @if ($isSuperUser)
+        me.setField('company_id', rec.company_id || null);
+      @endif
       var isReduce = rec.flag_reduce_balance === true || rec.flag_reduce_balance === 1 || rec
         .flag_reduce_balance === '1' || rec.flag_reduce_balance === 'true';
       me.setField('flag_reduce_balance', isReduce);

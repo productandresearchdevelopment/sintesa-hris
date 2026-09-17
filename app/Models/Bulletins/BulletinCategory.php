@@ -30,4 +30,9 @@ class BulletinCategory extends Model
     {
         return $this->belongsToMany(Organization::class, 'iq_bulletin_category_organization', 'category_id', 'organization_id');
     }
+
+    public function company()
+    {
+        return $this->belongsTo(\App\Models\Company::class, 'company_id');
+    }
 }

@@ -34,6 +34,14 @@
           type: 'auto'
         },
         {
+          name: 'company_id',
+          type: 'int'
+        },
+        {
+          name: 'company_name',
+          type: 'string'
+        },
+        {
           name: 'flag_reduce_balance',
           type: 'boolean'
         },
@@ -96,6 +104,16 @@
               return me.renderBox(r.alias, r.color, r.name, meta);
             }
           },
+          @if ($isSuperUser)
+            {
+              text: "COMPANY",
+              dataIndex: 'company_name',
+              width: 160,
+              renderer: function(val) {
+                return val ? val : '<span class="text-muted">GLOBAL</span>';
+              }
+            },
+          @endif
           {
             text: "NAME",
             dataIndex: 'name',

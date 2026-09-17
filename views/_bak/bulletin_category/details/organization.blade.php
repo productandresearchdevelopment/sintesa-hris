@@ -54,7 +54,7 @@
         ],
         root: {
           id: '0',
-          text: 'PT Sintesa Talenta Asia',
+          text: 'Organizations',
           icon: '{{ asset('images/icons/home.png') }}'
         },
         proxy: {
@@ -102,7 +102,7 @@
             }
           },
           {
-            text: 'PT Sintesa Talenta Asia',
+            text: 'Root',
             dataIndex: 'name',
             xtype: 'treecolumn',
             flex: 1
@@ -131,6 +131,9 @@
       var bulletin = grids.getRec(true);
       var rec = me.getRec(true);
       if (rec) {
+        if (typeof rec.id === 'string' && rec.id.indexOf('company_') !== -1) {
+          return;
+        }
         http.request({
           method: 'post',
           url: '{{ route('bulletin.category.set.organization', '') }}/' + bulletin.id,

@@ -15,20 +15,51 @@ use Illuminate\Support\Facades\Validator;
 
 class Bulletin extends Controller
 {
-    public function index(Request $request): View
+    private function prepareBulletinIndexParams(Request $request): array
     {
         $user = $request->user();
-        $categories = BulletinModelCategory::all()->map(function ($category) {
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+
+        $catQuery = BulletinModelCategory::query();
+        if (!$isSuperUser && $userCompany) {
+            $catQuery->where(function ($q) use ($userCompany) {
+                $q->whereHas('organizations', function ($orgQ) use ($userCompany) {
+                    $orgQ->where('company_id', $userCompany);
+                })
+                    ->orWhereHas('createdBy.employee', function ($empQ) use ($userCompany) {
+                        $empQ->where('company_id', $userCompany);
+                    })
+                    ->orWhere(function ($subQ) {
+                        $subQ->doesntHave('organizations')
+                            ->where(function ($authorQ) {
+                                $authorQ->whereNull('created_by')
+                                    ->orWhereHas('createdBy.role', function ($roleQ) {
+                                        $roleQ->whereIn('id', [1, 10, 11]);
+                                    });
+                            });
+                    });
+            });
+        }
+
+        $categories = $catQuery->get()->map(function ($category) {
             return [
                 'id' => $category->id,
                 'name' => $category->name
             ];
         });
 
-        $params = [
+        return [
             'category' => $categories,
             'user' => $user
         ];
+    }
+
+    public function index(Request $request): View
+    {
+        $params = $this->prepareBulletinIndexParams($request);
+        $user = $params['user'];
 
         $view = in_array($user?->role?->name, ['DEVELOPER', 'SUPERADMIN', 'ADMINISTRATOR', 'HRGA'])
             ? '_bak.bulletin.main'
@@ -39,19 +70,7 @@ class Bulletin extends Controller
 
     public function index_mobile(Request $request): View
     {
-        $user = $request->user();
-        $categories = BulletinModelCategory::all()->map(function ($category) {
-            return [
-                'id' => $category->id,
-                'name' => $category->name
-            ];
-        });
-
-        $params = [
-            'category' => $categories,
-            'user' => $user
-        ];
-
+        $params = $this->prepareBulletinIndexParams($request);
         return view('_front.bulletin.mobile', $params);
     }
 
@@ -89,6 +108,11 @@ class Bulletin extends Controller
 
     public function data(Request $request)
     {
+        $user = $request->user();
+        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
+        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
+        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+
         $searchFields = ['title', 'description'];
 
         $query = BulletinModel::with([
@@ -97,6 +121,28 @@ class Bulletin extends Controller
             'cover_image',
             'created_by'
         ]);
+
+        if (!$isSuperUser && $userCompany) {
+            $query->where(function ($q) use ($userCompany) {
+                $q->whereHas('category.organizations', function ($orgQ) use ($userCompany) {
+                    $orgQ->where('company_id', $userCompany);
+                })
+                    ->orWhereHas('created_by.employee', function ($empQ) use ($userCompany) {
+                        $empQ->where('company_id', $userCompany);
+                    })
+                    ->orWhere(function ($subQ) {
+                        $subQ->whereHas('category', function ($catQ) {
+                            $catQ->doesntHave('organizations')
+                                ->where(function ($authorQ) {
+                                    $authorQ->whereNull('created_by')
+                                        ->orWhereHas('createdBy.role', function ($roleQ) {
+                                            $roleQ->whereIn('id', [1, 10, 11]);
+                                        });
+                                });
+                        });
+                    });
+            });
+        }
 
         if ($request->has('category') && !is_null($request->category)) {
             $query->where('category_id', $request->category);
