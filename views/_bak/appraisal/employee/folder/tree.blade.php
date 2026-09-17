@@ -9,11 +9,15 @@
       me.store = Ext.create('Ext.data.TreeStore', {
         fields: [{
             name: 'id',
-            type: 'int'
+            type: 'auto'
           },
           {
             name: 'parent_id',
-            type: 'int'
+            type: 'auto'
+          },
+          {
+            name: 'name',
+            type: 'string'
           },
           {
             name: 'position_id',
@@ -69,8 +73,8 @@
           }
         ],
         root: {
-          id: 0,
-          name: 'PT Sintesa Talenta Asia',
+          id: '0',
+          text: 'Organizations',
           icon: '{{ asset('images/icons/home.png') }}',
           expanded: true
         },
@@ -78,26 +82,86 @@
           type: 'ajax',
           url: '{{ route('organization.data') }}'
         },
-        listeners: {}
+        listeners: {
+          load: function() {
+            me.autoSelectFirstNode();
+          }
+        }
       });
+
+      me.autoSelectFirstNode = function() {
+        if (!me.store) return;
+        let root = me.store.getRootNode();
+        if (!root || !root.hasChildNodes()) return;
+
+        let findFirstOrg = function(node) {
+          if (!node) return null;
+          let id = node.get('id');
+          if (id && id !== '0' && (typeof id !== 'string' || id.indexOf('company_') === -1)) {
+            return node;
+          }
+          if (node.childNodes && node.childNodes.length > 0) {
+            for (let i = 0; i < node.childNodes.length; i++) {
+              let res = findFirstOrg(node.childNodes[i]);
+              if (res) return res;
+            }
+          }
+          return null;
+        };
+
+        let target = findFirstOrg(root);
+        if (target) {
+          if (me.grid && me.grid.getSelectionModel()) {
+            me.grid.getSelectionModel().select(target);
+          }
+          me.handleSelectOrg(target);
+        }
+      };
+
+      me.handleSelectOrg = function(rec) {
+        if (!rec) return;
+        if (typeof rec.get('id') === 'string' && rec.get('id').indexOf('company_') !== -1) {
+          if (typeof grids !== 'undefined' && grids.store) {
+            grids.store.proxy.extraParams['organization'] = null;
+            grids.store.load();
+          }
+          return;
+        }
+        me.selectedOrganization = rec.get('id');
+        if (typeof grids !== 'undefined' && grids.store) {
+          grids.store.proxy.extraParams['organization'] = me.selectedOrganization;
+          grids.store.load();
+        }
+      };
 
       me.grid = Ext.create('Ext.tree.Panel', {
         title: 'Organizations',
         region: 'west',
         width: 280,
         split: true,
-        rootVisible: true,
+        rootVisible: false,
         multiSelect: true,
         singleExpand: true,
         border: true,
         store: me.store,
         useArrows: false,
-        hideHeaders: true,
+        hideHeaders: false,
         columns: [{
-          dataIndex: 'text',
-          xtype: 'treecolumn',
-          flex: 1
-        }],
+            text: '<img src="{{ asset('images/icons/home.png') }}">',
+            dataIndex: 'home',
+            width: 35,
+            align: 'center',
+            renderer: function(val, obj, rec) {
+              if (val) return '<img src="{{ asset('images/icons/yes.png') }}">';
+            }
+          },
+          {
+            text: 'Root',
+            dataIndex: 'name',
+            xtype: 'treecolumn',
+            flex: 1
+          },
+        ],
         viewConfig: {
           markDirty: false,
           enableTextSelection: true,
@@ -106,9 +170,7 @@
           },
           listeners: {
             itemclick: function(obj, rec) {
-              me.selectedOrganization = rec.get('id');
-              grids.store.proxy.extraParams['organization'] = me.selectedOrganization;
-              grids.store.load();
+              me.handleSelectOrg(rec);
             }
           }
         },

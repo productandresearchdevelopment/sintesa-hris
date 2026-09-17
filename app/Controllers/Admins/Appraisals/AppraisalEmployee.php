@@ -6,16 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Libraries\ExportExcel;
 use App\Libraries\Query;
 use App\Models\Appraisals\AppraisalEmployee as Mod;
+use App\Models\Appraisals\AppraisalEmployeeSummary;
 use App\Models\Appraisals\AppraisalPeriod;
 use App\Models\Appraisals\AppraisalQuestionTemplate;
 use App\Models\Employees\Employee;
 use App\Models\Organization;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AppraisalEmployee extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user()->load('employee');
@@ -31,19 +35,17 @@ class AppraisalEmployee extends Controller
     public function data(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower($user?->role?->name ?? '');
-
         $query = Mod::with(['period', 'employee', 'template', 'evaluator1', 'evaluator2', 'appraisal_employee_questions', 'appraisal_employee_summaries']);
 
-        if (!in_array($roleName, ['superadmin', 'developer', 'administrator', 'hrga'])) {
+        if (!$this->isSuperUser($user) && !$this->isHrga($user)) {
             $employId = $user?->employ_id ?? $user?->employee?->id;
             if ($employId) {
                 $query->where('employ_id', $employId);
             } else {
                 $query->whereRaw('1=0');
             }
-        } else if ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userCompany = $user?->employee?->company_id ?? $user?->company_id;
+        } elseif (!$this->isSuperUser($user)) {
+            $userCompany = $this->getUserCompanyId($user);
             if ($userCompany) {
                 $query->whereHas('employee', function ($q) use ($userCompany) {
                     $q->where('company_id', $userCompany);
@@ -58,7 +60,7 @@ class AppraisalEmployee extends Controller
             $query->onlyTrashed();
         }
 
-        $result = Query::open($query, [
+        return Query::open($query, [
             'period.period',
             'template.title',
             'employee.fullname',
@@ -67,15 +69,14 @@ class AppraisalEmployee extends Controller
             'evaluator1.fullname',
             'evaluator2.fullname'
         ], $counter);
-
-        return $result;
     }
 
     public function data_employee(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower($user?->role?->name ?? '');
-        $isManagerOrAdmin = in_array($roleName, ['superadmin', 'developer', 'administrator', 'hrga']);
+        $isSuper = $this->isSuperUser($user);
+        $isHrga = $this->isHrga($user);
+        $isManagerOrAdmin = $isSuper || $isHrga;
 
         $query = Employee::with([
             'user',
@@ -101,8 +102,8 @@ class AppraisalEmployee extends Controller
             'appraisal_employees.period.appraisal_period',
         ]);
 
-        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userCompany = $user?->employee?->company_id ?? $user?->company_id;
+        if (!$isSuper) {
+            $userCompany = $this->getUserCompanyId($user);
             if ($userCompany) {
                 $query->where('iq_employ.company_id', $userCompany);
             }
@@ -117,8 +118,7 @@ class AppraisalEmployee extends Controller
             }
         } else {
             if ($request->filled('organization')) {
-                $userOrg = $request->organization;
-                $childOrganizations = array_merge([$userOrg], $this->getAllChildOrganizations($userOrg));
+                $childOrganizations = $this->resolveDescendantOrgIds($request->organization);
                 $query->whereIn('iq_employ.org_id', $childOrganizations);
                 $query->orderByRaw("FIELD(iq_employ.org_id, " . implode(',', $childOrganizations) . ")");
             }
@@ -429,7 +429,6 @@ class AppraisalEmployee extends Controller
         }
     }
 
-
     public function exportExcel(Request $request)
     {
         ini_set('memory_limit', '64048M');
@@ -568,13 +567,13 @@ class AppraisalEmployee extends Controller
             ['text' => 'EVALUATOR 2', 'dataIndex' => 'evaluator2', 'width' => 180],
         ];
 
-        $params = array(
+        $params = [
             'title' => $title,
             'columns' => $columns,
             'data' => $exportData,
             'filename' => 'Appraisal Employee Report-' . date('YmdHi'),
             'footer' => [config('app.name') . ' (' . date('d F Y H:i:s') . ')'],
-        );
+        ];
 
         return ExportExcel::export($params);
     }
@@ -683,21 +682,5 @@ class AppraisalEmployee extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    private function getAllChildOrganizations($parentId, &$visited = [])
-    {
-        if (in_array($parentId, $visited)) {
-            return [];
-        }
-
-        $visited[] = $parentId;
-        $childs = Organization::where('parent_id', $parentId)->pluck('id')->toArray();
-
-        foreach ($childs as $childId) {
-            $childs = array_merge($childs, $this->getAllChildOrganizations($childId, $visited));
-        }
-
-        return $childs;
     }
 }

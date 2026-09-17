@@ -5,39 +5,35 @@ namespace App\Controllers\Admins\Appraisals;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Appraisals\AppraisalPeriod as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AppraisalPeriod extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
-
         $params = [
             'user' => $user
         ];
 
-        // if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-        // $view = isMobile() ? '_front.aprraisal.period.mobile' : '_front.aprraisal.period.index';
         $view = isMobile() ? '_front.aprraisal.period.mobile' : '_bak.appraisal.period.main';
         return view($view, $params);
-        // } else {
-        // return view('_bak.appraisal.period.main', $params);
-        // }
     }
 
     public function data(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         $query = Mod::with(['company', 'appraisal_period_organizations']);
 
-        if (!$isSuperUser && $userCompany) {
+        if (!$isSuper && $userCompany) {
             $query->where('company_id', $userCompany);
         }
 
@@ -50,28 +46,35 @@ class AppraisalPeriod extends Controller
 
         $query->orderBy('period', 'asc')->orderBy('smester', 'asc');
 
-        $result = Query::open($query, [
+        return Query::open($query, [
             'period',
             'smester',
             'start_date',
             'end_date',
             'is_closed'
         ], $counter);
-
-        return $result;
     }
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with(['company', 'appraisal_period_organizations'])->where('id', $id)->first();
+        $user = $request->user();
+        $query = Mod::with(['company', 'appraisal_period_organizations'])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $query->where('company_id', $this->getUserCompanyId($user));
+        }
+
+        return $query->first();
     }
 
     public function create(Request $request)
     {
         try {
             $user = $request->user();
-            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
-            $companyId = $request->input('company_id') ?? $userCompany;
+            $userCompany = $this->getUserCompanyId($user);
+            $companyId = $this->isSuperUser($user)
+                ? ($request->input('company_id') ?? $userCompany)
+                : $userCompany;
 
             $validator = Validator::make($request->all(), [
                 'company_id' => 'nullable|integer|exists:iq_company,id',
@@ -138,7 +141,7 @@ class AppraisalPeriod extends Controller
     {
         try {
             $user = $request->user();
-            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+            $userCompany = $this->getUserCompanyId($user);
 
             $validator = Validator::make($request->all(), [
                 'id' => 'required|integer|exists:iq_appraisal_period,id',
@@ -161,7 +164,15 @@ class AppraisalPeriod extends Controller
                 ], 404);
             }
 
-            $companyId = $request->input('company_id') ?? $appraisal->company_id ?? $userCompany;
+            if (!$this->isSuperUser($user)) {
+                if ($appraisal->company_id !== $userCompany) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+                }
+            }
+
+            $companyId = $this->isSuperUser($user)
+                ? ($request->input('company_id') ?? $appraisal->company_id ?? $userCompany)
+                : $userCompany;
 
             $validator->after(function ($validator) use ($request, $companyId) {
                 $query = Mod::where('period', $request->period)
@@ -195,7 +206,7 @@ class AppraisalPeriod extends Controller
                 'is_closed' => $request->has('is_closed') ? (int)$request->is_closed : ($appraisal->is_closed ?? 0),
             ];
 
-            if ($request->has('company_id')) {
+            if ($this->isSuperUser($user) && $request->has('company_id')) {
                 $updateData['company_id'] = $request->company_id;
             }
 
@@ -223,10 +234,18 @@ class AppraisalPeriod extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::find($id);
+                    $query = Mod::where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->delete();
                     }
@@ -258,10 +277,18 @@ class AppraisalPeriod extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::withTrashed()->find($id);
+                    $query = Mod::withTrashed()->where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->restore();
                     }
@@ -293,10 +320,18 @@ class AppraisalPeriod extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::where('id', $id)->withTrashed()->first();
+                    $query = Mod::where('id', $id)->withTrashed();
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
 
                     if ($rec) {
                         $rec->appraisal_period_organizations()->delete();

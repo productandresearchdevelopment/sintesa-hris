@@ -1,7 +1,6 @@
 <style>
-  .selected-node .x-grid-cell {
-    font-weight: bold;
-    background-color: #d0f0ff !important;
+  .cellediting tr.x-grid-row.x-grid-row-over td {
+    background-color: transparent;
   }
 </style>
 
@@ -17,14 +16,14 @@
 
     me.init = function() {
       me.store = Ext.create('Ext.data.TreeStore', {
-        id: 'store-modules',
+        id: 'store-modules-appraisal-template',
         fields: [{
             name: 'id',
-            type: 'int'
+            type: 'auto'
           },
           {
             name: 'parent_id',
-            type: 'int'
+            type: 'auto'
           },
           {
             name: 'name',
@@ -41,7 +40,7 @@
         ],
         root: {
           id: '0',
-          text: 'PT Sintesa Talenta Asia',
+          text: 'Organizations',
           icon: '{{ asset('images/icons/home.png') }}'
         },
         proxy: {
@@ -54,18 +53,25 @@
           },
           load: function() {
             me.loading = false;
-            me.grid.getEl().unmask();
-            if (me.selected) {
-              var node = me.grid.store.tree.getNodeById(me.selected);
+            const grid = me.grid || Ext.ComponentQuery.query('#grid-modules')[0];
+            if (grid && grid.getEl()) {
+              grid.getEl().unmask();
+            }
+
+            if (me.selected && grid && grid.store) {
+              const node = grid.store.getNodeById(me.selected);
               if (node) {
-                me.grid.expandPath(node.getPath());
-                me.grid.selectPath(node.getPath());
+                grid.expandPath(node.getPath());
+                grid.selectPath(node.getPath());
               }
             }
           },
           exception: function() {
             me.loading = false;
-            me.grid.getEl().unmask();
+            const grid = me.grid || Ext.ComponentQuery.query('#grid-modules')[0];
+            if (grid && grid.getEl()) {
+              grid.getEl().unmask();
+            }
           }
         }
       });
@@ -92,7 +98,7 @@
             }
           },
           {
-            text: 'Name',
+            text: 'Root',
             dataIndex: 'name',
             xtype: 'treecolumn',
             flex: 1
@@ -116,6 +122,9 @@
       var template = grids.getRec(true);
       var rec = me.getRec(true);
       if (rec && template) {
+        if (typeof rec.id === 'string' && rec.id.indexOf('company_') !== -1) {
+          return;
+        }
         http.request({
           method: 'GET',
           url: '{{ route('appraisal.period.data') }}',
@@ -191,7 +200,11 @@
         me.requestToken++;
         var currentToken = me.requestToken;
 
-        me.grid.getEl().mask('Proses');
+        const grid = me.grid || Ext.ComponentQuery.query('#grid-modules')[0];
+        if (grid && grid.getEl()) {
+          grid.getEl().mask('Proses');
+        }
+
         me.store.proxy.url = '{{ route('appraisal.question.template.data.organization', '') }}/' + rec.id;
         me.store.getRootNode().removeAll();
         me.store.load({

@@ -5,13 +5,28 @@ namespace App\Controllers\Admins\Appraisals;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Appraisals\AppraisalQuestion as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 
 class AppraisalQuestion extends Controller
 {
+    use UserScopingTrait;
+
     public function data(Request $request, $counter = true)
     {
+        $user = $request->user();
         $query = Mod::with(['category', 'template', 'template.division']);
+
+        if (!$this->isSuperUser($user)) {
+            $userCompany = $this->getUserCompanyId($user);
+            if ($userCompany) {
+                $query->whereHas('template', function ($tq) use ($userCompany) {
+                    $tq->whereHas('templates_organizations', function ($to) use ($userCompany) {
+                        $to->where('company_id', $userCompany);
+                    });
+                });
+            }
+        }
 
         if (!$request->trash) {
             $query->withTrashed();
@@ -28,7 +43,7 @@ class AppraisalQuestion extends Controller
             $query->where('category_id', $request->category);
         }
 
-        $result = Query::open($query, [
+        return Query::open($query, [
             'category.id',
             'category.name',
             'template.id',
@@ -37,8 +52,6 @@ class AppraisalQuestion extends Controller
             'group_kpi',
             'weight'
         ], $counter);
-
-        return $result;
     }
 
     public function get(Request $request, $id = null)

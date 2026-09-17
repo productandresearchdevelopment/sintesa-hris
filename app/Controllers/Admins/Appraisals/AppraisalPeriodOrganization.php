@@ -5,37 +5,32 @@ namespace App\Controllers\Admins\Appraisals;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Appraisals\AppraisalPeriodOrganization as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AppraisalPeriodOrganization extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
-
         $params = [
             'user' => $user
         ];
 
-        // if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-        // $view = isMobile() ? '_front.aprraisal.organization.mobile' : '_front.aprraisal.organization.index';
         $view = isMobile() ? '_front.aprraisal.organization.mobile' : '_bak.appraisal.organization.main';
         return view($view, $params);
-        // } else {
-        // return view('_bak.appraisal.organization.main', $params);
-        // }
     }
 
     public function data(Request $request, $counter = true)
     {
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-
         $query = Mod::with(['organization', 'appraisal_period', 'appraisal_question_template']);
 
-        if ($roleName !== 'superadmin' && $roleName !== 'developer') {
-            $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        if (!$this->isSuperUser($user)) {
+            $userCompany = $this->getUserCompanyId($user);
             if ($userCompany) {
                 $query->whereHas('organization', function ($q) use ($userCompany) {
                     $q->where('company_id', $userCompany);
@@ -43,14 +38,24 @@ class AppraisalPeriodOrganization extends Controller
             }
         }
 
-        $result = Query::open($query, [], $counter);
-
-        return $result;
+        return Query::open($query, [], $counter);
     }
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with(['organization', 'appraisal_period', 'appraisal_question_template'])->where('id', $id)->first();
+        $user = $request->user();
+        $query = Mod::with(['organization', 'appraisal_period', 'appraisal_question_template'])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $userCompany = $this->getUserCompanyId($user);
+            if ($userCompany) {
+                $query->whereHas('organization', function ($q) use ($userCompany) {
+                    $q->where('company_id', $userCompany);
+                });
+            }
+        }
+
+        return $query->first();
     }
 
     public function setTemplate(Request $request)

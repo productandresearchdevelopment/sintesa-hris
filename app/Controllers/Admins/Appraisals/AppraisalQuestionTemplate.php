@@ -17,6 +17,7 @@ use App\Models\Division;
 use App\Models\Employees\Employee;
 use App\Models\Organization;
 use App\SystemModels\Globals\Upload;
+use App\Traits\UserScopingTrait;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -27,13 +28,20 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AppraisalQuestionTemplate extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user()->load(['employee', 'role']);
+        $companyId = $this->getUserCompanyId($user);
+
+        $divisions = $this->isSuperUser($user) || !$companyId
+            ? Division::all()
+            : Division::where('company_id', $companyId)->get();
 
         $params = [
             'user' => $user,
-            'divisions' => Division::all(),
+            'divisions' => $divisions,
         ];
 
         $view = isMobile() ? '_front.appraisal.mobile' : '_bak.appraisal.template.main';
@@ -43,10 +51,15 @@ class AppraisalQuestionTemplate extends Controller
     public function index_mobile(Request $request)
     {
         $user = $request->user()->load(['employee', 'role']);
+        $companyId = $this->getUserCompanyId($user);
+
+        $divisions = $this->isSuperUser($user) || !$companyId
+            ? Division::all()
+            : Division::where('company_id', $companyId)->get();
 
         $params = [
             'user' => $user,
-            'divisions' => Division::all(),
+            'divisions' => $divisions,
         ];
 
         return view('_front.appraisal.mobile', $params);
@@ -56,9 +69,8 @@ class AppraisalQuestionTemplate extends Controller
     {
         $query = Mod::with(['division', 'appraisal_questions']);
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer', 'administrator']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuperUser = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         if (!$isSuperUser && $userCompany) {
             $query->whereHas('templates_organizations', function ($q2) use ($userCompany) {
@@ -80,7 +92,7 @@ class AppraisalQuestionTemplate extends Controller
             $query->onlyTrashed();
         }
 
-        if ($roleName !== 'hrga' && $roleName !== 'developer' && $roleName !== 'superadmin') {
+        if (!$isSuperUser && !$this->isHrga($user)) {
             $divisionId = optional($user->employee)->division_id;
 
             if ($divisionId) {
@@ -102,15 +114,13 @@ class AppraisalQuestionTemplate extends Controller
             $query->where('period_year', $request->period_year);
         }
 
-        $result = Query::open($query, [
+        return Query::open($query, [
             'division.id',
             'division.name',
             'title',
             'period_year',
             'period_smt'
         ], $counter);
-
-        return $result;
     }
 
     public function dataOrganizations(Request $request, $role = null)
@@ -125,16 +135,16 @@ class AppraisalQuestionTemplate extends Controller
         }
 
         $user = $request->user();
-        $userCompanyId = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
-        $templateCompanyId = optional($template->division)->company_id;
+        $isSuperUser = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
-        $companyId = $templateCompanyId ?? $userCompanyId;
+        $targetCompany = !$isSuperUser ? $userCompany : (optional($template->division)->company_id ?? null);
 
-        $data = $this->treeModules($template, null, $companyId);
+        $data = $this->buildCompanyOrgTree($template, $targetCompany);
         return response()->json($data);
     }
 
-    public function dataSummary(Request $request, $counter = true, $employee)
+    public function dataSummary(Request $request, $counter = true, $employee = null)
     {
         $query = AppraisalEmployeeSummary::with([
             'appraisal_employee',
@@ -146,8 +156,8 @@ class AppraisalQuestionTemplate extends Controller
             'appraisal_employee.evaluator2.organization',
             'category'
         ])
-            ->whereHas('appraisal_employee', function ($query) use ($employee) {
-                $query->where('employ_id', $employee);
+            ->whereHas('appraisal_employee', function ($q) use ($employee) {
+                $q->where('employ_id', $employee);
             })
             ->get();
 
@@ -164,9 +174,9 @@ class AppraisalQuestionTemplate extends Controller
                 $grouped[$key] = [
                     'employ_id' => $item->appraisal_employee->employ_id,
                     'appraisal_employ_id' => $key,
-                    'formatted_period' => $formattedPeriod ?? '-',
-                    'period' => $period ?? '-',
-                    'smester' => $smester ?? '-',
+                    'formatted_period' => $formattedPeriod,
+                    'period' => $period,
+                    'smester' => $smester,
                     'evaluator1' => $item->appraisal_employee->evaluator1 ?? '-',
                     'evaluator2' => $item->appraisal_employee->evaluator2 ?? '-',
                     'tech_weight' => null,
@@ -231,9 +241,7 @@ class AppraisalQuestionTemplate extends Controller
     public function dataQuestion(Request $request, $counter = true)
     {
         $query = AppraisalEmployeeQuestion::with(['appraisal_employee', 'question']);
-        $result = Query::open($query, [], $counter);
-
-        return $result;
+        return Query::open($query, [], $counter);
     }
 
     public function get(Request $request, $id = null)
@@ -416,21 +424,21 @@ class AppraisalQuestionTemplate extends Controller
             if (count($data_detail_appraisal['tech']) > 0) {
                 $this->deleteRelatedItems(
                     AppraisalQuestion::where('template_id', $appraisal->id)->where('category_id', 1)->get(),
-                    collect($data_detail_appraisal['tech']),
+                    collect($data_detail_appraisal['tech'])
                 );
             }
 
             if (count($data_detail_appraisal['behavior']) > 0) {
                 $this->deleteRelatedItems(
                     AppraisalQuestion::where('template_id', $appraisal->id)->where('category_id', 2)->get(),
-                    collect($data_detail_appraisal['behavior']),
+                    collect($data_detail_appraisal['behavior'])
                 );
             }
 
             if (count($data_detail_appraisal['leadership']) > 0) {
                 $this->deleteRelatedItems(
                     AppraisalQuestion::where('template_id', $appraisal->id)->where('category_id', 3)->get(),
-                    collect($data_detail_appraisal['leadership']),
+                    collect($data_detail_appraisal['leadership'])
                 );
             }
 
@@ -469,7 +477,6 @@ class AppraisalQuestionTemplate extends Controller
         ini_set('max_execution_time', '300');
 
         $title = [];
-
         $title[] = ['Appraisal', 'h2'];
 
         $dataStatus = 'All';
@@ -513,8 +520,7 @@ class AppraisalQuestionTemplate extends Controller
             ]
         ]];
 
-        function generateCategoryColumns($categoryName, $categoryId)
-        {
+        $categoryRenderer = function ($categoryName, $categoryId) {
             return [
                 ['text' => $categoryName, 'columns' => [
                     ['text' => 'Group KPI', 'dataIndex' => "appraisal_questions", 'width' => 150, 'align' => 'center', 'renderer' => function ($questions) use ($categoryId) {
@@ -523,9 +529,8 @@ class AppraisalQuestionTemplate extends Controller
                             ->pluck('group_kpi');
                         if ($items->count() > 1) {
                             return $items->map(fn($item) => "• " . $item)->implode("\n");
-                        } else {
-                            return $items->first() ?? '-';
                         }
+                        return $items->first() ?? '-';
                     }],
                     ['text' => 'Question', 'dataIndex' => "appraisal_questions", 'width' => 300, 'align' => 'left', 'renderer' => function ($questions) use ($categoryId) {
                         $items = collect($questions)
@@ -533,9 +538,8 @@ class AppraisalQuestionTemplate extends Controller
                             ->pluck('question');
                         if ($items->count() > 1) {
                             return $items->map(fn($item) => "• " . $item)->implode("\n");
-                        } else {
-                            return $items->first() ?? '-';
                         }
+                        return $items->first() ?? '-';
                     }],
                     ['text' => 'Formula Description', 'dataIndex' => "appraisal_questions", 'width' => 200, 'align' => 'center', 'renderer' => function ($questions) use ($categoryId) {
                         $items = collect($questions)
@@ -543,9 +547,8 @@ class AppraisalQuestionTemplate extends Controller
                             ->pluck('formula_description');
                         if ($items->count() > 1) {
                             return $items->map(fn($item) => "• " . $item)->implode("\n");
-                        } else {
-                            return $items->first() ?? '-';
                         }
+                        return $items->first() ?? '-';
                     }],
                     ['text' => 'Weight', 'dataIndex' => "appraisal_questions", 'width' => 100, 'align' => 'center', 'renderer' => function ($questions) use ($categoryId) {
                         $items = collect($questions)
@@ -553,17 +556,16 @@ class AppraisalQuestionTemplate extends Controller
                             ->pluck('weight');
                         if ($items->count() > 1) {
                             return $items->map(fn($item) => "• " . $item)->implode("\n");
-                        } else {
-                            return $items->first() ?? '-';
                         }
+                        return $items->first() ?? '-';
                     }],
                 ]]
             ];
-        }
+        };
 
-        $columns = array_merge($columns, generateCategoryColumns('Technical Ability & Work Result', 1));
-        $columns = array_merge($columns, generateCategoryColumns('Behavior & Work Processes', 2));
-        $columns = array_merge($columns, generateCategoryColumns('Leadership', 3));
+        $columns = array_merge($columns, $categoryRenderer('Technical Ability & Work Result', 1));
+        $columns = array_merge($columns, $categoryRenderer('Behavior & Work Processes', 2));
+        $columns = array_merge($columns, $categoryRenderer('Leadership', 3));
 
         $params = [
             'title' => $title,
@@ -634,7 +636,7 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    public function setOrganization(Request $request, $template)
+    public function setOrganization(Request $request, int|string $template)
     {
         try {
             $validatedData = $request->validate([
@@ -646,6 +648,17 @@ class AppraisalQuestionTemplate extends Controller
             $period_id = $validatedData['period'];
             $organization_id = $validatedData['organization'];
             $auth = $validatedData['auth'] ?? false;
+
+            $user = $request->user();
+            $isSuperUser = $this->isSuperUser($user);
+            $userCompany = $this->getUserCompanyId($user);
+
+            if (!$isSuperUser && $userCompany) {
+                $org = Organization::find($organization_id);
+                if (!$org || (int) $org->company_id !== (int) $userCompany) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action on this organization'], 403);
+                }
+            }
 
             DB::beginTransaction();
 
@@ -703,8 +716,7 @@ class AppraisalQuestionTemplate extends Controller
             }
 
             $user = $request->user();
-            $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-            $isAdmin = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+            $isAdmin = $this->isSuperUser($user);
 
             $targetEmployee = Employee::with(['organization', 'organization.authorized1', 'organization.authorized2'])->find($request->employee_id);
             if (!$targetEmployee) {
@@ -911,7 +923,7 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    public function frontExportPdf(Request $request, $employeeId)
+    public function frontExportPdf(Request $request, int|string $employeeId)
     {
         try {
             $employee = Employee::with('organization')->find($employeeId);
@@ -1093,7 +1105,7 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    private function processAppraisalDetail($data, $appraisalId)
+    private function processAppraisalDetail(array $data, int|string $appraisalId)
     {
         if (isset($data['tech']) && is_array($data['tech']) && count($data['tech']) > 0) {
             foreach ($data['tech'] as $tech) {
@@ -1183,7 +1195,7 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    private function deduplicateQuestions($items)
+    private function deduplicateQuestions(mixed $items)
     {
         if (!is_array($items)) return [];
         $unique = [];
@@ -1199,7 +1211,7 @@ class AppraisalQuestionTemplate extends Controller
         return $unique;
     }
 
-    private function getGrade($score)
+    private function getGrade(mixed $score)
     {
         if ($score === null || $score === '') return null;
 
@@ -1212,13 +1224,15 @@ class AppraisalQuestionTemplate extends Controller
         return 'Need Improvement';
     }
 
-    private function deleteRelatedItems($existingItems, $currentItems)
+    private function deleteRelatedItems(mixed $existingItems, mixed $currentItems)
     {
-        $itemsToDelete = $existingItems->filter(function ($existing) use ($currentItems) {
-            return !$currentItems->contains(function ($current) use ($existing) {
+        $currentCol = collect($currentItems);
+        $itemsToDelete = $existingItems->filter(function ($existing) use ($currentCol) {
+            return !$currentCol->contains(function ($current) use ($existing) {
                 if (isset($current['id']) && isset($existing['id'])) {
                     return $current['id'] == $existing->id;
                 }
+                return false;
             });
         });
 
@@ -1227,28 +1241,52 @@ class AppraisalQuestionTemplate extends Controller
         }
     }
 
-    private function treeModules($template, $parent = null, $companyId = null)
+    private function buildCompanyOrgTree($template, $userCompany = null)
     {
-        $query = Organization::query();
-
-        if ($companyId) {
-            $query->where('company_id', $companyId);
+        $companyQuery = \App\Models\Company::whereNull('deleted_at')->orderBy('name');
+        if ($userCompany !== null) {
+            $companyQuery->where('id', $userCompany);
         }
 
-        if (is_null($parent)) {
-            $query->whereNull('parent_id');
-        } else {
-            $query->where('parent_id', $parent);
+        $companies = $companyQuery->get();
+        $tree = [];
+
+        foreach ($companies as $company) {
+            $children = $this->treeOrg($template, $company->id, null);
+            $tree[] = [
+                'id' => 'company_' . $company->id,
+                'name' => $company->name,
+                'leaf' => count($children) === 0,
+                'icon' => asset('images/icons/home.png'),
+                'expanded' => true,
+                'children' => $children,
+            ];
         }
 
-        $result = $query->orderBy('name')->get()->unique('id')->values();
+        return $tree;
+    }
 
-        foreach ($result as $row) {
-            $row->children = $this->treeModules($template, $row->id, $companyId);
-            $row->leaf      = count($row->children) ? false : true;
-            $row->checked   = $row->hasTemplateOrganization($template->id);
-            $row->icon      = asset('images/icons/' . ($row->type->icon ?? 'home') . '.png');
-            $row->home      = ($template->home == $row->id) ? true : false;
+    private function treeOrg($template, $companyId, $parentId = null)
+    {
+        $orgs = Organization::where('company_id', $companyId)
+            ->where('parent_id', $parentId)
+            ->orderBy('name')
+            ->get();
+
+        $result = [];
+
+        foreach ($orgs as $row) {
+            $children = $this->treeOrg($template, $companyId, $row->id);
+            $result[] = [
+                'id' => (int) $row->id,
+                'name' => $row->name,
+                'leaf' => count($children) === 0,
+                'checked' => $template ? $row->hasTemplateOrganization($template->id) : false,
+                'icon' => asset('images/icons/' . ($row->type->icon ?? 'home') . '.png'),
+                'home' => ($template && $template->home == $row->id),
+                'children' => $children,
+                'expanded' => true,
+            ];
         }
 
         return $result;
