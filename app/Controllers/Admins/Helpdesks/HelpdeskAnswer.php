@@ -17,7 +17,11 @@ class HelpdeskAnswer extends Controller
 {
     public function getAllByHelpdeskId(Request $request, $id = null)
     {
-        return response()->json(['data' => Mod::where('helpdesk_id', $id)->with('user_mentions', 'uploads', 'createdBy', 'updatedBy', 'deletedBy')->get(), 'message' => 'Data fetched successfully', 'success' => true], 200);
+        return response()->json([
+            'data' => Mod::where('helpdesk_id', $id)->with('user_mentions', 'uploads', 'createdBy', 'updatedBy', 'deletedBy')->get(),
+            'message' => 'Data fetched successfully',
+            'success' => true
+        ], 200);
     }
 
     public function get(Request $request, $id = null)
@@ -87,7 +91,6 @@ class HelpdeskAnswer extends Controller
 
             if ($userMentions) {
                 $answer->user_mentions()->sync($userMentions);
-
                 Notifier::sendToMany($userMentions, 'New helpdesk answer', 'helpdesk_answer', 'You have a new helpdesk answer');
             }
 
@@ -106,7 +109,7 @@ class HelpdeskAnswer extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'helpdesk_id' => 'required|exists:iq_helpdesk,id',
@@ -138,7 +141,6 @@ class HelpdeskAnswer extends Controller
 
         DB::beginTransaction();
         try {
-            // Update field jika ada perubahan
             if ($request->has('helpdesk_id')) {
                 $answer->helpdesk_id = $request->input('helpdesk_id');
             }
@@ -209,7 +211,6 @@ class HelpdeskAnswer extends Controller
         }
     }
 
-
     public function destroy(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -233,8 +234,6 @@ class HelpdeskAnswer extends Controller
                 'message' => 'Data not found.'
             ], 404);
         }
-
-        // dd($answer);
 
         $helpdesk = Helpdesk::find($answer->helpdesk_id);
         if (!$helpdesk) {

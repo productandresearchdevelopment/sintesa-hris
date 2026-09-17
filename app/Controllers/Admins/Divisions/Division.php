@@ -5,12 +5,15 @@ namespace App\Controllers\Admins\Divisions;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Division as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class Division extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -24,11 +27,10 @@ class Division extends Controller
         $company = $request->input('company_id');
 
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
-        if (!$isSuperUser && $userCompany) {
+        if (!$isSuper && $userCompany) {
             $company = $userCompany;
         }
 
@@ -54,12 +56,24 @@ class Division extends Controller
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with(['company'])->where('id', $id)->first();
+        $user = $request->user();
+        $query = Mod::with(['company'])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $query->where('company_id', $this->getUserCompanyId($user));
+        }
+
+        return $query->first();
     }
 
     public function create(Request $request)
     {
         try {
+            $user = $request->user();
+            $companyId = $this->isSuperUser($user)
+                ? $request->input('company_id')
+                : $this->getUserCompanyId($user);
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'company_id' => 'required|exists:iq_company,id'
@@ -77,7 +91,7 @@ class Division extends Controller
 
             $division = Mod::create([
                 'name' => $request->input('name'),
-                'company_id' => $request->input('company_id')
+                'company_id' => $companyId
             ]);
 
             DB::commit();
@@ -92,7 +106,7 @@ class Division extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating company',
+                'message' => 'Error creating division',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -101,6 +115,7 @@ class Division extends Controller
     public function edit(Request $request)
     {
         try {
+            $user = $request->user();
             $validator = Validator::make($request->all(), [
                 'id' => 'required|integer|exists:iq_division,id',
                 'name' => 'required|string|max:255',
@@ -115,10 +130,7 @@ class Division extends Controller
                 ], 422);
             }
 
-            DB::beginTransaction();
-
             $division = Mod::find($request->input('id'));
-
             if (!$division) {
                 return response()->json([
                     'success' => false,
@@ -126,8 +138,21 @@ class Division extends Controller
                 ], 404);
             }
 
+            if (!$this->isSuperUser($user)) {
+                $userCompanyId = $this->getUserCompanyId($user);
+                if ($division->company_id !== $userCompanyId) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+                }
+            }
+
+            $companyId = $this->isSuperUser($user)
+                ? $request->input('company_id')
+                : $this->getUserCompanyId($user);
+
+            DB::beginTransaction();
+
             $division->name = $request->input('name');
-            $division->company_id = $request->input('company_id');
+            $division->company_id = $companyId;
             $division->save();
 
             DB::commit();
@@ -142,7 +167,7 @@ class Division extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating company',
+                'message' => 'Error updating division',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -152,10 +177,18 @@ class Division extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::find($id);
+                    $query = Mod::where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->delete();
                     }
@@ -164,7 +197,7 @@ class Division extends Controller
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'message' => 'Success deleting companies'
+                    'message' => 'Success deleting divisions'
                 ]);
             }
 
@@ -177,7 +210,7 @@ class Division extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting company',
+                'message' => 'Error deleting division',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -187,10 +220,18 @@ class Division extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::withTrashed()->find($id);
+                    $query = Mod::withTrashed()->where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->restore();
                     }
@@ -199,7 +240,7 @@ class Division extends Controller
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'message' => 'Success restoring companies'
+                    'message' => 'Success restoring divisions'
                 ]);
             }
 
@@ -212,7 +253,7 @@ class Division extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error restoring companies',
+                'message' => 'Error restoring division',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -222,10 +263,18 @@ class Division extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::where('id', $id)->withTrashed()->first();
+                    $query = Mod::where('id', $id)->withTrashed();
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->forcedelete();
                     }
@@ -234,7 +283,7 @@ class Division extends Controller
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'message' => 'Success permanently deleted companies'
+                    'message' => 'Success permanently deleted divisions'
                 ]);
             }
 
@@ -247,7 +296,7 @@ class Division extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error permanently deleting companies',
+                'message' => 'Error permanently deleting divisions',
                 'error' => $e->getMessage()
             ], 500);
         }

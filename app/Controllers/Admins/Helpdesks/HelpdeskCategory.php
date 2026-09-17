@@ -8,47 +8,40 @@ use App\Models\Helpdesks\HelpdeskCategory as ModCategory;
 use App\Models\Helpdesks\Helpdesk;
 use App\Models\Helpdesks\HelpdeskCategoryOrganization;
 use App\Models\Organization as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class HelpdeskCategory extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
+        $isSuper = $this->isSuperUser($user);
+        $companyId = $this->getUserCompanyId($user);
+
+        $organizations = $isSuper || !$companyId
+            ? Mod::all()
+            : Mod::where('company_id', $companyId)->get();
+
         $params = [
             'user' => $user,
-            'organization' => Mod::all(),
+            'organization' => $organizations,
         ];
         return view('_bak.helpdesk.category.main', $params);
     }
 
     public function data(Request $request)
     {
-
-        $query = ModCategory::with([
-            'organizations'
-        ]);
+        $query = ModCategory::with(['organizations']);
 
         if ($request->input('folder')) {
             $data = HelpdeskCategoryOrganization::where('organization_id', $request->input('folder'))->get();
             $query->whereIn('id', $data->pluck('category_id'));
         }
-
-        // Ini filter berdasarkan hirarki folder
-
-        // if ($request->input('folder')) {
-        //     $organizationId = $request->input('folder');
-        //     $rootOrganization = Mod::find($organizationId);
-
-        //     if ($rootOrganization) {
-        //         $organizationIds = Mod::where('path', 'like', $rootOrganization->path . '%')->pluck('id');
-
-        //         $data = HelpdeskCategoryOrganization::whereIn('organization_id', $organizationIds)->get();
-        //         $query->whereIn('id', $data->pluck('category_id'));
-        //     }
-        // }
 
         if (!$request->trash) {
             $query->withTrashed();
@@ -57,18 +50,15 @@ class HelpdeskCategory extends Controller
             $query->onlyTrashed();
         }
 
-        $searchFields = [
-            'name',
-            'description'
-        ];
-
-        return Query::open($query, $searchFields);
+        return Query::open($query, ['name', 'description']);
     }
 
     public function dataOrganizations(Request $request, $categoryId = null)
     {
         if ($categoryId) {
-            $data = $this->treeModules($categoryId);
+            $user = $request->user();
+            $companyId = $this->isSuperUser($user) ? null : $this->getUserCompanyId($user);
+            $data = $this->treeModules($categoryId, null, $companyId);
             return response()->json($data);
         }
     }
@@ -89,7 +79,6 @@ class HelpdeskCategory extends Controller
 
         DB::beginTransaction();
         try {
-
             $category = ModCategory::create([
                 'name' => $request->input('name'),
                 'description' => $request->input('description'),
@@ -109,7 +98,8 @@ class HelpdeskCategory extends Controller
             ], 500);
         }
     }
-    public function update(Request $request, $id)
+
+    public function update(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -134,7 +124,6 @@ class HelpdeskCategory extends Controller
 
         DB::beginTransaction();
         try {
-
             if ($request->has('name')) {
                 $category->name = $request->input('name');
             }
@@ -153,14 +142,14 @@ class HelpdeskCategory extends Controller
         }
     }
 
-    public function setOrganization(Request $request, $categoryId)
+    public function setOrganization(Request $request, int|string|null $categoryId = null)
     {
-        $input  = $request->all();
-        $organization  = $input['organization'];
+        $input = $request->all();
+        $organization = $input['organization'];
         $auth = $input['auth'];
 
         if ($categoryId && $organization) {
-            $data   = ModCategory::find($categoryId);
+            $data = ModCategory::find($categoryId);
             $data->organizations()->detach([$organization]);
             if ($auth) $data->organizations()->attach([$organization]);
             return response()->json(['success' => true, 'message' => 'Success!!!']);
@@ -268,15 +257,20 @@ class HelpdeskCategory extends Controller
         ], 400);
     }
 
-    private function treeModules($categoryId, $parent = null)
+    private function treeModules(int|string $categoryId, int|string|null $parent = null, ?int $companyId = null)
     {
-        $result = Mod::where('parent_id', $parent)
+        $query = Mod::query();
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
+
+        $result = $query->where('parent_id', $parent)
             ->orderBy('name')
             ->get();
         $category = ModCategory::find($categoryId);
 
         foreach ($result as $row) {
-            $row->children = $this->treeModules($category->id, $row->id);
+            $row->children = $this->treeModules($category->id, $row->id, $companyId);
             $row->leaf = (count($row->children)) ? false : true;
             $row->checked = $row->hasHelpdeskCategory($category->id);
             $row->icon = asset('images/icons/' . ($row->type->icon ?? 'home') . '.png');

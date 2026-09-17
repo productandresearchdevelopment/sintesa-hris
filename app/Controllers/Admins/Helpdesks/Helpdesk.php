@@ -21,6 +21,7 @@ use App\Models\Organization;
 use App\Models\Placement;
 use App\SystemModels\Auth\User;
 use App\SystemModels\Globals\Upload as Uploads;
+use App\Traits\UserScopingTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,19 +29,30 @@ use Illuminate\Support\Facades\Validator;
 
 class Helpdesk extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
+        $isSuper = $this->isSuperUser($user);
+        $companyId = $this->getUserCompanyId($user);
+
+        $employees = $isSuper || !$companyId ? Employee::all() : Employee::where('company_id', $companyId)->get();
+        $organizations = $isSuper || !$companyId ? Organization::all() : Organization::where('company_id', $companyId)->get();
+        $divisions = $isSuper || !$companyId ? Division::all() : Division::where('company_id', $companyId)->get();
+        $companies = $isSuper || !$companyId ? Company::all() : Company::where('id', $companyId)->get();
+        $users = $isSuper || !$companyId ? User::all() : User::whereHas('employee', fn($q) => $q->where('company_id', $companyId))->get();
+
         $params = [
             'user' => $user,
-            'employees' => Employee::all(),
+            'employees' => $employees,
             'leaves' => Leave::all(),
             'helpdesks' => Mod::all(),
             'helpdesk_categories' => HelpdeskCategory::all(),
-            'users' => User::all(),
-            'organizations' => Organization::all(),
-            'divisions' => Division::all(),
-            'companies' => Company::all(),
+            'users' => $users,
+            'organizations' => $organizations,
+            'divisions' => $divisions,
+            'companies' => $companies,
             'placements' => Placement::all(),
             'genders' => GlobalData::where('group', 'gender')->get(),
             'maritals' => GlobalData::where('group', 'marital')->get(),
@@ -51,13 +63,8 @@ class Helpdesk extends Controller
             'provinces' => City::select('id', 'province')->get()
         ];
 
-        // if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
-        // $view = isMobile() ? '_front.helpdesk.mobile' : '_front.helpdesk.index';
         $view = isMobile() ? '_front.helpdesk.mobile' : '_bak.helpdesk.main';
         return view($view, $params);
-        // } else {
-        // return view('_bak.helpdesk.main', $params);
-        // }
     }
 
     public function data(Request $request)
@@ -96,17 +103,26 @@ class Helpdesk extends Controller
         }
 
         $user = auth()->user();
-        $role = optional($user->role)->name;
-        if (!in_array(strtolower($role), ['developer', 'superadmin'])) {
-            $query->where(function ($q) use ($user) {
-                $q->whereHas('user_mentions', function ($q2) use ($user) {
-                    $q2->where('user_id', $user->id);
-                })
-                    ->orWhere('created_by', $user->id)
-                    ->orWhereHas('organizations', function ($q3) use ($user) {
-                        $q3->where('iq_org.id', $user->organization_id);
+        if (!$this->isSuperUser($user)) {
+            if ($this->isHrga($user)) {
+                $companyId = $this->getUserCompanyId($user);
+                if ($companyId) {
+                    $query->where(function ($q) use ($user, $companyId) {
+                        $q->whereHas('createdBy.employee', fn($ce) => $ce->where('company_id', $companyId))
+                            ->orWhereHas('organization', fn($o) => $o->where('company_id', $companyId))
+                            ->orWhereHas('user_mentions.employee', fn($me) => $me->where('company_id', $companyId))
+                            ->orWhere('created_by', $user->id);
                     });
-            });
+                }
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->whereHas('user_mentions', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id);
+                    })
+                        ->orWhere('created_by', $user->id)
+                        ->orWhere('organization_id', $user->organization_id);
+                });
+            }
         }
 
         $query->orderBy('created_at', 'desc');
@@ -120,9 +136,11 @@ class Helpdesk extends Controller
             'created_at',
         ]);
 
-        foreach ($result['data'] as $item) {
-            $photoId = $item->createdBy?->photo_id;
-            $item->setAttribute('created_by_avatar', $photoId ? route('file', $photoId) : null);
+        if (isset($result['data'])) {
+            foreach ($result['data'] as $item) {
+                $photoId = $item->createdBy?->photo_id;
+                $item->setAttribute('created_by_avatar', $photoId ? route('file', $photoId) : null);
+            }
         }
 
         return response()->json($result);
@@ -131,12 +149,14 @@ class Helpdesk extends Controller
     public function dataOrganizations(Request $request, $helpdeskId = null)
     {
         if ($helpdeskId) {
-            $data = $this->treeModules($helpdeskId);
+            $user = $request->user();
+            $companyId = $this->isSuperUser($user) ? null : $this->getUserCompanyId($user);
+            $data = $this->treeModules($helpdeskId, null, $companyId);
             return response()->json($data);
         }
     }
 
-    public function data_category(Request $request, $organization_id)
+    public function data_category(Request $request, $organization_id = null)
     {
         $query = HelpdeskCategory::with([
             'organizations',
@@ -145,7 +165,7 @@ class Helpdesk extends Controller
             'deletedBy',
         ]);
 
-        $organization_id = $request->input('organization_id') ? $request->input('organization_id') : $organization_id;
+        $organization_id = $request->input('organization_id') ?: $organization_id;
 
         if ($organization_id) {
             $query->whereHas('organizations', function ($q) use ($organization_id) {
@@ -266,8 +286,7 @@ class Helpdesk extends Controller
 
             if ($userMentions) {
                 $helpdesk->user_mentions()->sync($userMentions);
-
-                Notifier::sendToMany($userMentions, 'New helpdesk', 'helpdesk', $helpdesk->id, $helpdesk->title);
+                Notifier::sendToMany($userMentions, 'New helpdesk', 'helpdesk', $helpdesk->title);
             }
 
             DB::commit();
@@ -278,7 +297,7 @@ class Helpdesk extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required',
@@ -374,21 +393,20 @@ class Helpdesk extends Controller
         }
     }
 
-    public function setOrganization(Request $request, $helpdeskId)
+    public function setOrganization(Request $request, int|string|null $helpdeskId = null)
     {
-        $input  = $request->all();
-        $organization  = $input['organization'];
+        $input = $request->all();
+        $organization = $input['organization'];
         $auth = $input['auth'];
 
         if ($helpdeskId && $organization) {
-            $data   = Mod::find($helpdeskId);
+            $data = Mod::find($helpdeskId);
             $data->organizations()->detach([$organization]);
             if ($auth) $data->organizations()->attach([$organization]);
             return response()->json(['success' => true, 'message' => 'Success!!!']);
         }
         return response()->json(['success' => false, 'message' => 'Organization Not Found']);
     }
-
 
     public function destroy(Request $request)
     {
@@ -627,15 +645,20 @@ class Helpdesk extends Controller
         ], 400);
     }
 
-    private function treeModules($helpdeskId, $parent = null)
+    private function treeModules(int|string $helpdeskId, int|string|null $parent = null, ?int $companyId = null)
     {
-        $result = Organization::where('parent_id', $parent)
+        $query = Organization::query();
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
+
+        $result = $query->where('parent_id', $parent)
             ->orderBy('name')
             ->get();
         $helpdesk = Mod::find($helpdeskId);
 
         foreach ($result as $row) {
-            $row->children = $this->treeModules($helpdesk->id, $row->id);
+            $row->children = $this->treeModules($helpdesk->id, $row->id, $companyId);
             $row->leaf = (count($row->children)) ? false : true;
             $row->checked = $row->hasHelpdeskOrganization($helpdesk->id);
             $row->icon = asset('images/icons/' . ($row->type->icon ?? 'home') . '.png');

@@ -5,12 +5,15 @@ namespace App\Controllers\Admins\Companies;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Company as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class Company extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -21,13 +24,12 @@ class Company extends Controller
     public function data(Request $request)
     {
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         $query = Mod::select('*');
 
-        if (!$isSuperUser && $userCompany) {
+        if (!$isSuper && $userCompany) {
             $query->where('id', $userCompany);
         }
 
@@ -43,20 +45,27 @@ class Company extends Controller
         ]);
 
         return response()->json($result);
-
-        // return response()->json([
-        //     'data' => Mod::find(1),
-        //     'count' => 1
-        // ]);
     }
 
     public function get(Request $request, $id = null)
     {
-        return Mod::where('id', $id)->first();
+        $user = $request->user();
+        $query = Mod::where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $query->where('id', $this->getUserCompanyId($user));
+        }
+
+        return $query->first();
     }
 
     public function create(Request $request)
     {
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+        }
+
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
@@ -96,6 +105,11 @@ class Company extends Controller
 
     public function edit(Request $request)
     {
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+        }
+
         try {
             $validator = Validator::make($request->all(), [
                 'id' => 'required|integer|exists:iq_company,id',
@@ -113,7 +127,6 @@ class Company extends Controller
             DB::beginTransaction();
 
             $company = Mod::find($request->input('id'));
-
             if (!$company) {
                 return response()->json([
                     'success' => false,
@@ -144,6 +157,11 @@ class Company extends Controller
 
     public function delete(Request $request)
     {
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+        }
+
         try {
             if ($data = json_decode($request->data)) {
                 DB::beginTransaction();
@@ -179,6 +197,11 @@ class Company extends Controller
 
     public function restore(Request $request)
     {
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+        }
+
         try {
             if ($data = json_decode($request->data)) {
                 DB::beginTransaction();
@@ -214,6 +237,11 @@ class Company extends Controller
 
     public function forcedelete(Request $request)
     {
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+        }
+
         try {
             if ($data = json_decode($request->data)) {
                 DB::beginTransaction();

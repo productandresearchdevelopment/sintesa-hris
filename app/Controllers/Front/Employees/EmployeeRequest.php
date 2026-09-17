@@ -5,6 +5,7 @@ namespace App\Controllers\Front\Employees;
 use App\Http\Controllers\Controller;
 use App\Libraries\FileUpload;
 use App\Libraries\Query;
+use App\Traits\UserScopingTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -18,18 +19,20 @@ use Illuminate\Http\UploadedFile;
 
 class EmployeeRequest extends Controller
 {
-    public function data(Request $request, $employId, $counter = true)
+    use UserScopingTrait;
+
+    public function data(Request $request, int|string|null $employId = null, bool $counter = true)
     {
-        $relations = [
-            'organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by',
-            'employ', 'employ.organization', 'employ.division', 'employ.company', 'employ.gender', 'employ.marital', 'employ.religion', 'employ.bank', 'employ.emergency_relation', 'employ.photo', 'employ.placement', 'employ.address_city', 'employ.address_province', 'employ.address_permanent_city', 'employ.address_permanent_province'
-        ];
-        $query = ModEmployeeRequest::with($relations);
+        $relations = $this->requestRelations();
+        $query = ModEmployeeRequest::with($relations)->orderBy('created_at', 'DESC');
 
-        $query->orderBy('created_at', 'DESC');
-
-        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
-            $query->where('employ_id', $employId);
+        $user = $request->user();
+        if ($this->isSuperUser($user)) {
+        } elseif ($this->isHrga($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            $query->whereHas('employ', fn($q) => $q->where('company_id', $userCompanyId));
+        } else {
+            $query->where('employ_id', $employId ?: $user->employ_id);
         }
 
         if (!$request->trash) {
@@ -39,7 +42,7 @@ class EmployeeRequest extends Controller
             $query->onlyTrashed();
         }
 
-        $result = Query::open($query, [
+        return Query::open($query, [
             'nickname',
             'fullname',
             'organization.id',
@@ -71,26 +74,79 @@ class EmployeeRequest extends Controller
             'address_permanent_province.id',
             'address_permanent_province.name'
         ], $counter);
-
-        return $result;
     }
 
     private function requestRelations(): array
     {
         return [
-            'organization', 'organization.position', 'division', 'company', 'gender', 'marital', 'religion', 'bank', 'emergency_relation', 'photo', 'placement', 'address_city', 'address_province', 'address_permanent_city', 'address_permanent_province', 'approved_by',
-            'employ', 'employ.organization', 'employ.division', 'employ.company', 'employ.gender', 'employ.marital', 'employ.religion', 'employ.bank', 'employ.emergency_relation', 'employ.photo', 'employ.placement', 'employ.address_city', 'employ.address_province', 'employ.address_permanent_city', 'employ.address_permanent_province'
+            'organization',
+            'organization.position',
+            'division',
+            'company',
+            'gender',
+            'marital',
+            'religion',
+            'bank',
+            'emergency_relation',
+            'photo',
+            'placement',
+            'address_city',
+            'address_province',
+            'address_permanent_city',
+            'address_permanent_province',
+            'approved_by',
+            'employ',
+            'employ.organization',
+            'employ.division',
+            'employ.company',
+            'employ.gender',
+            'employ.marital',
+            'employ.religion',
+            'employ.bank',
+            'employ.emergency_relation',
+            'employ.photo',
+            'employ.placement',
+            'employ.address_city',
+            'employ.address_province',
+            'employ.address_permanent_city',
+            'employ.address_permanent_province'
         ];
     }
 
     public function get(Request $request, $id = null)
     {
-        return ModEmployeeRequest::with($this->requestRelations())->where('id', $id)->first();
+        $user = $request->user();
+        $query = ModEmployeeRequest::with($this->requestRelations())->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($this->isHrga($user)) {
+                $query->whereHas('employ', fn($q) => $q->where('company_id', $userCompanyId));
+            } else {
+                $query->where('employ_id', $user->employ_id);
+            }
+        }
+
+        return $query->first();
     }
 
     public function getByEmployeeId(Request $request, $id = null)
     {
-        return ModEmployeeRequest::with($this->requestRelations())->where('employ_id', $id)->where('approved_status', null)->first();
+        $user = $request->user();
+        $query = ModEmployeeRequest::with($this->requestRelations())
+            ->where('employ_id', $id)
+            ->whereNull('approved_status');
+
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($this->isHrga($user)) {
+                $query->whereHas('employ', fn($q) => $q->where('company_id', $userCompanyId));
+            } else {
+                $query->where('employ_id', $user->employ_id);
+            }
+        }
+
+        return $query->first();
     }
 
     public function create(Request $request)
@@ -143,6 +199,13 @@ class EmployeeRequest extends Controller
                     'success' => false,
                     'message' => 'Employee not found'
                 ], 404);
+            }
+
+            $user = $request->user();
+            if (!$this->isSuperUser($user) && !$this->isHrga($user)) {
+                if ($currentEmploy->id !== $user->employ_id) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+                }
             }
 
             DB::beginTransaction();
@@ -283,12 +346,18 @@ class EmployeeRequest extends Controller
             DB::beginTransaction();
 
             $employee = ModEmployeeRequest::find($request->input('id'));
-
             if (!$employee) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Employee request not found'
                 ], 404);
+            }
+
+            $user = $request->user();
+            if (!$this->isSuperUser($user) && !$this->isHrga($user)) {
+                if ($employee->employ_id !== $user->employ_id) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+                }
             }
 
             $fields = [
@@ -372,10 +441,11 @@ class EmployeeRequest extends Controller
 
     public function approve(Request $request)
     {
-        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
+        $user = $request->user();
+        if (!$this->isSuperUser($user) && !$this->isHrga($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk menyetujui/menolak pengajuan ini.'
+                'message' => 'Anda tidak memiliki akses untuk menyetujui pengajuan ini.'
             ], 403);
         }
 
@@ -387,106 +457,103 @@ class EmployeeRequest extends Controller
                 DB::beginTransaction();
 
                 $rec = ModEmployeeRequest::find($id);
-                if ($rec) {
-                    $rec->approved_status = 1;
-                    $rec->approved_at = now();
-                    $rec->approved_by = $request->user()->id;
-                    $rec->approved_note = $note;
-                    $rec->save();
+                if (!$rec) {
+                    return response()->json(['success' => false, 'message' => 'Request data not found!'], 404);
+                }
 
-                    $recEmployee = ModEmployee::find($rec->employ_id);
-                    if ($recEmployee) {
-                        $updateData = [
-                            'org_id' => $rec->org_id ?? $recEmployee->org_id,
-                            'division_id' => $rec->division_id ?? $recEmployee->division_id,
-                            'company_id' => $rec->company_id ?? $recEmployee->company_id,
-                            'placement_id' => $rec->placement_id ?? $recEmployee->placement_id,
-                            'last_contract_id' => $rec->last_contract_id ?? $recEmployee->last_contract_id,
-                            'last_career_id' => $rec->last_career_id ?? $recEmployee->last_career_id,
-                            'tax_id' => $rec->tax_id ?? $recEmployee->tax_id,
-                            'nik' => $rec->nik ?? $recEmployee->nik,
-                            'nickname' => $rec->nickname ?? $recEmployee->nickname,
-                            'fullname' => $rec->fullname ?? $recEmployee->fullname,
-                            'birth_place' => $rec->birth_place ?? $recEmployee->birth_place,
-                            'birth_date' => $rec->birth_date ?? $recEmployee->birth_date,
-                            'phone' => $rec->phone ?? $recEmployee->phone,
-                            'email' => $rec->email ?? $recEmployee->email,
-                            'gender_id' => $rec->gender_id ?? $recEmployee->gender_id,
-                            'marital_id' => $rec->marital_id ?? $recEmployee->marital_id,
-                            'religion_id' => $rec->religion_id ?? $recEmployee->religion_id,
-                            'join_date' => $rec->join_date ?? $recEmployee->join_date,
-                            'leave_saldo' => $rec->leave_saldo ?? $recEmployee->leave_saldo,
-                            'address' => $rec->address ?? $recEmployee->address,
-                            'address_city_id' => $rec->address_city_id ?? $recEmployee->address_city_id,
-                            'address_province_id' => $rec->address_province_id ?? $recEmployee->address_province_id,
-                            'address_permanent' => $rec->address_permanent ?? $recEmployee->address_permanent,
-                            'address_permanent_city_id' => $rec->address_permanent_city_id ?? $recEmployee->address_permanent_city_id,
-                            'address_permanent_province_id' => $rec->address_permanent_province_id ?? $recEmployee->address_permanent_province_id,
-                            'bank_id' => $rec->bank_id ?? $recEmployee->bank_id,
-                            'bank_account' => $rec->bank_account ?? $recEmployee->bank_account,
-                            'bank_alias' => $rec->bank_alias ?? $recEmployee->bank_alias,
-                            'emergency_relation_id' => $rec->emergency_relation_id ?? $recEmployee->emergency_relation_id,
-                            'emergency_contact_name' => $rec->emergency_contact_name ?? $recEmployee->emergency_contact_name,
-                            'emergency_contact_phone' => $rec->emergency_contact_phone ?? $recEmployee->emergency_contact_phone,
-                            'emergency_contact_address' => $rec->emergency_contact_address ?? $recEmployee->emergency_contact_address,
-                        ];
+                $recEmployee = ModEmployee::find($rec->employ_id);
+                if (!$recEmployee) {
+                    return response()->json(['success' => false, 'message' => 'Employee data not found!'], 404);
+                }
 
-                        if ($rec->photo_id) {
-                            if ($recEmployee->photo_id) {
-                                FileUpload::removeFileById($recEmployee->photo_id);
-                            }
-
-                            $photo_id_new = Upload::find($rec->photo_id);
-                            if ($photo_id_new) {
-                                $filePath = storage_path('app/public/uploads/' . $photo_id_new->filename);
-                                if (file_exists($filePath)) {
-                                    $uploadedFile = new UploadedFile(
-                                        $filePath,
-                                        $photo_id_new->filename_origin,
-                                        mime_content_type($filePath),
-                                        null,
-                                        true
-                                    );
-
-                                    $request->files->set('uploaded_photo', $uploadedFile);
-
-                                    $id_photo = FileUpload::upload('uploaded_photo', 'employee');
-
-                                    $updateData['photo_id'] = $id_photo;
-                                }
-                            }
-                        }
-
-                        foreach ($updateData as $key => $value) {
-                            if ($value) {
-                                $recEmployee->$key = $value;
-                            }
-                        }
-
-                        $recEmployee->save();
-                        DB::commit();
-                        return response()->json([
-                            'success' => true,
-                            'message' => 'Request successfully approved and employee data updated.'
-                        ]);
-                    } else {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Employee data not found!'
-                        ], 404);
+                if (!$this->isSuperUser($user)) {
+                    $userCompanyId = $this->getUserCompanyId($user);
+                    if ($recEmployee->company_id !== $userCompanyId) {
+                        return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
                     }
                 }
 
+                $rec->approved_status = 1;
+                $rec->approved_at = now();
+                $rec->approved_by = $user->id;
+                $rec->approved_note = $note;
+                $rec->save();
+
+                $updateData = [
+                    'org_id' => $rec->org_id ?? $recEmployee->org_id,
+                    'division_id' => $rec->division_id ?? $recEmployee->division_id,
+                    'company_id' => $rec->company_id ?? $recEmployee->company_id,
+                    'placement_id' => $rec->placement_id ?? $recEmployee->placement_id,
+                    'last_contract_id' => $rec->last_contract_id ?? $recEmployee->last_contract_id,
+                    'last_career_id' => $rec->last_career_id ?? $recEmployee->last_career_id,
+                    'tax_id' => $rec->tax_id ?? $recEmployee->tax_id,
+                    'nik' => $rec->nik ?? $recEmployee->nik,
+                    'nickname' => $rec->nickname ?? $recEmployee->nickname,
+                    'fullname' => $rec->fullname ?? $recEmployee->fullname,
+                    'birth_place' => $rec->birth_place ?? $recEmployee->birth_place,
+                    'birth_date' => $rec->birth_date ?? $recEmployee->birth_date,
+                    'phone' => $rec->phone ?? $recEmployee->phone,
+                    'email' => $rec->email ?? $recEmployee->email,
+                    'gender_id' => $rec->gender_id ?? $recEmployee->gender_id,
+                    'marital_id' => $rec->marital_id ?? $recEmployee->marital_id,
+                    'religion_id' => $rec->religion_id ?? $recEmployee->religion_id,
+                    'join_date' => $rec->join_date ?? $recEmployee->join_date,
+                    'leave_saldo' => $rec->leave_saldo ?? $recEmployee->leave_saldo,
+                    'address' => $rec->address ?? $recEmployee->address,
+                    'address_city_id' => $rec->address_city_id ?? $recEmployee->address_city_id,
+                    'address_province_id' => $rec->address_province_id ?? $recEmployee->address_province_id,
+                    'address_permanent' => $rec->address_permanent ?? $recEmployee->address_permanent,
+                    'address_permanent_city_id' => $rec->address_permanent_city_id ?? $recEmployee->address_permanent_city_id,
+                    'address_permanent_province_id' => $rec->address_permanent_province_id ?? $recEmployee->address_permanent_province_id,
+                    'bank_id' => $rec->bank_id ?? $recEmployee->bank_id,
+                    'bank_account' => $rec->bank_account ?? $recEmployee->bank_account,
+                    'bank_alias' => $rec->bank_alias ?? $recEmployee->bank_alias,
+                    'emergency_relation_id' => $rec->emergency_relation_id ?? $recEmployee->emergency_relation_id,
+                    'emergency_contact_name' => $rec->emergency_contact_name ?? $recEmployee->emergency_contact_name,
+                    'emergency_contact_phone' => $rec->emergency_contact_phone ?? $recEmployee->emergency_contact_phone,
+                    'emergency_contact_address' => $rec->emergency_contact_address ?? $recEmployee->emergency_contact_address,
+                ];
+
+                if ($rec->photo_id) {
+                    if ($recEmployee->photo_id) {
+                        FileUpload::removeFileById($recEmployee->photo_id);
+                    }
+
+                    $photo_id_new = Upload::find($rec->photo_id);
+                    if ($photo_id_new) {
+                        $filePath = storage_path('app/public/uploads/' . $photo_id_new->filename);
+                        if (file_exists($filePath)) {
+                            $uploadedFile = new UploadedFile(
+                                $filePath,
+                                $photo_id_new->filename_origin,
+                                mime_content_type($filePath),
+                                null,
+                                true
+                            );
+
+                            $request->files->set('uploaded_photo', $uploadedFile);
+                            $id_photo = FileUpload::upload('uploaded_photo', 'employee');
+                            $updateData['photo_id'] = $id_photo;
+                        }
+                    }
+                }
+
+                foreach ($updateData as $key => $value) {
+                    if ($value) {
+                        $recEmployee->$key = $value;
+                    }
+                }
+
+                $recEmployee->save();
+                DB::commit();
+
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Request data not found!'
-                ], 404);
+                    'success' => true,
+                    'message' => 'Request successfully approved and employee data updated.'
+                ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'No ID provided!'
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'No ID provided!'], 400);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -498,48 +565,55 @@ class EmployeeRequest extends Controller
         }
     }
 
-
-
     public function reject(Request $request)
     {
-        if (!in_array($request->user()->role->name, ['HRGA', 'SUPERADMIN', 'DEVELOPER'])) {
+        $user = $request->user();
+        if (!$this->isSuperUser($user) && !$this->isHrga($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk menyetujui/menolak pengajuan ini.'
+                'message' => 'Anda tidak memiliki akses untuk menolak pengajuan ini.'
             ], 403);
         }
 
         try {
             $id = $request->input('id');
             $note = $request->input('note');
+
             if ($id) {
                 DB::beginTransaction();
 
                 $rec = ModEmployeeRequest::find($id);
-                if ($rec) {
-                    $rec->approved_status = 0;
-                    $rec->approved_at = now();
-                    $rec->approved_by = $request->user()->id;
-                    $rec->approved_note = $note;
-                    $rec->save();
-
-                    DB::commit();
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Request successfully rejected.'
-                    ]);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Data not found!'
-                    ], 404);
+                if (!$rec) {
+                    return response()->json(['success' => false, 'message' => 'Request data not found!'], 404);
                 }
+
+                $recEmployee = ModEmployee::find($rec->employ_id);
+                if (!$recEmployee) {
+                    return response()->json(['success' => false, 'message' => 'Employee data not found!'], 404);
+                }
+
+                if (!$this->isSuperUser($user)) {
+                    $userCompanyId = $this->getUserCompanyId($user);
+                    if ($recEmployee->company_id !== $userCompanyId) {
+                        return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+                    }
+                }
+
+                $rec->approved_status = 0;
+                $rec->approved_at = now();
+                $rec->approved_by = $user->id;
+                $rec->approved_note = $note;
+                $rec->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Request successfully rejected.'
+                ]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'No ID provided!'
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'No ID provided!'], 400);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -554,67 +628,66 @@ class EmployeeRequest extends Controller
     public function delete(Request $request)
     {
         try {
-            $id = $request->input('id');
-            if ($id) {
+            if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
-
-                $rec = ModEmployeeRequest::find($id);
-                if ($rec) {
-                    $rec->delete();
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Data not found!'
-                    ], 404);
+                foreach ($data as $id) {
+                    $query = ModEmployeeRequest::where('id', $id);
+                    if (!$isSuper) {
+                        if ($this->isHrga($user)) {
+                            $query->whereHas('employ', fn($q) => $q->where('company_id', $userCompanyId));
+                        } else {
+                            $query->where('employ_id', $user->employ_id);
+                        }
+                    }
+                    if ($rec = $query->first()) {
+                        $rec->delete();
+                    }
                 }
-
                 DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Request successfully deleted.'
-                ]);
+
+                return response()->json(['success' => true, 'message' => 'Success deleting employee request']);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'No ID provided!'
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'No Data!'], 400);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting request.',
+                'message' => 'Error deleting employee request',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-
-    public function exportPdf(Request $request, $id)
+    public function exportPdf(Request $request, int|string $id)
     {
-        try {
-            $user = auth()->user();
-            $view = 'reports.cv_pdf';
-            $rec = ModEmployee::with(['contracts', 'citizens', 'educations', 'careers', 'families', 'job_experiences', 'trainings'])->find($id);
-
-            if (!$rec) {
-                return response()->json(['success' => false, 'message' => 'Data not found'], 404);
-            }
-
-            $fileName = strtolower($rec->fullname);
-            $fileName = preg_replace('/\s+/', '_', $fileName);
-            $fileName = preg_replace('/[^a-z0-9_]/', '', $fileName);
-
-            $photoUrl = $rec->photo_id ? public_path('/storage/uploads/' . $rec->photo->filename) : null;
-
-            $params = ['user' => $user, 'data' => $rec, 'photoUrl' => $photoUrl];
-            $html = view($view, $params)->render();
-            $pdf = Pdf::loadHtml($html);
-
-            return $pdf->download("Employee_Data_" . $fileName . ".pdf");
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error exporting PDF', 'error' => $e->getMessage()], 500);
+        $employeeRequest = ModEmployeeRequest::with($this->requestRelations())->find($id);
+        if (!$employeeRequest) {
+            abort(404, 'Employee request not found');
         }
+
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($this->isHrga($user)) {
+                if ($employeeRequest->employ?->company_id !== $userCompanyId) {
+                    abort(403, 'Unauthorized access');
+                }
+            } else {
+                if ($employeeRequest->employ_id !== $user->employ_id) {
+                    abort(403, 'Unauthorized access');
+                }
+            }
+        }
+
+        $pdf = Pdf::loadView('_bak.employee.request_pdf', compact('employeeRequest'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->download("employee_request_{$employeeRequest->nik}.pdf");
     }
 }

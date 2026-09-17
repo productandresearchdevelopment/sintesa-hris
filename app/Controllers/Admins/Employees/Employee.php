@@ -3,6 +3,7 @@
 namespace App\Controllers\Admins\Employees;
 
 use App\Http\Controllers\Controller;
+use App\Traits\UserScopingTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,8 @@ use ZipArchive;
 
 class Employee extends Controller
 {
+    use UserScopingTrait;
+
     private function pdfRelations(): array
     {
         return [
@@ -63,45 +66,35 @@ class Employee extends Controller
             'bank',
             'emergency_relation',
             'photo',
-
             'address_city',
             'address_province',
             'address_permanent_city',
             'address_permanent_province',
-
             'organization',
             'division',
             'company',
             'placement',
-
             'contracts',
             'contracts.status',
             'contracts.file',
-
             'citizens',
             'citizens.citizen',
             'citizens.file',
-
             'educations',
             'educations.education',
             'educations.major',
             'educations.file',
-
             'families',
             'families.relation',
             'families.occupation',
-
             'job_experiences',
-
             'careers',
             'careers.career',
             'careers.placement',
             'careers.organization',
             'careers.file',
-
             'trainings',
             'trainings.file',
-
             'last_contract',
             'last_contract.status',
             'last_career',
@@ -109,7 +102,7 @@ class Employee extends Controller
         ];
     }
 
-    private function isUploadedFile($value): bool
+    private function isUploadedFile(mixed $value): bool
     {
         return $value instanceof \Illuminate\Http\UploadedFile;
     }
@@ -166,42 +159,40 @@ class Employee extends Controller
                 }
             }
 
-            if (isset($item['id'])) {
-                $existing = $modelClass::find($item['id']);
-                if ($existing) {
-                    if ($hasFileColumn && $newFileId && !empty($existing->{$fileColumn})) {
-                        FileUpload::removeFileById($existing->{$fileColumn});
+            $itemId = $item['id'] ?? null;
+            if ($itemId) {
+                $record = $modelClass::find($itemId);
+                if ($record) {
+                    if ($hasFileColumn && $newFileId) {
+                        if ($record->{$fileColumn}) {
+                            FileUpload::removeFileById($record->{$fileColumn});
+                        }
+                        $data[$fileColumn] = $newFileId;
                     }
-
-                    if ($hasFileColumn) {
-                        $data[$fileColumn] = $newFileId ?? ($existing->{$fileColumn} ?? null);
-                    }
-
-                    $existing->update($data);
+                    $record->update($data);
                 }
             } else {
                 $data['employ_id'] = $employeeId;
-                if ($hasFileColumn) {
-                    $data[$fileColumn] = $newFileId ?? null;
+                if ($hasFileColumn && $newFileId) {
+                    $data[$fileColumn] = $newFileId;
                 }
                 $modelClass::create($data);
             }
         }
     }
 
-    private function deleteRelatedItems($existingItems, $currentItems, $modelClass, $fileColumn = 'file_id'): void
+    private function deleteRelatedItems(iterable $existingItems, iterable $newItems, string $modelClass, string $fileColumn = 'file_id'): void
     {
-        $itemsToDelete = $existingItems->filter(function ($existing) use ($currentItems) {
-            return !$currentItems->contains(function ($current) use ($existing) {
-                return isset($current['id']) && $current['id'] == $existing->id;
-            });
-        });
+        $newCollection = collect($newItems);
+        $newIds = $newCollection->pluck('id')->filter()->all();
 
-        foreach ($itemsToDelete as $item) {
-            if ($fileColumn && property_exists($item, $fileColumn) && !empty($item->{$fileColumn})) {
-                FileUpload::removeFileById($item->{$fileColumn});
+        foreach ($existingItems as $existingItem) {
+            if (!in_array($existingItem->id, $newIds)) {
+                if (!empty($existingItem->{$fileColumn})) {
+                    FileUpload::removeFileById($existingItem->{$fileColumn});
+                }
+                $existingItem->delete();
             }
-            $item->forceDelete();
         }
     }
 
@@ -209,32 +200,32 @@ class Employee extends Controller
     {
         $maps = [
             'career' => [
-                'model'       => ModCareer::class,
-                'folder'      => 'employee-career',
-                'fields'      => ['career_id', 'placement_id', 'date', 'org_id', 'description'],
-                'dateFields'  => ['date'],
-                'fileColumn'  => 'file_id',
+                'model'         => ModCareer::class,
+                'folder'        => 'employee-career',
+                'fields'        => ['career_id', 'date', 'description', 'org_id', 'placement_id'],
+                'dateFields'    => ['date'],
+                'fileColumn'    => 'file_id',
             ],
             'education' => [
-                'model'       => ModEducation::class,
-                'folder'      => 'employee-education',
-                'fields'      => ['education_id', 'major_id', 'institution', 'graduate', 'ipk', 'description'],
-                'dateFields'  => [],
-                'fileColumn'  => 'file_id',
+                'model'         => ModEducation::class,
+                'folder'        => 'employee-education',
+                'fields'        => ['education_id', 'institution', 'major_id', 'score', 'start_year', 'end_year', 'description'],
+                'dateFields'    => [],
+                'fileColumn'    => 'file_id',
             ],
             'family' => [
-                'model'       => ModFamily::class,
-                'folder'      => null,
-                'fields'      => ['relation_id', 'nik', 'name', 'birth_date', 'occupation_id', 'occupation_description', 'address', 'phone'],
-                'dateFields'  => ['birth_date'],
-                'fileColumn'  => null,
+                'model'         => ModFamily::class,
+                'folder'        => null,
+                'fields'        => ['relation_id', 'fullname', 'gender_id', 'birth_place', 'birth_date', 'occupation_id', 'description'],
+                'dateFields'    => ['birth_date'],
+                'fileColumn'    => null,
             ],
             'jobExperience' => [
-                'model'       => ModJobExperience::class,
-                'folder'      => null,
-                'fields'      => ['name', 'start_date', 'end_date', 'job_title', 'job_description', 'salary', 'reason_leaving', 'description'],
-                'dateFields'  => ['start_date', 'end_date'],
-                'fileColumn'  => null,
+                'model'         => ModJobExperience::class,
+                'folder'        => 'employee-job-experience',
+                'fields'        => ['company_name', 'position', 'start_date', 'end_date', 'description'],
+                'dateFields'    => ['start_date', 'end_date'],
+                'fileColumn'    => 'file_id',
             ],
             'training' => [
                 'model'         => ModTraining::class,
@@ -320,13 +311,13 @@ class Employee extends Controller
 
     private function syncDetails(Mod $employee, array $detail): void
     {
-        $this->deleteRelatedItems(ModCareer::where('employ_id', $employee->id)->get(),       collect($detail['career']),        ModCareer::class);
-        $this->deleteRelatedItems(ModTraining::where('employ_id', $employee->id)->get(),     collect($detail['training']),      ModTraining::class);
-        $this->deleteRelatedItems(ModJobExperience::where('employ_id', $employee->id)->get(), collect($detail['jobExperience']), ModJobExperience::class);
-        $this->deleteRelatedItems(ModFamily::where('employ_id', $employee->id)->get(),       collect($detail['family']),        ModFamily::class);
-        $this->deleteRelatedItems(ModEducation::where('employ_id', $employee->id)->get(),    collect($detail['education']),     ModEducation::class);
-        $this->deleteRelatedItems(ModContract::where('employ_id', $employee->id)->get(),     collect($detail['contract']),      ModContract::class);
-        $this->deleteRelatedItems(ModCitizen::where('employ_id', $employee->id)->get(),      collect($detail['citizen']),       ModCitizen::class);
+        $this->deleteRelatedItems(ModCareer::where('employ_id', $employee->id)->get(),       collect($detail['career'] ?? []),        ModCareer::class);
+        $this->deleteRelatedItems(ModTraining::where('employ_id', $employee->id)->get(),     collect($detail['training'] ?? []),      ModTraining::class);
+        $this->deleteRelatedItems(ModJobExperience::where('employ_id', $employee->id)->get(), collect($detail['jobExperience'] ?? []), ModJobExperience::class);
+        $this->deleteRelatedItems(ModFamily::where('employ_id', $employee->id)->get(),       collect($detail['family'] ?? []),        ModFamily::class);
+        $this->deleteRelatedItems(ModEducation::where('employ_id', $employee->id)->get(),    collect($detail['education'] ?? []),     ModEducation::class);
+        $this->deleteRelatedItems(ModContract::where('employ_id', $employee->id)->get(),     collect($detail['contract'] ?? []),      ModContract::class);
+        $this->deleteRelatedItems(ModCitizen::where('employ_id', $employee->id)->get(),      collect($detail['citizen'] ?? []),       ModCitizen::class);
 
         $this->processEmployeeDetail($detail, $employee->id);
     }
@@ -379,16 +370,29 @@ class Employee extends Controller
                 return response()->json(['success' => false, 'message' => 'Employee not found'], 404);
             }
 
+            $user = $request->user();
+            if (!$this->isSuperUser($user)) {
+                $userCompanyId = $this->getUserCompanyId($user);
+                if ($isEdit && $employee->company_id !== $userCompanyId) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action'], 403);
+                }
+            }
+
             $photoId = $isEdit ? ($employee->photo_id ?? null) : null;
             if ($request->hasFile('fileInputGeneral') && $this->isUploadedFile($request->file('fileInputGeneral'))) {
                 if ($photoId) FileUpload::removeFileById($photoId);
                 $photoId = FileUpload::upload('fileInputGeneral', 'employee');
             }
 
+            $companyId = $this->isSuperUser($user)
+                ? $request->company_id
+                : $this->getUserCompanyId($user);
+
             $payload = [
                 'org_id'                        => $request->org_id,
                 'division_id'                   => $request->division_id,
-                'company_id'                    => $request->company_id,
+                'company_id'                    => $companyId,
                 'placement_id'                  => $request->placement_id,
                 'nik'                           => $request->nik,
                 'nickname'                      => $request->nickname,
@@ -484,9 +488,21 @@ class Employee extends Controller
     private function prepareEmployeeIndexParams(Request $request): array
     {
         $user = $request->user();
-        $organizations = Organization::whereNull('deleted_at')->get();
-        $divisions = Division::whereNull('deleted_at')->get();
-        $companies = Company::whereNull('deleted_at')->get();
+        $isSuper = $this->isSuperUser($user);
+        $userCompanyId = $this->getUserCompanyId($user);
+
+        $companies = $isSuper
+            ? Company::whereNull('deleted_at')->get()
+            : Company::whereNull('deleted_at')->where('id', $userCompanyId)->get();
+
+        $organizations = $isSuper
+            ? Organization::whereNull('deleted_at')->get()
+            : Organization::whereNull('deleted_at')->where('company_id', $userCompanyId)->get();
+
+        $divisions = $isSuper
+            ? Division::whereNull('deleted_at')->get()
+            : Division::whereNull('deleted_at')->where('company_id', $userCompanyId)->get();
+
         $placements = Placement::whereNull('deleted_at')->get();
         $genders = GlobalData::where('group', 'gender')->get();
         $maritals = GlobalData::where('group', 'marital')->get();
@@ -629,25 +645,27 @@ class Employee extends Controller
         }
 
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompanyId = $this->getUserCompanyId($user);
 
-        if (!$isSuperUser && $userCompany) {
-            $query->where('company_id', $userCompany);
-        } elseif ($request->filled('company') && $request->company !== 'all' && $request->company != 0) {
-            $query->where('company_id', $request->company);
+        if ($isSuper) {
+            if ($request->filled('company') && $request->company !== 'all' && $request->company != 0) {
+                $query->where('company_id', $request->company);
+            }
+        } elseif ($this->isHrga($user)) {
+            $query->where('company_id', $userCompanyId);
+        } else {
+            $userEmployId = $user->employ_id;
+            if ($userEmployId) {
+                $query->where('id', $userEmployId);
+            } else {
+                $query->where('company_id', $userCompanyId);
+            }
         }
 
         if ($request->filled('organization') && $request->organization !== 'all' && $request->organization != 0) {
-            $organizationIds = $this->getDescendantOrganizationIds($request->organization);
+            $organizationIds = $this->resolveDescendantOrgIds($request->organization);
             $query->whereIn('org_id', $organizationIds);
-        } elseif (!$isSuperUser) {
-            $userOrg = optional(optional($user)->employee)->org_id ?? optional($user)->organization_id;
-            if ($userOrg) {
-                $organizationIds = $this->getDescendantOrganizationIds($userOrg);
-                $query->whereIn('org_id', $organizationIds);
-            }
         }
         if ($request->filled('division') && $request->division !== 'all' && $request->division != 0) {
             $query->where('division_id', $request->division);
@@ -701,7 +719,8 @@ class Employee extends Controller
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with([
+        $user = $request->user();
+        $query = Mod::with([
             'employee_requests',
             'organization',
             'division',
@@ -742,20 +761,41 @@ class Employee extends Controller
             'job_experiences',
             'trainings',
             'trainings.file',
-        ])->where('id', $id)->first();
+        ])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            if ($this->isHrga($user)) {
+                $query->where('company_id', $this->getUserCompanyId($user));
+            } else {
+                $query->where('id', $user->employ_id);
+            }
+        }
+
+        return $query->first();
     }
 
     public function view(Request $request, $id = null)
     {
-        if ($data = Mod::with([
+        $user = $request->user();
+        $query = Mod::with([
             'address_city',
             'address_province',
             'address_permanent_city',
             'address_permanent_province',
             'last_career.career',
             'last_career.placement',
-        ])->find($id)) {
-            $user   = $request->user();
+        ])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            if ($this->isHrga($user)) {
+                $query->where('company_id', $this->getUserCompanyId($user));
+            } else {
+                $query->where('id', $user->employ_id);
+            }
+        }
+
+        $data = $query->first();
+        if ($data) {
             $params = ['user' => $user, 'data' => $data];
             return view('_bak.employee.detail', $params);
         }
@@ -848,230 +888,140 @@ class Employee extends Controller
                     ['text' => 'BIRTH DATE',   'dataIndex' => 'birth_date',   'width' => 120, 'type' => 'date', 'align' => 'center'],
                     ['text' => 'PHONE',        'dataIndex' => 'phone',        'width' => 150, 'align' => 'center'],
                     ['text' => 'EMAIL',        'dataIndex' => 'email',        'width' => 200],
-                    ['text' => 'GENDER',   'dataIndex' => 'gender',   'width' => 100, 'renderer' => fn($e) => $e?->name ?? '-'],
-                    ['text' => 'MARITAL',  'dataIndex' => 'marital',  'width' => 100, 'renderer' => fn($e) => $e?->name ?? '-'],
-                    ['text' => 'RELIGION', 'dataIndex' => 'religion', 'width' => 100, 'renderer' => fn($e) => $e?->name ?? '-'],
-                    ['text' => 'JOIN DATE',          'dataIndex' => 'join_date',      'width' => 120, 'type' => 'date', 'align' => 'center'],
-                    ['text' => 'CONTRACT END DATE',  'dataIndex' => 'last_contract',  'width' => 140, 'type' => 'date', 'align' => 'center', 'renderer' => fn($e) => $e?->end_date ?? null],
-                    ['text' => 'LEAVE SALDO',        'dataIndex' => 'leave_saldo',    'width' => 100, 'type' => 'int', 'align' => 'center'],
-                    ['text' => 'ADDRESS',            'dataIndex' => 'address',        'width' => 300],
-                    ['text' => 'CITY',               'dataIndex' => 'address_city',   'width' => 150, 'renderer' => fn($e) => $e?->city ?? '-'],
-                    ['text' => 'PROVINCE',           'dataIndex' => 'address_province', 'width' => 150, 'renderer' => fn($e) => $e?->province ?? '-'],
-                    ['text' => 'PERMANENT ADDRESS',  'dataIndex' => 'address_permanent',           'width' => 300, 'renderer' => fn($e) => $e ?? '-'],
-                    ['text' => 'PERMANENT CITY',     'dataIndex' => 'address_permanent_city',      'width' => 150, 'renderer' => fn($e) => $e?->city ?? '-'],
-                    ['text' => 'PERMANENT PROVINCE', 'dataIndex' => 'address_permanent_province',  'width' => 150, 'renderer' => fn($e) => $e?->province ?? '-'],
-                    ['text' => 'BANK',         'dataIndex' => 'bank', 'width' => 200, 'renderer' => fn($e) => $e?->name ?? '-'],
-                    ['text' => 'BANK ALIAS',   'dataIndex' => 'bank', 'width' => 150, 'renderer' => fn($e) => $e?->alias ?? '-'],
-                    ['text' => 'BANK ACCOUNT', 'dataIndex' => 'bank_account', 'width' => 180],
-                    ['text' => 'EMERGENCY RELATION', 'dataIndex' => 'emergency_relation',      'width' => 160, 'renderer' => fn($e) => $e?->name ?? '-'],
-                    ['text' => 'EMERGENCY NAME',     'dataIndex' => 'emergency_contact_name',  'width' => 200],
-                    ['text' => 'EMERGENCY PHONE',    'dataIndex' => 'emergency_contact_phone', 'width' => 160, 'align' => 'center'],
-                    ['text' => 'EMERGENCY ADDRESS',  'dataIndex' => 'emergency_contact_address', 'width' => 250],
+                    ['text' => 'GENDER',       'dataIndex' => 'gender',       'width' => 120, 'renderer' => fn($e) => $e?->name ?? '-'],
+                    ['text' => 'MARITAL',      'dataIndex' => 'marital',      'width' => 120, 'renderer' => fn($e) => $e?->name ?? '-'],
+                    ['text' => 'RELIGION',     'dataIndex' => 'religion',     'width' => 120, 'renderer' => fn($e) => $e?->name ?? '-'],
+                    ['text' => 'JOIN DATE',    'dataIndex' => 'join_date',    'width' => 120, 'type' => 'date', 'align' => 'center'],
+                    ['text' => 'LEAVE SALDO',  'dataIndex' => 'leave_saldo',  'width' => 120, 'type' => 'number', 'align' => 'center'],
+                    ['text' => 'BANK',         'dataIndex' => 'bank',         'width' => 150, 'renderer' => fn($e) => $e?->name ?? '-'],
+                    ['text' => 'BANK ACCOUNT', 'dataIndex' => 'bank_account', 'width' => 150, 'align' => 'center'],
+                    ['text' => 'EMERGENCY RELATION', 'dataIndex' => 'emergency_relation', 'width' => 150, 'renderer' => fn($e) => $e?->name ?? '-'],
+                    ['text' => 'EMERGENCY NAME',     'dataIndex' => 'emergency_contact_name',    'width' => 150],
+                    ['text' => 'EMERGENCY PHONE',    'dataIndex' => 'emergency_contact_phone',   'width' => 150, 'align' => 'center'],
+                    ['text' => 'EMERGENCY ADDRESS',  'dataIndex' => 'emergency_contact_address', 'width' => 200],
                 ]
             ],
             [
-                'text'    => 'CONTRACT',
+                'text'    => 'DOMICILE ADDRESS',
                 'columns' => [
-                    ['text' => 'STATUS',      'dataIndex' => 'contracts', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($c) => $c->status?->name ?? '-')->implode(' | ')],
-                    ['text' => 'START DATE',  'dataIndex' => 'contracts', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($c) => $c->start_date ? Carbon::parse($c->start_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'END DATE',    'dataIndex' => 'contracts', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($c) => $c->end_date ? Carbon::parse($c->end_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'DESCRIPTION', 'dataIndex' => 'contracts', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($c) => $c->description ?? '-')->implode(' | ')],
+                    ['text' => 'ADDRESS',  'dataIndex' => 'address',          'width' => 250],
+                    ['text' => 'CITY',     'dataIndex' => 'address_city',     'width' => 150, 'renderer' => fn($e) => $e?->city ?? '-'],
+                    ['text' => 'PROVINCE', 'dataIndex' => 'address_province', 'width' => 150, 'renderer' => fn($e) => $e?->province ?? '-'],
                 ]
             ],
             [
-                'text'    => 'CITIZEN',
+                'text'    => 'ID CARD ADDRESS',
                 'columns' => [
-                    ['text' => 'TYPE',        'dataIndex' => 'citizens', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($c) => $c->citizen?->name ?? '-')->implode(' | ')],
-                    ['text' => 'VALUE',       'dataIndex' => 'citizens', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($c) => $c->value ?? '-')->implode(' | ')],
-                    ['text' => 'DESCRIPTION', 'dataIndex' => 'citizens', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($c) => $c->description ?? '-')->implode(' | ')],
+                    ['text' => 'ADDRESS',  'dataIndex' => 'address_permanent',          'width' => 250],
+                    ['text' => 'CITY',     'dataIndex' => 'address_permanent_city',     'width' => 150, 'renderer' => fn($e) => $e?->city ?? '-'],
+                    ['text' => 'PROVINCE', 'dataIndex' => 'address_permanent_province', 'width' => 150, 'renderer' => fn($e) => $e?->province ?? '-'],
                 ]
-            ],
-            [
-                'text'    => 'EDUCATION',
-                'columns' => [
-                    ['text' => 'LEVEL',       'dataIndex' => 'educations', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($e) => $e->education?->name ?? '-')->implode(' | ')],
-                    ['text' => 'MAJOR',       'dataIndex' => 'educations', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($e) => $e->major?->name ?? '-')->implode(' | ')],
-                    ['text' => 'INSTITUTION', 'dataIndex' => 'educations', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($e) => $e->institution ?? '-')->implode(' | ')],
-                    ['text' => 'GRADUATE',    'dataIndex' => 'educations', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($e) => $e->graduate ? Carbon::parse($e->graduate)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'IPK',         'dataIndex' => 'educations', 'width' => 80,  'align' => 'center', 'renderer' => fn($items) => $items->map(fn($e) => $e->ipk ?? '-')->implode(' | ')],
-                    ['text' => 'DESCRIPTION', 'dataIndex' => 'educations', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($e) => $e->description ?? '-')->implode(' | ')],
-                ]
-            ],
-            [
-                'text'    => 'FAMILY',
-                'columns' => [
-                    ['text' => 'NAME',             'dataIndex' => 'families', 'width' => 180, 'renderer' => fn($items) => $items->map(fn($f) => $f->name ?? '-')->implode(' | ')],
-                    ['text' => 'NIK',              'dataIndex' => 'families', 'width' => 150, 'align' => 'center', 'renderer' => fn($items) => $items->map(fn($f) => $f->nik ?? '-')->implode(' | ')],
-                    ['text' => 'BIRTH DATE',       'dataIndex' => 'families', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($f) => $f->birth_date ? Carbon::parse($f->birth_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'RELATION',         'dataIndex' => 'families', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($f) => $f->relation?->name ?? '-')->implode(' | ')],
-                    ['text' => 'OCCUPATION',       'dataIndex' => 'families', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($f) => $f->occupation?->name ?? '-')->implode(' | ')],
-                    ['text' => 'OCC. DESCRIPTION', 'dataIndex' => 'families', 'width' => 180, 'renderer' => fn($items) => $items->map(fn($f) => $f->occupation_description ?? '-')->implode(' | ')],
-                    ['text' => 'ADDRESS',          'dataIndex' => 'families', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($f) => $f->address ?? '-')->implode(' | ')],
-                    ['text' => 'PHONE',            'dataIndex' => 'families', 'width' => 130, 'align' => 'center', 'renderer' => fn($items) => $items->map(fn($f) => $f->phone ?? '-')->implode(' | ')],
-                ]
-            ],
-            [
-                'text'    => 'JOB EXPERIENCE',
-                'columns' => [
-                    ['text' => 'COMPANY',         'dataIndex' => 'job_experiences', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($j) => $j->name ?? '-')->implode(' | ')],
-                    ['text' => 'JOB TITLE',       'dataIndex' => 'job_experiences', 'width' => 180, 'renderer' => fn($items) => $items->map(fn($j) => $j->job_title ?? '-')->implode(' | ')],
-                    ['text' => 'START DATE',      'dataIndex' => 'job_experiences', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($j) => $j->start_date ? Carbon::parse($j->start_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'END DATE',        'dataIndex' => 'job_experiences', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($j) => $j->end_date ? Carbon::parse($j->end_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'SALARY',          'dataIndex' => 'job_experiences', 'width' => 130, 'renderer' => fn($items) => $items->map(fn($j) => $j->salary ? number_format($j->salary, 0, ',', '.') : '-')->implode(' | ')],
-                    ['text' => 'JOB DESCRIPTION', 'dataIndex' => 'job_experiences', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($j) => $j->job_description ?? '-')->implode(' | ')],
-                    ['text' => 'REASON LEAVING',  'dataIndex' => 'job_experiences', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($j) => $j->reason_leaving ?? '-')->implode(' | ')],
-                ]
-            ],
-            [
-                'text'    => 'CAREER',
-                'columns' => [
-                    ['text' => 'CAREER',       'dataIndex' => 'careers', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($c) => $c->career?->name ?? '-')->implode(' | ')],
-                    ['text' => 'PLACEMENT',    'dataIndex' => 'careers', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($c) => $c->placement?->name ?? '-')->implode(' | ')],
-                    ['text' => 'DATE',         'dataIndex' => 'careers', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($c) => $c->date ? Carbon::parse($c->date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'ORGANIZATION', 'dataIndex' => 'careers', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($c) => $c->organization?->name ?? '-')->implode(' | ')],
-                    ['text' => 'DESCRIPTION',  'dataIndex' => 'careers', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($c) => $c->description ?? '-')->implode(' | ')],
-                ]
-            ],
-            [
-                'text'    => 'TRAINING',
-                'columns' => [
-                    ['text' => 'TITLE',         'dataIndex' => 'trainings', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($t) => $t->title ?? '-')->implode(' | ')],
-                    ['text' => 'LOCATION',      'dataIndex' => 'trainings', 'width' => 150, 'renderer' => fn($items) => $items->map(fn($t) => $t->location ?? '-')->implode(' | ')],
-                    ['text' => 'START DATE',    'dataIndex' => 'trainings', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($t) => $t->start_date ? Carbon::parse($t->start_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'END DATE',      'dataIndex' => 'trainings', 'width' => 120, 'renderer' => fn($items) => $items->map(fn($t) => $t->end_date ? Carbon::parse($t->end_date)->format('d/m/Y') : '-')->implode(' | ')],
-                    ['text' => 'DESCRIPTION',   'dataIndex' => 'trainings', 'width' => 200, 'renderer' => fn($items) => $items->map(fn($t) => $t->description ?? '-')->implode(' | ')],
-                    ['text' => 'INTERNAL',      'dataIndex' => 'trainings', 'width' => 100, 'align' => 'center', 'renderer' => fn($items) => $items->map(fn($t) => $t->is_internal ? 'Yes' : 'No')->implode(' | ')],
-                    ['text' => 'CERTIFICATION', 'dataIndex' => 'trainings', 'width' => 110, 'align' => 'center', 'renderer' => fn($items) => $items->map(fn($t) => $t->is_certification ? 'Yes' : 'No')->implode(' | ')],
-                ]
-            ],
+            ]
         ];
 
         $params = [
-            'title'    => $title,
-            'columns'  => $columns,
-            'data'     => $data,
-            'filename' => 'Employee-' . date('YmdHi'),
-            'footer'   => [config('app.name') . ' (' . date('d F Y H:i:s') . ')'],
+            'title' => $title,
+            'columns' => $columns,
+            'data' => $data,
+            'filename' => 'EMPLOYEE_' . date('Ymd_His'),
+            'footer' => [config('app.name') . ' (' . date('d F Y H:i:s') . ')'],
         ];
 
         return ExportExcel::export($params);
     }
 
-    public function exportPdf(Request $request, $id)
+    public function exportPdf(int|string $id)
     {
-        try {
-            $user = auth()->user();
-            $view = 'reports.cv_pdf';
+        $employee = Mod::with($this->pdfRelations())->find($id);
 
-            $rec = Mod::with($this->pdfRelations())->find($id);
-
-            if (!$rec) {
-                return response()->json(['success' => false, 'message' => 'Data not found'], 404);
-            }
-
-            $fileName = strtolower(
-                preg_replace('/[^a-z0-9_]/', '', preg_replace('/\s+/', '_', $rec->fullname))
-            );
-
-            $photoUrl = null;
-            if ($rec->photo_id && $rec->photo) {
-                $photoUrl = public_path('/storage/uploads/' . $rec->photo->filename);
-            }
-
-            $params = ['user' => $user, 'data' => $rec, 'photoUrl' => $photoUrl];
-            $html   = view($view, $params)->render();
-            $pdf    = Pdf::loadHtml($html);
-
-            return $pdf->download('Employee_Data_' . $fileName . '.pdf');
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error exporting PDF',
-                'error'   => $e->getMessage(),
-            ], 500);
+        if (!$employee) {
+            abort(404, 'Employee not found');
         }
+
+        $user = auth()->user();
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($this->isHrga($user)) {
+                if ($employee->company_id !== $userCompanyId) {
+                    abort(403, 'Unauthorized access');
+                }
+            } else {
+                if ($employee->id !== $user->employ_id) {
+                    abort(403, 'Unauthorized access');
+                }
+            }
+        }
+
+        $pdf = Pdf::loadView('_bak.employee.pdf', compact('employee'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->download("employee_{$employee->nik}.pdf");
     }
 
     public function exportPdfMultiple(Request $request)
     {
-        $data = json_decode($request->data);
+        $ids = json_decode($request->input('ids', '[]'), true);
 
-        if (!$data || !is_array($data) || count($data) === 0) {
-            return response()->json(['success' => false, 'message' => 'No data provided or invalid format.'], 400);
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'No employees selected'], 400);
         }
 
-        try {
-            $zip         = new ZipArchive();
-            $zipFileName = 'Employee_Reports_' . time() . '.zip';
-            $tempDir     = storage_path('app/public/temp');
-            $tempPath    = $tempDir . '/' . $zipFileName;
-
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0775, true);
+        $user = auth()->user();
+        $query = Mod::with($this->pdfRelations())->whereIn('id', $ids);
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($this->isHrga($user)) {
+                $query->where('company_id', $userCompanyId);
+            } else {
+                $query->where('id', $user->employ_id);
             }
+        }
 
-            if ($zip->open($tempPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                return response()->json(['error' => 'Could not create ZIP file.'], 500);
-            }
+        $employees = $query->get();
+        if ($employees->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No valid employees found'], 404);
+        }
 
-            $pdfTempFiles = [];
+        $zipFileName = 'employees_pdf_' . time() . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
 
-            foreach ($data as $id) {
-                $record = Mod::with($this->pdfRelations())->find($id);
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
 
-                if (!$record) continue;
-
-                $user     = auth()->user();
-                $photoUrl = null;
-
-                if ($record->photo_id && $record->photo) {
-                    $photoUrl = public_path('/storage/uploads/' . $record->photo->filename);
-                }
-
-                $params     = ['user' => $user, 'data' => $record, 'photoUrl' => $photoUrl];
-                $html       = view('reports.cv_pdf', $params)->render();
-                $pdf        = Pdf::loadHtml($html);
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach ($employees as $employee) {
+                $pdf = Pdf::loadView('_bak.employee.pdf', compact('employee'));
+                $pdf->setPaper('A4', 'portrait');
                 $pdfContent = $pdf->output();
 
-                $filename    = strtolower(
-                    preg_replace('/[^a-z0-9_]/', '', preg_replace('/\s+/', '_', $record->fullname))
-                );
-                $pdfFileName = 'Employee_Data_' . $filename . '.pdf';
-                $pdfTempPath = $tempDir . '/' . $pdfFileName;
+                $fileName = "employee_{$employee->nik}_{$employee->fullname}.pdf";
+                $fileName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $fileName);
 
-                file_put_contents($pdfTempPath, $pdfContent);
-
-                $zip->addFile($pdfTempPath, $pdfFileName);
-                $pdfTempFiles[] = $pdfTempPath;
+                $zip->addFromString($fileName, $pdfContent);
             }
-
             $zip->close();
 
-            foreach ($pdfTempFiles as $tmpFile) {
-                if (file_exists($tmpFile)) {
-                    @unlink($tmpFile);
-                }
-            }
-
             return response()->json([
-                'url' => route('employee.downloadZip', ['filename' => $zipFileName])
+                'success' => true,
+                'filename' => $zipFileName,
+                'download_url' => route('employee.downloadZip', ['filename' => $zipFileName])
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error generating ZIP',
-                'error'   => $e->getMessage(),
-            ], 500);
         }
+
+        return response()->json(['success' => false, 'message' => 'Failed to create zip file'], 500);
     }
 
-    public function downloadZip($filename)
+    public function downloadZip(string $filename)
     {
-        $filePath = storage_path('app/public/temp/' . $filename);
+        $filePath = storage_path('app/temp/' . $filename);
+
         if (file_exists($filePath)) {
             return response()->download($filePath)->deleteFileAfterSend(true);
         }
-        return abort(404);
+
+        abort(404, 'File not found');
     }
 
     public function importFormat(Request $request)
@@ -1172,9 +1122,19 @@ class Employee extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
                 foreach ($data as $id) {
-                    if ($rec = Mod::find($id)) $rec->delete();
+                    $query = Mod::where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    if ($rec = $query->first()) {
+                        $rec->delete();
+                    }
                 }
                 DB::commit();
                 return response()->json(['success' => true, 'message' => 'Success deleting employees']);
@@ -1190,9 +1150,19 @@ class Employee extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
                 foreach ($data as $id) {
-                    if ($rec = Mod::withTrashed()->find($id)) $rec->restore();
+                    $query = Mod::withTrashed()->where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    if ($rec = $query->first()) {
+                        $rec->restore();
+                    }
                 }
                 DB::commit();
                 return response()->json(['success' => true, 'message' => 'Success restoring employees']);
@@ -1208,10 +1178,18 @@ class Employee extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::withTrashed()->find($id);
+                    $query = Mod::withTrashed()->where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if (!$rec) continue;
 
                     if ($rec->photo_id) FileUpload::removeFileById($rec->photo_id);
@@ -1264,23 +1242,7 @@ class Employee extends Controller
         }
     }
 
-    protected function getDescendantOrganizationIds($organizationId)
-    {
-        $descendantIds = [$organizationId];
-
-        $fetchChildren = function ($parentId) use (&$descendantIds, &$fetchChildren) {
-            $children = Organization::where('parent_id', $parentId)->pluck('id');
-            foreach ($children as $childId) {
-                $descendantIds[] = $childId;
-                $fetchChildren($childId);
-            }
-        };
-
-        $fetchChildren($organizationId);
-        return $descendantIds;
-    }
-
-    protected function processImport(Request $request, $uploadFolder, $importClass)
+    protected function processImport(Request $request, string $uploadFolder, string $importClass)
     {
         if ($upload = FileUpload::upload('file', $uploadFolder)) {
             $user      = $request->user();

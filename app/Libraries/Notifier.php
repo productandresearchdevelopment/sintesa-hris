@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class Notifier
 {
-    public static function send($userId, $title, $module = null, $message = null)
+    public static function send(int|string $userId, string $title, ?string $module = null, ?string $message = null)
     {
         return Notification::create([
             'user_id' => $userId,
@@ -19,19 +19,19 @@ class Notifier
         ]);
     }
 
-    public static function sendToMany($userIds, $title, $module = null, $message = null)
+    public static function sendToMany(array $userIds, string $title, ?string $module = null, ?string $message = null)
     {
         foreach ($userIds as $userId) {
-            self::send($userId, $title, $module, $message, false);
+            self::send($userId, $title, $module, $message);
         }
     }
 
-    public static function markAsRead($id)
+    public static function markAsRead(int|string $id)
     {
         Notification::where('id', $id)->update(['is_read' => true]);
     }
 
-    public static function markAllAsReadByModule($userId = null, $module = null)
+    public static function markAllAsReadByModule(int|string|null $userId = null, ?string $module = null)
     {
         $userId = $userId ?? Auth::id();
         $moduleMap = [
@@ -45,8 +45,7 @@ class Notifier
             ->update(['is_read' => true]);
     }
 
-
-    public static function unreadCount($userId = null)
+    public static function unreadCount(int|string|null $userId = null)
     {
         $userId = $userId ?? Auth::id();
         return Notification::where('user_id', $userId)

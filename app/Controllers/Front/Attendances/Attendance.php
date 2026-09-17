@@ -5,6 +5,7 @@ namespace App\Controllers\Front\Attendances;
 use App\Http\Controllers\Controller;
 use App\Libraries\ExportExcel;
 use App\Libraries\FileUpload;
+use App\Traits\UserScopingTrait;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -13,11 +14,14 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance as IqAttendance;
 use App\Models\Employees\Employee as IqEmployee;
 use App\Models\Office;
+use App\Models\Organization;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
 class Attendance extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request): View|RedirectResponse
     {
         $data = $this->prepareAttendanceData();
@@ -120,13 +124,16 @@ class Attendance extends Controller
         );
     }
 
-    public function check($type)
+    public function check(string $type)
     {
         if (!in_array($type, ['in', 'out'])) {
             return redirect()->route('attendance.index')->with('error', 'Invalid attendance type');
         }
 
         $employee = IqEmployee::with(['office'])->where('id', Auth::user()->employ_id)->first();
+        if (!$employee) {
+            return redirect()->route('dashboard')->with('error', 'Employee record not found');
+        }
 
         $today = Carbon::now()->format('Y-m-d');
         $todayAttendance = IqAttendance::where('employee_id', $employee->id)
@@ -179,6 +186,7 @@ class Attendance extends Controller
 
         if (
             $request->work_from === 'office' &&
+            $office &&
             $request->distance_from_office > $office->max_distance_allowed
         ) {
             return response()->json([
@@ -219,7 +227,7 @@ class Attendance extends Controller
                 $attendance->clock_in_lat = $request->latitude;
                 $attendance->clock_in_lng = $request->longitude;
                 $attendance->clock_in_photo = $photo;
-                $attendance->distance_in_from_office =  $request->distance_from_office;
+                $attendance->distance_in_from_office = $request->distance_from_office;
                 $attendance->status = $status;
                 $attendance->work_from = $request->work_from;
                 $attendance->save();
@@ -228,7 +236,7 @@ class Attendance extends Controller
                 $attendance->clock_out_lat = $request->latitude;
                 $attendance->clock_out_lng = $request->longitude;
                 $attendance->clock_out_photo = $photo;
-                $attendance->distance_out_from_office =  $request->distance_from_office;
+                $attendance->distance_out_from_office = $request->distance_from_office;
                 $attendance->save();
             } else {
                 throw new \Exception('Invalid attendance action');
@@ -250,7 +258,7 @@ class Attendance extends Controller
         }
     }
 
-    private function buildReportQuery(Request $request, $employee, $isHR)
+    private function buildReportQuery(Request $request, mixed $employee = null, bool $isHR = false)
     {
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = Carbon::parse($request->start_date)->format('Y-m-d');
@@ -262,9 +270,9 @@ class Attendance extends Controller
             $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
         }
 
-        $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
-        $isSuperUser = in_array($userRole, ['developer', 'superadmin', 'administrator']);
-        $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
+        $user = Auth::user();
+        $isSuperUser = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         $query = IqAttendance::whereBetween('date', [$startDate, $endDate])
             ->with(['employee', 'employee.organization']);
@@ -275,12 +283,12 @@ class Attendance extends Controller
             });
         }
 
-        if (!$isHR) {
-            $query->where('employee_id', $employee ? $employee->id : Auth::user()->employ_id);
+        if (!$isHR && !$isSuperUser) {
+            $query->where('employee_id', $employee ? $employee->id : $user->employ_id);
         } else {
             if ($request->filled('org_id')) {
                 $selectedOrgId = $request->org_id;
-                $targetOrgIds = array_merge([$selectedOrgId], $this->getAllChildOrganizations($selectedOrgId));
+                $targetOrgIds = $this->resolveDescendantOrgIds($selectedOrgId);
                 $query->whereHas('employee', function ($q) use ($targetOrgIds) {
                     $q->whereIn('org_id', $targetOrgIds);
                 });
@@ -298,7 +306,6 @@ class Attendance extends Controller
             });
         }
 
-        // Sort by date DESC, then earliest clock in time ASC (non-null first)
         $query->orderBy('date', 'desc')
             ->orderByRaw('CASE WHEN clock_in_time IS NULL THEN 1 ELSE 0 END ASC')
             ->orderBy('clock_in_time', 'asc');
@@ -312,7 +319,7 @@ class Attendance extends Controller
 
     private function getOrganizationTreeOptions($allowedOrgIds = null, $userCompany = null)
     {
-        $orgQuery = \App\Models\Organization::orderBy('name');
+        $orgQuery = Organization::orderBy('name');
         if ($userCompany !== null) {
             $orgQuery->where('company_id', $userCompany);
         }
@@ -390,18 +397,15 @@ class Attendance extends Controller
 
     private function prepareReportData(Request $request): ?array
     {
-        $employee = IqEmployee::where('id', Auth::user()->employ_id)->first();
-        if (!$employee) {
-            return null;
-        }
+        $user = Auth::user();
+        $employee = IqEmployee::where('id', $user->employ_id)->first();
 
         $month = $request->month ?? Carbon::now()->month;
         $year = $request->year ?? Carbon::now()->year;
 
-        $userRole = strtolower(optional(optional(Auth::user())->role)->name ?? '');
-        $isSuperUser = in_array($userRole, ['developer', 'superadmin', 'administrator']);
-        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator']);
-        $userCompany = optional($employee)->company_id ?? optional(optional(Auth::user())->employee)->company_id ?? optional(Auth::user())->company_id;
+        $isSuperUser = $this->isSuperUser($user);
+        $isHR = $this->isHrga($user) || $isSuperUser;
+        $userCompany = $this->getUserCompanyId($user);
 
         $orgTree = $isHR ? $this->getOrganizationTreeOptions(null, !$isSuperUser ? $userCompany : null) : [];
 
@@ -470,9 +474,9 @@ class Attendance extends Controller
         ini_set('memory_limit', '64048M');
         ini_set('max_execution_time', '300');
 
-        $employee = IqEmployee::where('id', Auth::user()->employ_id)->first();
-        $userRole = strtolower(optional(Auth::user()->role)->name);
-        $isHR = in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator']);
+        $user = Auth::user();
+        $employee = IqEmployee::where('id', $user->employ_id)->first();
+        $isHR = $this->isHrga($user) || $this->isSuperUser($user);
 
         $reportData = $this->buildReportQuery($request, $employee, $isHR);
         $startDate = $reportData['startDate'];
@@ -541,24 +545,7 @@ class Attendance extends Controller
         return ExportExcel::export($params);
     }
 
-    private function getAllChildOrganizations($parentId, &$visited = [])
-    {
-        if (in_array($parentId, $visited)) {
-            return [];
-        }
-
-        $visited[] = $parentId;
-        $childs = \App\Models\Organization::where('parent_id', $parentId)->pluck('id')->toArray();
-
-        foreach ($childs as $childId) {
-            $childs = array_merge($childs, $this->getAllChildOrganizations($childId, $visited));
-        }
-
-        return array_unique($childs);
-    }
-
-
-    private function calculateWorkHours($date, $clockIn, $clockOut)
+    private function calculateWorkHours(string $date, ?string $clockIn, ?string $clockOut): array
     {
         if (!$clockIn || !$clockOut) {
             return ['text' => '-', 'hours' => 0];
@@ -581,7 +568,7 @@ class Attendance extends Controller
         ];
     }
 
-    private function getStatusClass($status)
+    private function getStatusClass(?string $status): string
     {
         switch ($status) {
             case 'on_time':
@@ -597,8 +584,8 @@ class Attendance extends Controller
 
     public function update(Request $request)
     {
-        $userRole = strtolower(optional(Auth::user()->role)->name);
-        if (!in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator'])) {
+        $user = Auth::user();
+        if (!$this->isHrga($user) && !$this->isSuperUser($user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized action'
@@ -613,6 +600,13 @@ class Attendance extends Controller
 
         $attendance = IqAttendance::findOrFail($request->id);
         $employee = IqEmployee::findOrFail($attendance->employee_id);
+
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($employee->company_id !== $userCompanyId) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+            }
+        }
 
         DB::beginTransaction();
         try {
@@ -659,8 +653,8 @@ class Attendance extends Controller
 
     public function store(Request $request)
     {
-        $userRole = strtolower(optional(Auth::user()->role)->name);
-        if (!in_array($userRole, ['hrga', 'developer', 'superadmin', 'administrator'])) {
+        $user = Auth::user();
+        if (!$this->isHrga($user) && !$this->isSuperUser($user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized action'
@@ -680,6 +674,14 @@ class Attendance extends Controller
         ]);
 
         $employee = IqEmployee::findOrFail($request->employee_id);
+
+        if (!$this->isSuperUser($user)) {
+            $userCompanyId = $this->getUserCompanyId($user);
+            if ($employee->company_id !== $userCompanyId) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+            }
+        }
+
         $dateStr = Carbon::parse($request->date)->format('Y-m-d');
 
         $existing = IqAttendance::where('employee_id', $employee->id)

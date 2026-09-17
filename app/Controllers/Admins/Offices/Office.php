@@ -5,12 +5,15 @@ namespace App\Controllers\Admins\Offices;
 use App\Http\Controllers\Controller;
 use App\Libraries\Query;
 use App\Models\Office as Mod;
+use App\Traits\UserScopingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class Office extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -24,11 +27,10 @@ class Office extends Controller
         $company = $request->input('company_id');
 
         $user = $request->user();
-        $roleName = strtolower(optional(optional($user)->role)->name ?? '');
-        $isSuperUser = in_array($roleName, ['superadmin', 'developer']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
-        if (!$isSuperUser && $userCompany) {
+        if (!$isSuper && $userCompany) {
             $company = $userCompany;
         }
 
@@ -43,29 +45,28 @@ class Office extends Controller
             $query->onlyTrashed();
         }
 
-        // $result = Query::open($query, [
-        //     'name',
-        // ]);
-
         return response()->json([
             'data' => $query->get(),
             'count' => $query->count()
         ]);
-
-        // return response()->json([
-        //     'data' => Mod::find(1),
-        //     'count' => 1
-        // ]);
     }
 
     public function get(Request $request, $id = null)
     {
-        return Mod::with(['company'])->where('id', $id)->first();
+        $user = $request->user();
+        $query = Mod::with(['company'])->where('id', $id);
+
+        if (!$this->isSuperUser($user)) {
+            $query->where('company_id', $this->getUserCompanyId($user));
+        }
+
+        return $query->first();
     }
 
     public function create(Request $request)
     {
         try {
+            $user = $request->user();
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'company_id' => 'required|integer|exists:iq_company,id',
@@ -83,11 +84,15 @@ class Office extends Controller
                 ], 422);
             }
 
+            $companyId = $this->isSuperUser($user)
+                ? $request->input('company_id')
+                : $this->getUserCompanyId($user);
+
             DB::beginTransaction();
 
             $office = Mod::create([
                 'name' => $request->input('name'),
-                'company_id' => $request->input('company_id'),
+                'company_id' => $companyId,
                 'address' => $request->input('address'),
                 'latitude' => $request->input('latitude'),
                 'longitude' => $request->input('longitude'),
@@ -115,7 +120,9 @@ class Office extends Controller
     public function edit(Request $request)
     {
         try {
+            $user = $request->user();
             $validator = Validator::make($request->all(), [
+                'id' => 'required|integer|exists:iq_office,id',
                 'name' => 'required|string|max:255',
                 'company_id' => 'required|integer|exists:iq_company,id',
                 'address' => 'nullable|string|max:255',
@@ -132,10 +139,7 @@ class Office extends Controller
                 ], 422);
             }
 
-            DB::beginTransaction();
-
             $office = Mod::find($request->input('id'));
-
             if (!$office) {
                 return response()->json([
                     'success' => false,
@@ -143,8 +147,21 @@ class Office extends Controller
                 ], 404);
             }
 
+            if (!$this->isSuperUser($user)) {
+                $userCompanyId = $this->getUserCompanyId($user);
+                if ($office->company_id !== $userCompanyId) {
+                    return response()->json(['success' => false, 'message' => 'Unauthorized action for this company.'], 403);
+                }
+            }
+
+            $companyId = $this->isSuperUser($user)
+                ? $request->input('company_id')
+                : $this->getUserCompanyId($user);
+
+            DB::beginTransaction();
+
             $office->name = $request->input('name');
-            $office->company_id = $request->input('company_id');
+            $office->company_id = $companyId;
             $office->address = $request->input('address');
             $office->latitude = $request->input('latitude');
             $office->longitude = $request->input('longitude');
@@ -173,10 +190,18 @@ class Office extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::find($id);
+                    $query = Mod::where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->delete();
                     }
@@ -208,10 +233,18 @@ class Office extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::withTrashed()->find($id);
+                    $query = Mod::withTrashed()->where('id', $id);
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->restore();
                     }
@@ -243,10 +276,18 @@ class Office extends Controller
     {
         try {
             if ($data = json_decode($request->data)) {
+                $user = $request->user();
+                $userCompanyId = $this->getUserCompanyId($user);
+                $isSuper = $this->isSuperUser($user);
+
                 DB::beginTransaction();
 
                 foreach ($data as $id) {
-                    $rec = Mod::where('id', $id)->withTrashed()->first();
+                    $query = Mod::where('id', $id)->withTrashed();
+                    if (!$isSuper) {
+                        $query->where('company_id', $userCompanyId);
+                    }
+                    $rec = $query->first();
                     if ($rec) {
                         $rec->forcedelete();
                     }

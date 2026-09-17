@@ -3,7 +3,6 @@
 namespace App\Controllers\Admins\FileManagers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Systems\User;
 use App\Libraries\FileUpload;
 use App\Libraries\Notifier;
 use App\Libraries\Query;
@@ -11,6 +10,8 @@ use App\Models\FileManager as ModelsFileManager;
 use App\Models\Organization;
 use App\SystemModels\Auth\User as AuthUser;
 use App\SystemModels\Globals\Upload as ModelsUpload;
+use App\Traits\UserScopingTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,13 +20,25 @@ use ZipArchive;
 
 class FileManager extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request)
     {
         $user = $request->user();
+        $isSuper = $this->isSuperUser($user);
+        $companyId = $this->getUserCompanyId($user);
+
         $parentFolder = ModelsFileManager::find(1);
         $parentorganization = Organization::find(1);
-        $organizations = Organization::all();
-        $users = AuthUser::all();
+
+        $organizations = $isSuper || !$companyId
+            ? Organization::all()
+            : Organization::where('company_id', $companyId)->get();
+
+        $users = $isSuper || !$companyId
+            ? AuthUser::all()
+            : AuthUser::whereHas('employee', fn($q) => $q->where('company_id', $companyId))->get();
+
         $params = [
             'user' => $user,
             'users' => $users,
@@ -35,7 +48,7 @@ class FileManager extends Controller
             'organization' => $organizations
         ];
 
-        if ($user->role->name !== 'DEVELOPER' && $user->role->name !== 'SUPERADMIN') {
+        if (!$isSuper) {
             $view = isMobile() ? '_front.filemanager.mobile' : '_front.filemanager.index';
             return view($view, $params);
         } else {
@@ -43,68 +56,6 @@ class FileManager extends Controller
             return view($view, $params);
         }
     }
-
-    // public function data(Request $request)
-    // {
-    //     $query = ModelsFileManager::with([
-    //         'file',
-    //         'parent',
-    //         'childs',
-    //         'organizations',
-    //         'users',
-    //         'createdBy',
-    //         'updatedBy',
-    //         'deletedBy',
-    //     ])->where('type', 2);
-
-    //     $query->addSelect([
-    //         'size' => DB::table('uploads')
-    //             ->select('size')
-    //             ->whereColumn('uploads.id', 'iq_filemanager.file_id')
-    //             ->limit(1),
-    //     ]);
-
-    //     $query->addSelect([
-    //         'folder_name' => DB::table('iq_filemanager as parent')
-    //             ->select('name')
-    //             ->whereColumn('parent.id', 'iq_filemanager.parent_id')
-    //             ->limit(1)
-    //     ]);
-
-    //     $searchFields = [
-    //         'name',
-    //         'path',
-    //         'extension',
-    //     ];
-
-    //     if ($folder = $request->input('filter-folder')) {
-    //         if ($folder = ModelsFileManager::find($folder)) {
-    //             if ($request->input('only-current-folder')) {
-    //                 $query->where('parent_id', $folder->id);
-    //             } else {
-    //                 $query->where('path', 'LIKE', $folder->path . '%');
-    //             }
-    //         }
-    //     }
-
-    //     $trash = $request->input('trash');
-
-    //     if ($trash === null || $trash === '' || $trash === 'all trash') {
-    //         $query->withTrashed();
-    //     } elseif ($trash == 1) {
-    //         $query->withoutTrashed();
-    //     } elseif ($trash == 2) {
-    //         $query->onlyTrashed();
-    //     }
-
-    //     if ($fileType = $request->input('file-type')) {
-    //         $this->applyFileTypeFilter($query, $fileType);
-    //     }
-
-    //     // dd(Query::open($query, $searchFields));
-
-    //     return Query::open($query, $searchFields);
-    // }
 
     public function data(Request $request)
     {
@@ -117,7 +68,7 @@ class FileManager extends Controller
             'createdBy',
             'updatedBy',
             'deletedBy',
-        ])->where('type', 2); // Hanya ambil tipe file
+        ])->where('type', 2);
 
         $query->addSelect([
             'size' => DB::table('uploads')
@@ -132,6 +83,27 @@ class FileManager extends Controller
                 ->whereColumn('parent.id', 'iq_filemanager.parent_id')
                 ->limit(1),
         ]);
+
+        $user = $request->user();
+        if (!$this->isSuperUser($user)) {
+            if ($this->isHrga($user)) {
+                $companyId = $this->getUserCompanyId($user);
+                if ($companyId) {
+                    $query->where(function ($q) use ($user, $companyId) {
+                        $q->whereHas('organizations', fn($o) => $o->where('company_id', $companyId))
+                            ->orWhereHas('users.employee', fn($ue) => $ue->where('company_id', $companyId))
+                            ->orWhereHas('createdBy.employee', fn($ce) => $ce->where('company_id', $companyId))
+                            ->orWhere('created_by', $user->id);
+                    });
+                }
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->whereHas('users', fn($qu) => $qu->where('auth_user.id', $user->id))
+                        ->orWhereHas('organizations', fn($qo) => $qo->where('iq_org.id', $user->organization_id))
+                        ->orWhere('created_by', $user->id);
+                });
+            }
+        }
 
         $searchFields = ['name', 'path', 'extension'];
 
@@ -149,7 +121,6 @@ class FileManager extends Controller
             $query->where('extension', $fileType);
         }
 
-        // Trash Filter
         $trash = $request->input('trash');
         if ($trash === null || $trash === '' || $trash === 'all trash') {
             $query->withTrashed();
@@ -163,24 +134,25 @@ class FileManager extends Controller
         return Query::open($query, $searchFields);
     }
 
-
-    public function dataOrganizations(Request $request, $filemanagerId = null)
+    public function dataOrganizations(Request $request, int|string|null $filemanagerId = null)
     {
         if ($filemanagerId) {
-            $data = $this->treeFiles($filemanagerId);
+            $user = $request->user();
+            $companyId = $this->isSuperUser($user) ? null : $this->getUserCompanyId($user);
+            $data = $this->treeFiles($filemanagerId, null, $companyId);
             return response()->json($data);
         }
     }
 
-    public function dataUsers(Request $request, $filemanagerId = null)
+    public function dataUsers(Request $request, int|string|null $filemanagerId = null)
     {
         if ($filemanagerId) {
             $data = ModelsFileManager::where('id', $filemanagerId)->first();
-            return response()->json($data->users);
+            return response()->json($data?->users ?? []);
         }
     }
 
-    protected function applyFileTypeFilter($query, $fileType)
+    protected function applyFileTypeFilter(Builder $query, ?string $fileType)
     {
         $fileExtensions = [];
 
@@ -210,8 +182,7 @@ class FileManager extends Controller
         }
     }
 
-
-    public function get(Request $request, $id = null)
+    public function get(Request $request, int|string|null $id = null)
     {
         return ModelsFileManager::where('id', $id)->where('type', 2)->with('createdBy', 'updatedBy', 'deletedBy')->first();
     }
@@ -220,38 +191,41 @@ class FileManager extends Controller
     {
         if (!$file = FileUpload::upload('file', 'filemanager')) {
             return ['success' => false, 'message' => 'File not found'];
-        } else if (!$folder = ModelsFileManager::find($request->input('folder_id'))) {
-            return ['success' => false, 'message' => 'Folder not found'];
-        } else {
-            $file = ModelsUpload::find($file);
-
-            $data = ModelsFileManager::create([
-                'file_id' => $file->id,
-                'parent_id' => $folder->id,
-                'name' => $file->filename_origin,
-                'extension' => $file->extension,
-                'type_file' => $file->type,
-                'type' => 2,
-                'path_file' => $file->filename,
-                'description' => $request->description,
-            ]);
-
-            if ($request->filled('file_name')) {
-                $this->setName(new Request([
-                    'id' => $data->id,
-                    'name' => $request->input('file_name')
-                ]));
-            }
-            $this->setPathFolder($data);
-
-            $user = auth()->user();
-            $data->users()->attach($user->id);
-            $data->organizations()->attach($user->organization_id);
-
-            return ['success' => true, 'message' => 'Success...'];
         }
 
-        return ['success' => false, 'message' => 'File not found'];
+        $folder = ModelsFileManager::find($request->input('folder_id'));
+        if (!$folder) {
+            return ['success' => false, 'message' => 'Folder not found'];
+        }
+
+        $file = ModelsUpload::find($file);
+
+        $data = ModelsFileManager::create([
+            'file_id' => $file->id,
+            'parent_id' => $folder->id,
+            'name' => $file->filename_origin,
+            'extension' => $file->extension,
+            'type_file' => $file->type,
+            'type' => 2,
+            'path_file' => $file->filename,
+            'description' => $request->description,
+        ]);
+
+        if ($request->filled('file_name')) {
+            $this->setName(new Request([
+                'id' => $data->id,
+                'name' => $request->input('file_name')
+            ]));
+        }
+        $this->setPathFolder($data);
+
+        $user = auth()->user();
+        $data->users()->attach($user->id);
+        if ($user->organization_id) {
+            $data->organizations()->attach($user->organization_id);
+        }
+
+        return ['success' => true, 'message' => 'Success...'];
     }
 
     public function pushLink(Request $request)
@@ -315,14 +289,13 @@ class FileManager extends Controller
         ], 200);
     }
 
-    public function updateLink(Request $request, $id)
+    public function updateLink(Request $request, int|string $id)
     {
         $validatedData = $request->validate([
             'folder_id' => 'required|exists:iq_filemanager,id',
             'name' => 'required|string',
             'link' => 'required|string',
         ]);
-
 
         $upload = ModelsFileManager::find($id);
 
@@ -342,28 +315,35 @@ class FileManager extends Controller
         ], 200);
     }
 
-    public function updateOrganizations(Request $request, $id)
+    public function updateOrganizations(Request $request, int|string $id)
     {
-        $input  = $request->all();
-        $organizations  = json_decode($input['organizations']);
-        $data   = ModelsFileManager::find($id);
+        $input = $request->all();
+        $organizations = json_decode($input['organizations']);
+        $data = ModelsFileManager::find($id);
 
-        $data->organizations()->sync($organizations);
+        if ($data) {
+            $data->organizations()->sync($organizations);
+            return response()->json(['success' => true, 'message' => 'Success!!!']);
+        }
 
-        return response()->json(['success' => true, 'message' => 'Success!!!']);
+        return response()->json(['success' => false, 'message' => 'Data not found'], 404);
     }
 
-    public function setOrganization(Request $request, $filemanagerId)
+    public function setOrganization(Request $request, int|string $filemanagerId)
     {
-        $input  = $request->all();
-        $organization  = $input['organization'];
+        $input = $request->all();
+        $organization = $input['organization'];
         $auth = $input['auth'];
 
         if ($filemanagerId && $organization) {
-            $data   = ModelsFileManager::find($filemanagerId);
-            $data->organizations()->detach([$organization]);
-            if ($auth) $data->organizations()->attach([$organization]);
-            return response()->json(['success' => true, 'message' => 'Success!!!']);
+            $data = ModelsFileManager::find($filemanagerId);
+            if ($data) {
+                $data->organizations()->detach([$organization]);
+                if ($auth) {
+                    $data->organizations()->attach([$organization]);
+                }
+                return response()->json(['success' => true, 'message' => 'Success!!!']);
+            }
         }
         return response()->json(['success' => false, 'message' => 'Organization Not Found']);
     }
@@ -391,7 +371,6 @@ class FileManager extends Controller
         return response()->json(['message' => 'User added successfully.']);
     }
 
-
     public function removeUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -404,7 +383,6 @@ class FileManager extends Controller
         }
 
         $fileManager = ModelsFileManager::find($request->fileManagerId);
-
         $fileManager->users()->detach($request->userId);
 
         return response()->json(['message' => 'User removed successfully.']);
@@ -434,7 +412,6 @@ class FileManager extends Controller
             'data' => $upload,
         ], 200);
     }
-
 
     public function setTag(Request $request)
     {
@@ -532,13 +509,11 @@ class FileManager extends Controller
         ], 400);
     }
 
-
     public function forceDelete(Request $request)
     {
         if ($data = json_decode($request->data)) {
             foreach ($data as $id) {
                 if ($rec = ModelsFileManager::withTrashed()->where('id', $id)->first()) {
-
                     $rec->forceDelete();
                     FileUpload::removeFileById($rec->file_id);
                 }
@@ -555,67 +530,10 @@ class FileManager extends Controller
         ], 400);
     }
 
-    // FOLDER CONTROLLER -----------------------------------------------------------------------------------------------
-
-    // public function dataFolder(Request $request)
-    // {
-    //     $node = $request->input('node');
-    //     $level = $request->input('level');
-    //     $selected = ModelsFileManager::find($request->input('selected'));
-    //     $selectedPath = $selected ? explode('/', $selected->path) : [];
-
-    //     $filter = $request->input('filter');
-
-    //     if ($filter === 'trash') {
-    //         $query = ModelsFileManager::onlyTrashed()->where('type', 1)->orderBy('name');
-    //     } else {
-    //         $query = $node ? ModelsFileManager::where('parent_id', $node) : ModelsFileManager::whereNull('parent_id');
-
-    //         if ($filter === 'active') {
-    //             $query->whereNull('deleted_at');
-    //         } elseif ($filter === 'all trash') {
-    //             $query->withTrashed();
-    //         }
-
-    //         $query->orderBy('name')->where('type', 1);
-    //     }
-
-    //     $result = $query->get();
-
-    //     foreach ($result as $row) {
-    //         $row->text = $row->name;
-    //         $row->icon = asset('images/icons/folder.png');
-
-    //         if ($filter === 'trash') {
-    //             $row->parent_id = null;
-    //         }
-
-    //         if ($filter === 'active') {
-    //             $allChildren = ModelsFileManager::where('parent_id', $row->id)->get();
-    //         } else {
-    //             $allChildren = $row->childs;
-    //         }
-
-    //         $hasChildren = $allChildren->where('type', 1)->count();
-
-    //         foreach ($selectedPath as $r) {
-    //             if ($r == $row->id) {
-    //                 if ($hasChildren) {
-    //                     $row->expanded = true;
-    //                 }
-    //             }
-    //         }
-
-    //         $row->leaf = !$hasChildren;
-    //     }
-
-    //     return $result;
-    // }
-
     public function dataFolder(Request $request)
     {
-        $node = $request->input('node'); // ID parent node
-        $level = $request->input('level'); // Level folder yang diminta
+        $node = $request->input('node');
+        $level = $request->input('level');
         $selected = ModelsFileManager::find($request->input('selected'));
         $selectedPath = $selected ? explode('/', $selected->path) : [];
 
@@ -624,7 +542,6 @@ class FileManager extends Controller
         if ($filter === 'trash') {
             $query = ModelsFileManager::onlyTrashed()->where('type', 1)->orderBy('name');
         } else {
-            // Jika ada parameter level, tambahkan ke filter query
             if ($level !== null) {
                 $query = ModelsFileManager::where('level', $level);
             } else {
@@ -652,7 +569,6 @@ class FileManager extends Controller
                 $row->parent_id = null;
             }
 
-            // Periksa apakah ada anak untuk menentukan status leaf
             $allChildren = ($filter === 'active')
                 ? ModelsFileManager::where('parent_id', $row->id)->get()
                 : $row->childs;
@@ -671,12 +587,8 @@ class FileManager extends Controller
         return response()->json($result);
     }
 
-
-
-
     public function pushFolder(Request $request, $id = null)
     {
-        // dd($request->all());
         if ($parent = $request->input('parent_id')) {
             $input = [
                 'parent_id' => $parent,
@@ -702,7 +614,9 @@ class FileManager extends Controller
                 } else {
                     return ['success' => false, 'message' => 'No Update Data'];
                 }
-            } else $data = ModelsFileManager::create($input);
+            } else {
+                $data = ModelsFileManager::create($input);
+            }
 
             $this->setPathFolder($data);
 
@@ -714,7 +628,9 @@ class FileManager extends Controller
                 'message' => 'Success!!!',
                 'data' => $data
             ];
-        } else abort('500');
+        } else {
+            abort(500);
+        }
     }
 
     public function deleteFolder(Request $request)
@@ -758,14 +674,15 @@ class FileManager extends Controller
         return response()->json(['success' => false, 'message' => 'File cannot be force deleted'], 400);
     }
 
-    private function setPathFolder($data)
+    private function setPathFolder(ModelsFileManager $data)
     {
         $parent = $data->parent_id;
         $path = '/' . $data->id;
         $level = 1;
         while ($parent) {
             $path = '/' . $parent . $path;
-            $parent = ModelsFileManager::find($parent)->parent_id;
+            $parentObj = ModelsFileManager::find($parent);
+            $parent = $parentObj?->parent_id;
             $level++;
         }
         $path = $path . '/';
@@ -773,7 +690,7 @@ class FileManager extends Controller
         return $path;
     }
 
-    public function downloadFile(Request $request, $id)
+    public function downloadFile(Request $request, int|string $id)
     {
         $ufile = ModelsFileManager::find($id);
 
@@ -845,7 +762,7 @@ class FileManager extends Controller
         ], 400);
     }
 
-    public function downloadZip($filename)
+    public function downloadZip(string $filename)
     {
         $filePath = storage_path('app/public/temp/' . $filename);
 
@@ -856,15 +773,20 @@ class FileManager extends Controller
         return abort(404);
     }
 
-    private function treeFiles($filemanagerId, $parent = null)
+    private function treeFiles(int|string $filemanagerId, int|string|null $parent = null, int|string|null $companyId = null)
     {
-        $result = Organization::where('parent_id', $parent)
+        $query = Organization::query();
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
+
+        $result = $query->where('parent_id', $parent)
             ->orderBy('name')
             ->get();
         $filemanagers = ModelsFileManager::find($filemanagerId);
 
         foreach ($result as $row) {
-            $row->children = $this->treeFiles($filemanagers->id, $row->id);
+            $row->children = $this->treeFiles($filemanagers->id, $row->id, $companyId);
             $row->leaf = (count($row->children)) ? false : true;
             $row->checked = $row->hasFilemanager($filemanagers->id);
             $row->icon = asset('images/icons/' . ($row->type->icon ?? 'home') . '.png');

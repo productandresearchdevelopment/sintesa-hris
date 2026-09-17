@@ -7,7 +7,7 @@ use App\Libraries\ExportExcel;
 use App\Libraries\FileUpload;
 use App\Models\GlobalData;
 use App\Models\Leave as ModelsLeave;
-use App\Models\Organization;
+use App\Traits\UserScopingTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,12 +15,25 @@ use Illuminate\Support\Facades\Validator;
 
 class Leave extends Controller
 {
+    use UserScopingTrait;
+
     public function index(Request $request): View
     {
         $user = $request->user();
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
+
+        $typesQuery = GlobalData::where('group', 'leave_type');
+        if (!$isSuper && $userCompany) {
+            $typesQuery->where(function ($q) use ($userCompany) {
+                $q->whereNull('property->company_id')
+                    ->orWhere('property->company_id', $userCompany);
+            });
+        }
+
         $params = [
             'user' => $user,
-            'types' => GlobalData::where('group', 'leave_type')->get(),
+            'types' => $typesQuery->get(),
             'currentEmployee' => $user?->employee
         ];
 
@@ -30,9 +43,20 @@ class Leave extends Controller
     public function index_mobile(Request $request): View
     {
         $user = $request->user();
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
+
+        $typesQuery = GlobalData::where('group', 'leave_type');
+        if (!$isSuper && $userCompany) {
+            $typesQuery->where(function ($q) use ($userCompany) {
+                $q->whereNull('property->company_id')
+                    ->orWhere('property->company_id', $userCompany);
+            });
+        }
+
         $params = [
             'user' => $user,
-            'types' => GlobalData::where('group', 'leave_type')->get(),
+            'types' => $typesQuery->get(),
             'currentEmployee' => $user?->employee
         ];
 
@@ -42,12 +66,11 @@ class Leave extends Controller
     public function data(Request $request)
     {
         $user = $request->user();
-        $roleName = strtolower(optional($user->role)->name);
-        $isHR = $roleName === 'hrga';
-        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
-        $isSuperOrHR = in_array($roleName, ['developer', 'superadmin', 'administrator', 'hrga']);
+        $isHR = $this->isHrga($user);
+        $isSuper = $this->isSuperUser($user);
+        $isSuperOrHR = $isSuper || $isHR;
         $canApproveRoute = $user->hasRoute('leave.approve') || $isSuper;
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+        $userCompany = $this->getUserCompanyId($user);
 
         $search = $request->input('search') ?? $request->input('query');
         $leaveTypeFilter = $request->input('leave_type');
@@ -63,7 +86,6 @@ class Leave extends Controller
                 });
             }
         } else {
-            // Non-admin roles: only see their own leave records
             $query->where(function ($q) use ($user) {
                 if ($user->employ_id) {
                     $q->where('employ_id', $user->employ_id);
@@ -223,7 +245,7 @@ class Leave extends Controller
             ];
 
             if ($request->hasFile('file_id')) {
-                $rules['file_id'] = 'nullable|file|max:5120'; // Max 5MB
+                $rules['file_id'] = 'nullable|file|max:5120';
             }
 
             $messages = [
@@ -262,7 +284,26 @@ class Leave extends Controller
 
             $currentLeaveSaldo = (float) $employee->leave_saldo;
             $typeId = $request->input('type_id');
-            $leaveType = GlobalData::find($typeId);
+            $user = $request->user();
+            $isSuper = $this->isSuperUser($user);
+            $userCompany = $this->getUserCompanyId($user);
+
+            $leaveTypeQuery = GlobalData::where('id', $typeId)->where('group', 'leave_type');
+            if (!$isSuper && $userCompany) {
+                $leaveTypeQuery->where(function ($q) use ($userCompany) {
+                    $q->whereNull('property->company_id')
+                        ->orWhere('property->company_id', $userCompany);
+                });
+            }
+            $leaveType = $leaveTypeQuery->first();
+
+            if (!$leaveType) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid leave type selected.'
+                ], 400);
+            }
+
             $flagReduce = false;
             if ($leaveType && isset($leaveType->property->flag_reduce_balance)) {
                 $flagReduce = $leaveType->property->flag_reduce_balance === true || $leaveType->property->flag_reduce_balance === 1 || $leaveType->property->flag_reduce_balance === '1' || $leaveType->property->flag_reduce_balance === 'true';
@@ -374,12 +415,11 @@ class Leave extends Controller
         }
     }
 
-    public function get(Request $request, $id = null)
+    public function get(Request $request, int|string|null $id = null)
     {
         $user = $request->user();
-        $roleName = strtolower(optional($user->role)->name);
-        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         $query = ModelsLeave::with([
             'type',
@@ -416,7 +456,7 @@ class Leave extends Controller
         ]);
     }
 
-    public function approve(Request $request, $id)
+    public function approve(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'notes' => 'required',
@@ -447,8 +487,7 @@ class Leave extends Controller
             }
 
             $user = $request->user();
-            $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+            $isSuper = $this->isSuperUser($user);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
@@ -521,7 +560,7 @@ class Leave extends Controller
         }
     }
 
-    public function reject(Request $request, $id)
+    public function reject(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'notes' => 'required',
@@ -552,8 +591,7 @@ class Leave extends Controller
             }
 
             $user = $request->user();
-            $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+            $isSuper = $this->isSuperUser($user);
 
             $notes = $request->input('notes');
             $employee = $leave->employee;
@@ -612,7 +650,7 @@ class Leave extends Controller
         }
     }
 
-    public function cancel(Request $request, $id)
+    public function cancel(Request $request, int|string $id)
     {
         $validator = Validator::make($request->all(), [
             'notes' => 'required|string',
@@ -638,8 +676,7 @@ class Leave extends Controller
             }
 
             $user = $request->user();
-            $roleName = strtolower(optional($user->role)->name);
-            $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
+            $isSuper = $this->isSuperUser($user);
 
             if ($leave->created_by != $user->id && !$isSuper) {
                 return response()->json([
@@ -663,9 +700,6 @@ class Leave extends Controller
             }
 
             $employee = $leave->employee;
-            $leaveType = $leave->type;
-            $flagReduce = $leaveType && isset($leaveType->property->flag_reduce_balance) && filter_var($leaveType->property->flag_reduce_balance, FILTER_VALIDATE_BOOLEAN);
-
             $org = optional($employee->organization);
             $auth1 = optional($org->authorized1);
             $auth2 = optional($org->authorized2);
@@ -730,9 +764,8 @@ class Leave extends Controller
             $query->whereDate('end_date', '<=', $endDate);
         }
 
-        $roleName = strtolower(optional($user->role)->name);
-        $isSuper = in_array($roleName, ['developer', 'superadmin', 'administrator']);
-        $userCompany = optional(optional($user)->employee)->company_id ?? optional($user->organization)->company_id ?? optional($user)->company_id;
+        $isSuper = $this->isSuperUser($user);
+        $userCompany = $this->getUserCompanyId($user);
 
         if (!$isSuper && $userCompany) {
             $query->whereHas('employee', function ($q) use ($userCompany) {
@@ -740,7 +773,7 @@ class Leave extends Controller
             });
         }
 
-        if (!in_array($roleName, ['hrga', 'developer', 'superadmin', 'administrator'])) {
+        if (!$this->isHrga($user) && !$isSuper) {
             $query->where(function ($q) use ($user) {
                 if ($user->employ_id) {
                     $q->where('employ_id', $user->employ_id);
@@ -835,7 +868,7 @@ class Leave extends Controller
         return ExportExcel::export($params);
     }
 
-    protected function updateLeaveStatus($leave, $stage, $status, $user, $notes)
+    protected function updateLeaveStatus(ModelsLeave $leave, string $stage, string|int $status, mixed $user, ?string $notes): void
     {
         $leave->update([
             "{$stage}_status" => $status,
